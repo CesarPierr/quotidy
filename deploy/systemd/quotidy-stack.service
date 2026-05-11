@@ -1,0 +1,15 @@
+[Unit]
+Description=Quotidy docker stack
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/quotidy
+ExecStart=/usr/bin/env bash /opt/quotidy/scripts/server/install-or-update.sh
+ExecStop=/usr/bin/env bash -lc 'cd /opt/quotidy && docker compose --env-file .env.production -f docker-compose.prod.yml down'
+
+[Install]
+WantedBy=multi-user.target

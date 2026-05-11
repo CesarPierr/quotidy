@@ -2,10 +2,10 @@
 set -euo pipefail
 
 TARGET="${1:-}"
-APP_DIR="${2:-/opt/makemenage}"
+APP_DIR="${2:-/opt/quotidy}"
 
 if [[ -z "$TARGET" ]]; then
-  echo "Usage: scripts/deploy/sync-to-server.sh user@host [/opt/makemenage]"
+  echo "Usage: scripts/deploy/sync-to-server.sh user@host [/opt/quotidy]"
   exit 1
 fi
 

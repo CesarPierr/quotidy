@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea for Makemenage
+about: Suggest an idea for Quotidy
 title: "[FEATURE] "
 labels: enhancement
 assignees: ''

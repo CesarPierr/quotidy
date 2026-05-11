@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.APP_BASE_URL ?? "https://makemenage.local";
+  const baseUrl = process.env.APP_BASE_URL ?? "https://quotidy.local";
 
   return [
     {

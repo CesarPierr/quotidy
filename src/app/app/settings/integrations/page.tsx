@@ -127,7 +127,7 @@ export default async function IntegrationsSettingsPage({ searchParams }: Integra
             <p className="text-sm font-semibold text-ink-950">Serveur MCP local</p>
             <CopyValueButton
               label="Copier la commande MCP"
-              value={`MAKEMENAGE_MCP_HOUSEHOLD_ID=${context.household.id} npm run mcp:server`}
+              value={`QUOTIDY_MCP_HOUSEHOLD_ID=${context.household.id} npm run mcp:server`}
             />
           </article>
         </div>

@@ -6,14 +6,14 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-quotidy}
-      POSTGRES_USER: ${POSTGRES_USER:-makemenage}
+      POSTGRES_USER: ${POSTGRES_USER:-quotidy}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set-postgres-password}
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     expose:
       - "5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-makemenage} -d ${POSTGRES_DB:-quotidy}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quotidy} -d ${POSTGRES_DB:-quotidy}"]
       interval: 15s
       timeout: 5s
       retries: 8
@@ -25,9 +25,9 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-makemenage}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-quotidy}?schema=public
+      DATABASE_URL: postgresql://${POSTGRES_USER:-quotidy}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-quotidy}?schema=public
       APP_BASE_URL: ${APP_BASE_URL:?set-app-base-url}
-      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-MakeMenage}
+      NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME:-Quotidy}
       NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-contact@example.com}
       NEXT_PUBLIC_SUPPORT_URL: ${NEXT_PUBLIC_SUPPORT_URL:-}
       AUTH_SECRET: ${AUTH_SECRET:?set-auth-secret}
@@ -40,7 +40,7 @@ services:
       CRON_SECRET: ${CRON_SECRET:?set-cron-secret}
       NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
-      VAPID_EMAIL: ${VAPID_EMAIL:-mailto:admin@makemenage.fr}
+      VAPID_EMAIL: ${VAPID_EMAIL:-mailto:admin@quotidy.fr}
       GITHUB_REPORT_REPO: ${GITHUB_REPORT_REPO:-}
       GITHUB_REPORT_TOKEN: ${GITHUB_REPORT_TOKEN:-}
     expose:
@@ -69,8 +69,8 @@ services:
 
 volumes:
   postgres_prod_data:
-    name: makemenage_postgres_prod_data
+    name: quotidy_postgres_prod_data
   caddy_data:
-    name: makemenage_caddy_data
+    name: quotidy_caddy_data
   caddy_config:
-    name: makemenage_caddy_config
+    name: quotidy_caddy_config

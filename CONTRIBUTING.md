@@ -1,6 +1,6 @@
-# Contributing to Makemenage
+# Contributing to Quotidy
 
-Thank you for your interest in contributing to Makemenage! Makemenage is an open-source web application designed for fair household chore coordination.
+Thank you for your interest in contributing to Quotidy! Quotidy is an open-source web application designed for fair household chore coordination.
 
 ## Getting Started
 
@@ -13,8 +13,8 @@ Thank you for your interest in contributing to Makemenage! Makemenage is an open
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/CesarPierr/makemenage.git
-   cd makemenage
+   git clone https://github.com/CesarPierr/quotidy.git
+   cd quotidy
    ```
 
 2. **Install dependencies:**
@@ -46,7 +46,7 @@ Thank you for your interest in contributing to Makemenage! Makemenage is an open
 
 ## Development Guidelines
 
-- **UI/UX First**: Makemenage is heavily optimized for mobile (375x812 viewport). When making UI changes, always test on a narrow screen first.
+- **UI/UX First**: Quotidy is heavily optimized for mobile (375x812 viewport). When making UI changes, always test on a narrow screen first.
 - **Form Submissions**: All forms should use the `useFormAction` hook rather than standard `<form action="...">` to provide interactive toast feedback.
 - **Time/Dates**: To avoid timezone drift, always use the utility functions in `src/lib/date-input.ts` and `src/lib/time.ts` for manipulating dates.
 - **Styling**: We use TailwindCSS (v4). Custom tokens (e.g., colors) are defined directly in `src/app/globals.css`.

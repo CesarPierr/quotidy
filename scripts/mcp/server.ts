@@ -12,10 +12,13 @@ import {
 } from "@/lib/integrations/openclaw";
 
 function resolveHouseholdId(provided?: string) {
-  const householdId = provided?.trim() || process.env.MAKEMENAGE_MCP_HOUSEHOLD_ID?.trim();
-
+  const householdId = 
+    provided?.trim() || 
+    process.env.QUOTIDY_MCP_HOUSEHOLD_ID?.trim() || 
+    process.env.MAKEMENAGE_MCP_HOUSEHOLD_ID?.trim();
+  
   if (!householdId) {
-    throw new Error("Missing householdId. Set MAKEMENAGE_MCP_HOUSEHOLD_ID or pass householdId to the tool.");
+    throw new Error("Missing householdId. Set QUOTIDY_MCP_HOUSEHOLD_ID or pass householdId to the tool.");
   }
 
   return householdId;
@@ -39,7 +42,7 @@ function buildToolResult(payload: unknown) {
 }
 
 const server = new McpServer({
-  name: "makemenage-openclaw",
+  name: "quotidy-openclaw",
   version: "1.0.0",
 });
 
@@ -200,10 +203,10 @@ server.registerTool(
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("MakeMenage MCP server running on stdio");
+  console.error("Quotidy MCP server running on stdio");
 }
 
 main().catch((error) => {
-  console.error("MakeMenage MCP server error:", error);
+  console.error("Quotidy MCP server error:", error);
   process.exit(1);
 });

@@ -34,7 +34,7 @@ Si non défini, les liens de reset sont loggés dans la console en dev.
 | `SMTP_PORT` | Port SMTP (587 par défaut) |
 | `SMTP_USER` | Utilisateur SMTP |
 | `SMTP_PASS` | Mot de passe SMTP |
-| `SMTP_FROM` | Adresse expéditeur (ex. `noreply@makemenage.local`) |
+| `SMTP_FROM` | Adresse expéditeur (ex. `noreply@quotidy.local`) |
 
 ## Observabilité
 

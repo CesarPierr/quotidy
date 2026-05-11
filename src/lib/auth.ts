@@ -11,7 +11,7 @@ import { db } from "@/lib/db";
 export const SESSION_COOKIE = "quotidy_session";
 // Legacy cookie name kept readable during the rebrand transition. Sessions issued before
 // the rename are honored until they expire naturally (max 21 days). Remove once the
-// hearthly cookie window has fully elapsed in production.
+// quotidy cookie window has fully elapsed in production.
 export const LEGACY_SESSION_COOKIE = "hearthly_session";
 const SESSION_DURATION_DAYS = 21;
 
@@ -44,6 +44,10 @@ export async function hashPassword(password: string) {
 
 export async function verifyPassword(password: string, passwordHash: string) {
   return bcrypt.compare(password, passwordHash);
+}
+
+export async function createIntegrationApiKey() {
+  return `qtd_oc_${randomBytes(24).toString("base64url")}`;
 }
 
 export async function createSession(userId: string, options?: { secure?: boolean }) {

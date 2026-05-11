@@ -1,4 +1,4 @@
-const CACHE_NAME = "makemenage-static-v8";
+const CACHE_NAME = "quotidy-static-v8";
 const STATIC_ASSETS = ["/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -27,7 +27,7 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("push", (event) => {
-  let data = { title: "makemenage", body: "Vous avez de nouvelles tâches.", url: "/app" };
+  let data = { title: "quotidy", body: "Vous avez de nouvelles tâches.", url: "/app" };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
   } catch {

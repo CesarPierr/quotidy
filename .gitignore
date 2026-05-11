@@ -41,8 +41,8 @@
 
 # docker
 .docker-compose.prod.yml.tmp
-makemenage-db-data/
-makemenage-postgres-prod-data/
+quotidy-db-data/
+quotidy-postgres-prod-data/
 
 # vercel
 .vercel

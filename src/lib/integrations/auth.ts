@@ -7,7 +7,7 @@ import type { IntegrationProvider } from "@prisma/client";
 import { db } from "@/lib/db";
 
 export const OPENCLAW_PROVIDER: IntegrationProvider = "mcp_openclaw";
-// Canonical headers (post-rebrand). The `x-hearthly-*` legacy aliases below remain
+// Canonical headers (post-rebrand). The `x-quotidy-*` legacy aliases below remain
 // accepted indefinitely so existing third-party integrations don't break.
 export const INTEGRATION_KEY_HEADER = "x-quotidy-key";
 export const INTEGRATION_HOUSEHOLD_HEADER = "x-quotidy-household";
@@ -30,7 +30,7 @@ function safeCompareHex(left: string, right: string) {
 }
 
 export function createIntegrationApiKey() {
-  return `mmg_oc_${randomBytes(24).toString("base64url")}`;
+  return `qtd_oc_${randomBytes(24).toString("base64url")}`;
 }
 
 export function hashIntegrationApiKey(apiKey: string) {

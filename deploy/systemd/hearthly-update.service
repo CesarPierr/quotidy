@@ -1,9 +1,0 @@
-[Unit]
-Description=Update and redeploy MakeMenage
-After=network-online.target docker.service
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-WorkingDirectory=/opt/hearthly
-ExecStart=/usr/bin/env bash /opt/hearthly/scripts/server/pull-and-deploy.sh

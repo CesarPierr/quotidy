@@ -3,13 +3,13 @@
 ## Dump PostgreSQL
 
 ```bash
-docker compose exec db pg_dump -U makemenage -d makemenage > makemenage-backup.sql
+docker compose exec db pg_dump -U quotidy -d quotidy > quotidy-backup.sql
 ```
 
 ## Restauration
 
 ```bash
-cat makemenage-backup.sql | docker compose exec -T db psql -U makemenage -d makemenage
+cat quotidy-backup.sql | docker compose exec -T db psql -U quotidy -d quotidy
 ```
 
 ## Fréquence recommandée

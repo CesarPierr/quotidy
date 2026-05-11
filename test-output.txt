@@ -1,9 +1,9 @@
 
-> makemenage@0.1.0 test
+> quotidy@0.1.0 test
 > vitest run --coverage
 
 
-[1m[30m[46m RUN [49m[39m[22m [36mv4.1.5 [39m[90m/home/pierre/makemenage[39m
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.5 [39m[90m/home/pierre/quotidy[39m
       [2mCoverage enabled with [22m[33mv8[39m
 
  [32m✓[39m tests/validation.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 11[2mms[22m[39m

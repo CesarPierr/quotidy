@@ -46,7 +46,7 @@ npm run db:seed
 
 Compte créé :
 
-- email : `demo@makemenage.local`
+- email : `demo@quotidy.local`
 - mot de passe : `demo12345`
 
 ## E2E navigateur

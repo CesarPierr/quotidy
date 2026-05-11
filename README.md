@@ -1,6 +1,6 @@
 <div align="center">
 
-# Hearthly
+# Quotidy
 
 **L'app qui répartit les tâches et l'épargne du foyer, équitablement et sans friction.**
 
@@ -17,7 +17,7 @@ Récurrences automatiques, rotation équitable entre membres, épargne partagée
 
 ---
 
-## Ce que fait Hearthly
+## Ce que fait Quotidy
 
 - **Tâches récurrentes** — `daily`, `every_x_days`, `weekly`, `every_x_weeks`, `monthly_simple`, avec glissement intelligent (Sliding Window)
 - **Attribution équitable** — `fixed`, `manual`, `strict_alternation`, `round_robin`, `least_assigned_count`, `least_assigned_minutes`
@@ -73,8 +73,8 @@ graph TD
 ## Démarrage rapide
 
 ```bash
-git clone https://github.com/CesarPierr/makemenage.git
-cd makemenage
+git clone https://github.com/CesarPierr/quotidy.git
+cd quotidy
 cp .env.example .env
 npm install
 docker compose up -d db

@@ -14,7 +14,7 @@ export type PushPayload = {
 function configureWebPush() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
-  const email = process.env.VAPID_EMAIL ?? "mailto:admin@hearthly.app";
+  const email = process.env.VAPID_EMAIL ?? "mailto:admin@quotidy.app";
 
   if (!publicKey || !privateKey) return false;
   webpush.setVapidDetails(email, publicKey, privateKey);

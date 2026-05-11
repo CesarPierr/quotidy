@@ -1,0 +1,9 @@
+[Unit]
+Description=Update and redeploy Quotidy
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/quotidy
+ExecStart=/usr/bin/env bash /opt/quotidy/scripts/server/pull-and-deploy.sh

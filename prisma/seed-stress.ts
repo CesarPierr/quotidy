@@ -4,7 +4,7 @@
  *
  * Usage:  npm run db:seed:stress
  *
- * Creates demo-stress@makemenage.local / demo12345
+ * Creates demo-stress@quotidy.local / demo12345
  */
 import { PrismaClient, type Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -54,7 +54,7 @@ const TASK_OBJECTS = [
 const COLORS = ["#E86A33", "#1F6E8C", "#5A8A6E", "#A45EA8", "#D4A745", "#3F86C7"];
 
 async function main() {
-  const email = "demo-stress@makemenage.local";
+  const email = "demo-stress@quotidy.local";
 
   // Wipe prior stress data idempotently
   const existing = await prisma.user.findUnique({ where: { email } });

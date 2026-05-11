@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: makemenage
-      POSTGRES_USER: makemenage
-      POSTGRES_PASSWORD: makemenage
+      POSTGRES_DB: quotidy
+      POSTGRES_USER: quotidy
+      POSTGRES_PASSWORD: quotidy
     ports:
       - "5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U makemenage -d makemenage"]
+      test: ["CMD-SHELL", "pg_isready -U quotidy -d quotidy"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,7 +21,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://makemenage:makemenage@db:5432/makemenage?schema=public
+      DATABASE_URL: postgresql://quotidy:quotidy@db:5432/quotidy?schema=public
       APP_BASE_URL: http://localhost:3000
       AUTH_SECRET: dev-secret-change-me
       DEFAULT_TIMEZONE: Europe/Paris

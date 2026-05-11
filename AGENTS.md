@@ -1,4 +1,4 @@
-# AGENTS.md — hearthly
+# AGENTS.md — quotidy
 
 Brief for AI coding agents working on this repo. Read this before exploring.
 

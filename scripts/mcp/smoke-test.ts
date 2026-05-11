@@ -28,7 +28,7 @@ async function main() {
       createdByUserId: (
         await db.user.create({
           data: {
-            email: `mcp-smoke-${now}@makemenage.local`,
+            email: `mcp-smoke-${now}@quotidy.local`,
             passwordHash: "not-used",
             displayName: "MCP Smoke",
           },
@@ -58,7 +58,7 @@ async function main() {
   });
 
   const client = new Client({
-    name: "makemenage-mcp-smoke",
+    name: "quotidy-mcp-smoke",
     version: "1.0.0",
   });
 
@@ -68,7 +68,7 @@ async function main() {
     cwd: process.cwd(),
     env: {
       DATABASE_URL: databaseUrl,
-      MAKEMENAGE_MCP_HOUSEHOLD_ID: household.id,
+      QUOTIDY_MCP_HOUSEHOLD_ID: household.id,
     },
     stderr: "pipe",
   });
