@@ -19,21 +19,21 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:17-alpine
         env:
-          POSTGRES_USER: hearthly
-          POSTGRES_PASSWORD: hearthly
-          POSTGRES_DB: hearthly_test
+          POSTGRES_USER: quotidy
+          POSTGRES_PASSWORD: quotidy
+          POSTGRES_DB: quotidy_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U hearthly -d hearthly_test"
+          --health-cmd "pg_isready -U quotidy -d quotidy_test"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql://hearthly:hearthly@localhost:5432/hearthly_test?schema=public
+      DATABASE_URL: postgresql://quotidy:quotidy@localhost:5432/quotidy_test?schema=public
       APP_BASE_URL: http://localhost:3000
       AUTH_SECRET: ci-only-not-secret
       CSRF_SECRET: ci-only-csrf-secret-32chars-long-aaaa
