@@ -38,6 +38,20 @@ function getEligiblePool(
   return available.length ? available : activeMembers;
 }
 
+export function isHouseholdFullyAbsent(
+  rule: AssignmentRuleInput,
+  members: MemberInput[],
+  scheduledDate: Date,
+  absences: AbsenceInput[],
+) {
+  if (!rule.rebalanceOnMemberAbsence) return false;
+  const activeMembers = members.filter(
+    (member) => member.isActive && rule.eligibleMemberIds.includes(member.id),
+  );
+  if (!activeMembers.length) return false;
+  return activeMembers.every((member) => isAbsent(member.id, scheduledDate, absences));
+}
+
 export function pickAssignee(params: {
   sequenceIndex: number;
   rule: AssignmentRuleInput;
@@ -86,14 +100,28 @@ export function pickAssignee(params: {
 
     const lastAssignedMemberId = priorAssignments.at(-1)?.assignedMemberId ?? null;
 
+    // Walk forward in the rotation, skipping members not currently in the pool
+    // (i.e. absent when rebalanceOnMemberAbsence is on). Bounded by rotation length.
+    const advanceFromIndex = (startIndex: number) => {
+      for (let step = 1; step <= rotation.length; step++) {
+        const candidateId = rotation[(startIndex + step) % rotation.length];
+        if (candidateId && pool.some((member) => member.id === candidateId)) {
+          return candidateId;
+        }
+      }
+      return pool[0]?.id ?? null;
+    };
+
     if (lastAssignedMemberId) {
       const currentIndex = rotation.indexOf(lastAssignedMemberId);
       if (currentIndex >= 0) {
-        return rotation[(currentIndex + 1) % rotation.length] ?? pool[0]?.id ?? null;
+        return advanceFromIndex(currentIndex);
       }
     }
 
-    return rotation[sequenceIndex % rotation.length] ?? pool[0]?.id ?? null;
+    // Fall back to a deterministic starting position based on the sequence index,
+    // then skip forward over absents.
+    return advanceFromIndex((sequenceIndex - 1 + rotation.length) % rotation.length);
   }
 
   const windowDays = rule.fairnessWindowDays ?? 14;

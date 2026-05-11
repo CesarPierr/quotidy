@@ -133,7 +133,7 @@ describe("OpenClaw integration", () => {
     const result = await authorizeHouseholdIntegrationRequest(
       new Request("http://localhost/api/integrations/mcp/openclaw/tasks", {
         headers: {
-          "x-makemenage-key": "secret-key",
+          "x-quotidy-key": "secret-key",
         },
       }),
       "clh9x8j0a0000f7a8h1b2c3d",

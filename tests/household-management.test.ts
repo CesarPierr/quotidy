@@ -51,6 +51,8 @@ import {
 } from "@/lib/household-management";
 
 describe("household management", () => {
+  const futureInviteExpiry = () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -68,7 +70,7 @@ describe("household management", () => {
       code: "ABC12345",
       acceptedAt: null,
       revokedAt: null,
-      expiresAt: new Date("2026-05-01T00:00:00Z"),
+      expiresAt: futureInviteExpiry(),
       household: { id: "house-1", name: "Maison" },
       createdByMember: { id: "creator-1", displayName: "Pierre" },
     });
@@ -108,7 +110,7 @@ describe("household management", () => {
       code: "ABC12345",
       acceptedAt: null,
       revokedAt: null,
-      expiresAt: new Date("2026-05-01T00:00:00Z"),
+      expiresAt: futureInviteExpiry(),
       household: { id: "house-1", name: "Maison" },
       createdByMember: null,
     });
@@ -192,7 +194,7 @@ describe("household management", () => {
       getInviteState({
         acceptedAt: null,
         revokedAt: null,
-        expiresAt: new Date("2026-05-01T00:00:00Z"),
+        expiresAt: futureInviteExpiry(),
       }),
     ).toBe("active");
     expect(

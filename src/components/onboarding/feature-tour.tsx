@@ -36,7 +36,7 @@ const SLIDES: Slide[] = [
     id: "welcome",
     kicker: "Bienvenue",
     title: "Tout ce qu'il faut pour faire avancer le foyer",
-    desc: "Hearthly répartit les tâches automatiquement, suit qui fait quoi et vous laisse vous concentrer sur l'essentiel.",
+    desc: "Quotidy répartit les tâches automatiquement, suit qui fait quoi et vous laisse vous concentrer sur l'essentiel.",
     accent: "var(--coral-500)",
     icon: Sparkles,
     bullets: [

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   };
   const result = await sendPushToAll(
     {
-      title: body.payload?.title ?? "makemenage",
+      title: body.payload?.title ?? "Hearthly",
       body: body.payload?.body ?? "Nouvelles tâches à faire !",
       url: body.payload?.url ?? "/app",
     },

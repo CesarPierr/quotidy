@@ -50,7 +50,7 @@ type CalendarMonthProps = {
     startDate: Date;
     endDate: Date;
     notes: string | null;
-    member: { displayName: string; color: string };
+    member: { id: string; displayName: string; color: string };
   }[];
   householdId?: string;
   currentMemberId?: string | null;
@@ -96,12 +96,30 @@ export function CalendarMonth({
     ),
   }));
 
-  const dayAbsences = (day: Date) =>
-    absences.filter(
+  const dayAbsences = (day: Date) => {
+    const dayKey = format(day, "yyyy-MM-dd");
+    const matches = absences.filter(
       (absence) =>
-        format(absence.startDate, "yyyy-MM-dd") <= format(day, "yyyy-MM-dd") &&
-        format(absence.endDate, "yyyy-MM-dd") >= format(day, "yyyy-MM-dd"),
+        format(absence.startDate, "yyyy-MM-dd") <= dayKey &&
+        format(absence.endDate, "yyyy-MM-dd") >= dayKey,
     );
+    // De-duplicate by member: a member may have several overlapping absence records
+    // (e.g. two ranges that both cover this day). The calendar should show one chip per member.
+    const seen = new Map<string, (typeof matches)[number]>();
+    for (const absence of matches) {
+      if (!seen.has(absence.member.id)) {
+        seen.set(absence.member.id, absence);
+      }
+    }
+    return [...seen.values()];
+  };
+
+  const isAssigneeAbsent = (occurrence: CalendarOccurrence) => {
+    if (!occurrence.assignedMember) return false;
+    return dayAbsences(occurrence.scheduledDate).some(
+      (absence) => absence.member.id === occurrence.assignedMember?.id,
+    );
+  };
 
   const selectedOccurrence = occurrences.find(o => o.id === selectedOccurrenceId);
   const selectedDayOccurrences = selectedDay 
@@ -180,6 +198,7 @@ export function CalendarMonth({
         daysWithOccurrences={daysWithOccurrences}
         occurrences={occurrences}
         dayAbsences={dayAbsences}
+        isAssigneeAbsent={isAssigneeAbsent}
         setSelectedDay={setSelectedDay}
         getOccurrenceStyle={getOccurrenceStyle}
       />
@@ -192,6 +211,7 @@ export function CalendarMonth({
         month={month}
         occurrences={occurrences}
         dayAbsences={dayAbsences}
+        isAssigneeAbsent={isAssigneeAbsent}
         setSelectedDay={setSelectedDay}
         setSelectedOccurrenceId={setSelectedOccurrenceId}
         getOccurrenceStyle={getOccurrenceStyle}

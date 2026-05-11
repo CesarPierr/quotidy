@@ -42,13 +42,13 @@ export function BoxDetailSettings({
   });
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300 pb-12">
+    <div className="space-y-4 pb-12">
       <div className="flex gap-2 p-1 bg-black/[0.03] rounded-lg">
         <button
           type="button"
           onClick={() => setSettingsTab("general")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all",
+            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
             settingsTab === "general" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
           )}
         >
@@ -58,7 +58,7 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("autofill")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all",
+            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
             settingsTab === "autofill" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
           )}
         >
@@ -68,7 +68,7 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("calculators")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-all",
+            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
             settingsTab === "calculators" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
           )}
         >
@@ -77,7 +77,7 @@ export function BoxDetailSettings({
       </div>
 
       {settingsTab === "general" ? (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           <section className="app-surface rounded-2xl p-5 border border-black/[0.03]">
             <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-[var(--ink-800)]">
               <Pencil className="size-4 opacity-50" /> Identité
@@ -147,7 +147,7 @@ export function BoxDetailSettings({
           </section>
         </div>
       ) : settingsTab === "autofill" ? (
-        <div className="animate-in fade-in duration-200">
+        <div>
           <section className="app-surface rounded-2xl p-5 border border-black/[0.03]">
             <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-coral-500">
               <Sparkles className="size-4" /> Auto-versement
@@ -160,7 +160,7 @@ export function BoxDetailSettings({
           </section>
         </div>
       ) : (
-        <div className="space-y-4 animate-in fade-in duration-200">
+        <div className="space-y-4">
           <CalculatorRunner
             key={refreshCalculatorsKey}
             householdId={householdId}

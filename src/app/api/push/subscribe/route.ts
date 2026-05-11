@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Subscription invalide" }, { status: 400 });
     }
 
-    // Resolve member
-    let resolvedMemberId = memberId;
-    if (!resolvedMemberId) {
-      const member = await db.householdMember.findFirst({ where: { userId: user.id } });
-      resolvedMemberId = member?.id;
-    }
+    // Resolve member and enforce ownership of any client-supplied memberId.
+    const member = memberId
+      ? await db.householdMember.findFirst({ where: { id: memberId, userId: user.id } })
+      : await db.householdMember.findFirst({ where: { userId: user.id } });
+    const resolvedMemberId = member?.id;
+
     if (!resolvedMemberId) return NextResponse.json({ error: "Membre introuvable" }, { status: 404 });
 
     await db.pushSubscription.upsert({

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 
 // Mirror the deriveCsrfToken logic from middleware (edge-runtime Web Crypto)
-async function deriveCsrfToken(sessionToken: string, secret = "makemenage-csrf-default"): Promise<string> {
+async function deriveCsrfToken(sessionToken: string, secret = "quotidy-csrf-default"): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),

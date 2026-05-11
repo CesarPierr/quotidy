@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { describe, expect, it } from "vitest";
 
 import { generateOccurrences } from "@/lib/scheduling/generator";
@@ -177,6 +178,92 @@ describe("occurrence generation", () => {
 
     expect(generated).toHaveLength(1);
     expect(generated[0]?.sourceGenerationKey).toBe("task-single:2026-01-10");
+  });
+
+  it("pushes occurrences past a household-wide absence window", () => {
+    // Both A and B absent for May 10-12. Daily task should not land in that window;
+    // first available date is May 13.
+    const generated = generateOccurrences({
+      template: {
+        id: "task-trash",
+        householdId: "home-1",
+        title: "Poubelles",
+        estimatedMinutes: 10,
+        startsOn: new Date("2026-05-08"),
+        recurrence: {
+          type: "daily",
+          mode: "FIXED",
+          interval: 1,
+          anchorDate: new Date("2026-05-08"),
+          dueOffsetDays: 0,
+        },
+        assignment: {
+          mode: "round_robin",
+          eligibleMemberIds: ["A", "B"],
+          rotationOrder: ["A", "B"],
+          rebalanceOnMemberAbsence: true,
+        },
+      },
+      members: [
+        { id: "A", displayName: "Alice", isActive: true },
+        { id: "B", displayName: "Bob", isActive: true },
+      ],
+      absences: [
+        { memberId: "A", startDate: new Date("2026-05-10"), endDate: new Date("2026-05-12") },
+        { memberId: "B", startDate: new Date("2026-05-10"), endDate: new Date("2026-05-12") },
+      ],
+      existingOccurrences: [],
+      rangeStart: new Date("2026-05-08"),
+      rangeEnd: new Date("2026-05-15"),
+    });
+
+    const dates = generated.map((occurrence) => format(occurrence.scheduledDate, "yyyy-MM-dd"));
+
+    // The 3 absence-day occurrences (May 10, 11, 12) should all be pushed to May 13.
+    expect(dates).not.toContain("2026-05-10");
+    expect(dates).not.toContain("2026-05-11");
+    expect(dates).not.toContain("2026-05-12");
+    const pushedCount = dates.filter((date) => date === "2026-05-13").length;
+    expect(pushedCount).toBeGreaterThanOrEqual(3);
+  });
+
+  it("does not push when only a subset of the household is absent", () => {
+    const generated = generateOccurrences({
+      template: {
+        id: "task-trash-2",
+        householdId: "home-1",
+        title: "Poubelles",
+        estimatedMinutes: 10,
+        startsOn: new Date("2026-05-08"),
+        recurrence: {
+          type: "daily",
+          mode: "FIXED",
+          interval: 1,
+          anchorDate: new Date("2026-05-08"),
+          dueOffsetDays: 0,
+        },
+        assignment: {
+          mode: "round_robin",
+          eligibleMemberIds: ["A", "B"],
+          rotationOrder: ["A", "B"],
+          rebalanceOnMemberAbsence: true,
+        },
+      },
+      members: [
+        { id: "A", displayName: "Alice", isActive: true },
+        { id: "B", displayName: "Bob", isActive: true },
+      ],
+      absences: [
+        { memberId: "A", startDate: new Date("2026-05-10"), endDate: new Date("2026-05-10") },
+      ],
+      existingOccurrences: [],
+      rangeStart: new Date("2026-05-08"),
+      rangeEnd: new Date("2026-05-12"),
+    });
+
+    const dates = generated.map((occurrence) => format(occurrence.scheduledDate, "yyyy-MM-dd"));
+    // May 10 should still be present (B is available).
+    expect(dates).toContain("2026-05-10");
   });
 
   it("rebalances future alternation after adding a new eligible member", () => {

@@ -2,9 +2,8 @@
 
 import { format, startOfToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Clock, ListTodo, Wrench } from "lucide-react";
+import { Clock, ListTodo, Plane, Wrench } from "lucide-react";
 import type { CalendarOccurrence } from "@/components/calendar/calendar-month";
-import { hexToRgba } from "@/lib/colors";
 
 type CalendarMobileViewProps = {
   viewType: "tasks" | "minutes";
@@ -17,8 +16,9 @@ type CalendarMobileViewProps = {
     startDate: Date;
     endDate: Date;
     notes: string | null;
-    member: { displayName: string; color: string };
+    member: { id: string; displayName: string; color: string };
   }[];
+  isAssigneeAbsent: (occurrence: CalendarOccurrence) => boolean;
   setSelectedDay: (day: Date) => void;
   getOccurrenceStyle: (status: string, baseColor: string) => { className: string; style: React.CSSProperties };
 };
@@ -30,29 +30,30 @@ export function CalendarMobileView({
   daysWithOccurrences,
   occurrences,
   dayAbsences,
+  isAssigneeAbsent,
   setSelectedDay,
   getOccurrenceStyle,
 }: CalendarMobileViewProps) {
   return (
-    <div className="app-surface rounded-[2rem] p-4 md:hidden">
+    <div className="app-surface rounded-[1.6rem] p-3.5 md:hidden">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <p className="section-kicker">Agenda mobile</p>
-          <h3 className="display-title mt-2 text-2xl">
+          <p className="section-kicker text-[0.62rem]">Agenda mobile</p>
+          <h3 className="display-title mt-1 text-xl leading-tight">
             {viewType === "tasks" ? "Les 7 prochains jours" : "Charge prévue"}
           </h3>
-          <p className="mt-2 text-sm leading-6 text-ink-700">
+          <p className="mt-1 text-xs leading-5 text-ink-700">
             Une vue compacte, lisible et sans scroll horizontal.
           </p>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-[1.5rem] border border-line bg-glass-bg p-1.5">
+      <div className="mt-3 grid grid-cols-2 gap-1.5 rounded-[1.2rem] border border-line bg-glass-bg p-1">
         <button
           aria-pressed={viewType === "tasks"}
-          className={`rounded-[1.1rem] px-3 py-2.5 text-sm font-semibold transition-all ${
+          className={`rounded-[0.95rem] px-2 py-2 text-xs font-semibold transition-all ${
             viewType === "tasks"
-              ? "bg-ink-950 text-[var(--sand-50)] shadow-sm"
+              ? "bg-ink-950 text-white shadow-sm"
               : "text-ink-700"
           }`}
           onClick={() => setViewType("tasks")}
@@ -65,9 +66,9 @@ export function CalendarMobileView({
         </button>
         <button
           aria-pressed={viewType === "minutes"}
-          className={`rounded-[1.1rem] px-3 py-2.5 text-sm font-semibold transition-all ${
+          className={`rounded-[0.95rem] px-2 py-2 text-xs font-semibold transition-all ${
             viewType === "minutes"
-              ? "bg-ink-950 text-[var(--sand-50)] shadow-sm"
+              ? "bg-ink-950 text-white shadow-sm"
               : "text-ink-700"
           }`}
           onClick={() => setViewType("minutes")}
@@ -83,7 +84,7 @@ export function CalendarMobileView({
       {viewType === "minutes" ? (
         <div
           aria-label="Charge prévue sur 7 jours"
-          className="mt-4 rounded-[1.6rem] border border-line bg-glass-bg p-4"
+          className="mt-3 rounded-[1.3rem] border border-line bg-glass-bg p-3"
           role="region"
         >
           <div className="grid h-48 grid-cols-7 items-end gap-2">
@@ -135,7 +136,7 @@ export function CalendarMobileView({
           </div>
         </div>
       ) : (
-        <div aria-label="Tâches des 7 prochains jours" className="mt-4 space-y-3" role="region">
+        <div aria-label="Tâches des 7 prochains jours" className="mt-3 space-y-2.5" role="region">
           {daysWithOccurrences.length ? (
             daysWithOccurrences.map(({ day, occurrences: dayOccurrences }) => {
               const activeAbsences = dayAbsences(day);
@@ -144,7 +145,7 @@ export function CalendarMobileView({
               return (
                 <article
                   key={day.toISOString()}
-                  className={`rounded-[1.6rem] border p-4 ${
+                  className={`rounded-[1.25rem] border p-3 ${
                     isToday
                       ? "border-[rgba(216,100,61,0.24)] bg-[rgba(216,100,61,0.08)]"
                       : "border-line bg-glass-bg"
@@ -161,23 +162,25 @@ export function CalendarMobileView({
                         {format(day, "d MMMM", { locale: fr })}
                       </h4>
                     </div>
-                    <span className="stat-pill px-3 py-1 text-xs font-semibold">
+                    <span className="stat-pill px-2.5 py-1 text-[0.68rem] font-semibold">
                       {dayOccurrences.length} tâche{dayOccurrences.length > 1 ? "s" : ""}
                     </span>
                   </div>
 
-                  <div className="mt-3 space-y-2">
+                  <div className="mt-2.5 space-y-2">
                     {activeAbsences.map((absence) => (
                       <div
                         key={absence.id}
-                        className="rounded-[1.1rem] border px-3 py-2 text-xs"
-                        style={{
-                          borderColor: hexToRgba(absence.member.color, 0.22),
-                          backgroundColor: hexToRgba(absence.member.color, 0.1),
-                          color: "var(--ink-950)",
-                        }}
+                        className="rounded-[1.1rem] border border-[rgba(56,115,93,0.22)] bg-[rgba(56,115,93,0.08)] px-3 py-2 text-xs text-leaf-700"
                       >
-                        <p className="font-semibold">Absence · {absence.member.displayName}</p>
+                        <p className="font-semibold inline-flex items-center gap-1.5">
+                          <Plane className="size-3" aria-hidden="true" />
+                          <span
+                            className="size-1.5 rounded-full border border-black/10"
+                            style={{ backgroundColor: absence.member.color }}
+                          />
+                          Absence · {absence.member.displayName}
+                        </p>
                         {absence.notes ? (
                           <p className="mt-1 text-[11px] text-ink-700">{absence.notes}</p>
                         ) : null}
@@ -187,19 +190,25 @@ export function CalendarMobileView({
                     {dayOccurrences.length ? (
                       dayOccurrences.slice(0, 3).map((occurrence) => {
                         const { className, style } = getOccurrenceStyle(occurrence.status, occurrence.taskTemplate.color ?? "#D8643D");
+                        const absentAssignee = isAssigneeAbsent(occurrence);
                         return (
                           <div
-                            aria-label={`${occurrence.taskTemplate.title} · ${occurrence.assignedMember?.displayName ?? "À attribuer"}`}
+                            aria-label={`${occurrence.taskTemplate.title} · ${occurrence.assignedMember?.displayName ?? "À attribuer"}${absentAssignee ? " · membre absent" : ""}`}
                             key={occurrence.id}
-                            className={`rounded-[1.1rem] px-3 py-2 text-sm relative group ${className}`}
+                            className={`rounded-[1.1rem] px-3 py-2 text-sm relative group ${className} ${absentAssignee ? "ring-1 ring-leaf-500/50" : ""}`}
                             role="group"
                             style={style}
                           >
                             <div className="flex items-center justify-between gap-2 min-w-0">
                               <p className="font-semibold leading-5 truncate">{occurrence.taskTemplate.title}</p>
-                              {occurrence.isManuallyModified && (
-                                <Wrench className="size-3 shrink-0 text-coral-500" />
-                              )}
+                              <div className="flex items-center gap-1 shrink-0">
+                                {absentAssignee && (
+                                  <Plane className="size-3 text-leaf-600" aria-label="Membre absent" />
+                                )}
+                                {occurrence.isManuallyModified && (
+                                  <Wrench className="size-3 text-coral-500" />
+                                )}
+                              </div>
                             </div>
                             <div className="mt-0.5 inline-flex items-center gap-2 text-[10px] opacity-80">
                               {occurrence.assignedMember ? (

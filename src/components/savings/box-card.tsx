@@ -53,7 +53,7 @@ export function BoxCard({ box, onClick }: BoxCardProps) {
       onClick={onClick}
       type="button"
       aria-label={`Ouvrir ${box.name}, solde ${formatCurrency(balance)}`}
-      className="app-surface interactive-surface w-full rounded-2xl p-4 text-left transition-all hover:shadow-md active:scale-[0.99]"
+      className="app-surface interactive-surface w-full rounded-2xl p-3.5 text-left transition-shadow duration-150 hover:shadow-md sm:p-4"
       style={{ borderLeft: `4px solid ${box.color}` }}
     >
       <div className="flex items-start justify-between gap-3">
@@ -64,19 +64,19 @@ export function BoxCard({ box, onClick }: BoxCardProps) {
               {kindLabel[box.kind]}
             </p>
           </div>
-          <h3 className="mt-1 truncate text-base font-bold text-ink-950">{box.name}</h3>
+          <h3 className="mt-1 truncate text-sm font-bold text-ink-950 sm:text-base">{box.name}</h3>
         </div>
-        <div className="text-right">
+        <div className="shrink-0 text-right">
           <p
             className={cn(
-              "text-xl font-bold tabular-nums",
+              "text-lg font-bold tabular-nums sm:text-xl",
               inDebt ? "text-red-700" : "text-ink-950",
             )}
           >
             {formatCurrency(balance)}
           </p>
           {target ? (
-            <p className="text-xs text-ink-500 mt-0.5">/ {formatCurrency(target)}</p>
+            <p className="mt-0.5 text-[0.68rem] text-ink-500 sm:text-xs">/ {formatCurrency(target)}</p>
           ) : null}
         </div>
       </div>

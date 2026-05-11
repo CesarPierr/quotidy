@@ -119,52 +119,61 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
 
   return (
     <section className="space-y-6">
-      <div className="app-surface glow-card rounded-[2rem] p-5 sm:p-6">
-        <p className="section-kicker">Planifier</p>
-        <h2 className="display-title mt-2 text-4xl leading-tight">
-          {manageable ? "Bibliothèque et suivi" : "Voir les tâches du foyer"}
-        </h2>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-700">
-          Aujourd&apos;hui reste la page d&apos;action. Ici, vous retrouvez les routines, les tâches à venir et les réglages liés au planning.
-        </p>
+      <div className="px-1">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="section-kicker">Planifier</p>
+            <h2 className="display-title mt-1 text-3xl leading-tight sm:mt-2 sm:text-4xl">
+              {manageable ? "Pilotage des tâches" : "Tâches du foyer"}
+            </h2>
+            <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-ink-700 sm:block">
+              Routines, tâches à venir et réglages de planning, sans diluer la vue d&apos;action.
+            </p>
+          </div>
 
-        <div className="mt-6 summary-strip sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            {
-              label: "À faire maintenant",
-              value: todayAndOverdueAssigned.length,
-              detail: formatMinutes(todayMinutes),
-            },
-            {
-              label: "À venir",
-              value: futureAssigned.length,
-              detail: formatMinutes(futureMinutes),
-            },
-            {
-              label: "Clôturées",
-              value: closedAssigned.length,
-              detail: "récentes",
-            },
-            {
-              label: "Modifs futures",
-              value: manualOverrideCount,
-              detail: "protégées",
-            },
-          ].map((item) => (
-            <article key={item.label} className="metric-card interactive-surface px-4 py-4">
-              <p className="text-sm text-ink-700">{item.label}</p>
-              <p className="mt-2 text-3xl font-semibold">{item.value}</p>
-              <p className="text-sm text-ink-500">{item.detail}</p>
-            </article>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {[
+              {
+                label: "Maintenant",
+                value: todayAndOverdueAssigned.length,
+                detail: formatMinutes(todayMinutes),
+              },
+              {
+                label: "À venir",
+                value: futureAssigned.length,
+                detail: formatMinutes(futureMinutes),
+              },
+              {
+                label: "Clôturées",
+                value: closedAssigned.length,
+                detail: "récentes",
+              },
+              {
+                label: "Modifiées",
+                value: manualOverrideCount,
+                detail: "protégées",
+              },
+            ].map((item) => (
+              <span
+                key={item.label}
+                className="accent-pill bg-white shadow-sm dark:bg-[#262830]"
+              >
+                <span className="accent-pill-dot" style={{ backgroundColor: item.label === "Maintenant" ? "var(--coral-500)" : "var(--leaf-500)" }} />
+                <span className="text-[10px] font-bold uppercase tracking-wider">
+                  {item.value} {item.label}
+                </span>
+                <span className="text-[10px] font-semibold text-ink-500">{item.detail}</span>
+              </span>
+            ))}
+          </div>
         </div>
 
-        <div className="sticky-subnav mt-6">
-          <div className="glass-strip flex flex-wrap gap-2 overflow-x-auto rounded-[1.5rem] px-3 py-3 no-scrollbar">
+        <div className="sticky-subnav mt-4 sm:mt-6">
+          <div className="glass-strip flex gap-2 overflow-x-auto rounded-[1.2rem] px-2 py-2 no-scrollbar sm:flex-wrap sm:rounded-[1.5rem] sm:px-3 sm:py-3">
             <Link
               href={tabBaseHref("daily")}
               className={cn(
-                "flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all",
+                "flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all sm:px-5 sm:py-2.5",
                 activeTab === "daily"
                   ? "bg-white dark:bg-[#262830] text-ink-950 border-2 border-ink-950 shadow-lg scale-105"
                   : "bg-white/80 dark:bg-[#262830]/80 border border-line text-ink-700 hover:bg-white dark:bg-[#262830]",
@@ -186,7 +195,7 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
                 <Link
                   href={tabBaseHref("templates")}
                   className={cn(
-                    "flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all",
+                    "flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all sm:px-5 sm:py-2.5",
                     activeTab === "templates"
                       ? "bg-white dark:bg-[#262830] text-ink-950 border-2 border-ink-950 shadow-lg scale-105"
                       : "bg-white/80 dark:bg-[#262830]/80 border border-line text-ink-700 hover:bg-white dark:bg-[#262830]",
@@ -207,7 +216,7 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
                 <Link
                   href={tabBaseHref("wizard")}
                   className={cn(
-                    "flex shrink-0 items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all",
+                    "flex min-h-10 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all sm:px-5 sm:py-2.5",
                     activeTab === "wizard"
                       ? "bg-white dark:bg-[#262830] text-ink-950 border-2 border-ink-950 shadow-lg scale-105"
                       : "bg-white/80 dark:bg-[#262830]/80 border border-line text-ink-700 hover:bg-white dark:bg-[#262830]",
@@ -224,10 +233,12 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
       {activeTab === "daily" ? (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <section className="app-surface deferred-section rounded-[2rem] p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="section-kicker">Priorités</p>
-                  <h3 className="display-title mt-2 text-3xl">À faire maintenant</h3>
+                  <h3 className="display-title mt-1 text-2xl leading-tight sm:mt-2 sm:text-3xl">
+                    À faire maintenant
+                  </h3>
                 </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="accent-pill">
@@ -277,10 +288,10 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
 
           {futureAssigned.length > 0 ? (
             <section className="app-surface deferred-section rounded-[2rem] p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="section-kicker">Prochainement</p>
-                  <h3 className="display-title mt-2 text-3xl">Ensuite</h3>
+                  <h3 className="display-title mt-1 text-2xl leading-tight sm:mt-2 sm:text-3xl">Ensuite</h3>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="accent-pill">
@@ -327,10 +338,10 @@ export default async function MyTasksPage({ searchParams }: MyTasksPageProps) {
 
           {closedAssigned.length ? (
             <section className="app-surface deferred-section rounded-[2rem] p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="section-kicker">Récemment</p>
-                  <h3 className="display-title mt-2 text-2xl">Terminé récemment</h3>
+                  <h3 className="display-title mt-1 text-2xl leading-tight sm:mt-2">Terminé récemment</h3>
                 </div>
                 <span className="accent-pill">
                   <span className="accent-pill-dot" style={{ backgroundColor: "var(--leaf-500)" }} />

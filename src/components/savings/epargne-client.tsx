@@ -61,49 +61,45 @@ export function EpargneClient({
   const isEmpty = activeBoxes.length === 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <section
         aria-live="polite"
-        className="app-surface glow-card rounded-[1.6rem] p-5 sm:p-6"
+        className="px-1"
       >
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:gap-6">
           <div>
-            <p className="section-kicker text-leaf-600">Épargne & Provisions</p>
-            <p className="mt-1 text-4xl font-bold tabular-nums text-ink-950 sm:text-5xl">
+            <p className="section-kicker text-[0.62rem] text-leaf-600 sm:text-xs">Épargne & Provisions</p>
+            <p className="mt-1 text-3xl font-bold tabular-nums text-ink-950 sm:text-5xl">
               {formatCurrency(totalSavings)}
             </p>
-            <p className="mt-1 text-sm text-ink-700">
+            <p className="mt-1 text-xs text-ink-700 sm:text-sm">
               Réparti sur {balanceBoxes.length} enveloppe{balanceBoxes.length > 1 ? "s" : ""}.
             </p>
           </div>
 
           {debtBoxes.length > 0 ? (
-            <div className="sm:text-right border-t sm:border-t-0 sm:border-l border-black/[0.08] pt-4 sm:pt-0 sm:pl-6">
-              <p className="section-kicker text-red-600">Dettes & Découverts</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-red-700 sm:text-3xl">
-                {formatCurrency(totalDebt)}
-              </p>
-              <p className="mt-0.5 text-xs text-ink-500">
-                Sur {debtBoxes.length} poste{debtBoxes.length > 1 ? "s" : ""}.
-              </p>
-            </div>
+            <span className="accent-pill self-start bg-white shadow-sm dark:bg-[#262830] sm:self-auto">
+              <span className="accent-pill-dot" style={{ backgroundColor: "var(--coral-500)" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Dettes</span>
+              <span className="text-xs font-bold text-red-700">{formatCurrency(totalDebt)}</span>
+            </span>
           ) : null}
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           <button
             onClick={() => setCreateOpen(true)}
             type="button"
-            className="btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold"
+            className="btn-primary inline-flex min-h-10 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold sm:px-4 sm:py-2.5"
           >
             <Plus className="size-4" />
-            Nouvelle enveloppe
+            <span className="truncate">Nouvelle</span>
           </button>
           {activeBoxes.length >= 2 ? (
             <>
               <button
                 onClick={() => setTransferOpen(true)}
                 type="button"
-                className="btn-secondary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold"
+                className="btn-secondary inline-flex min-h-10 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold sm:px-4 sm:py-2.5"
               >
                 <ArrowLeftRight className="size-4" />
                 Transférer
@@ -111,7 +107,7 @@ export function EpargneClient({
               <button
                 onClick={() => setTransferHistoryOpen(true)}
                 type="button"
-                className="btn-quiet inline-flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-[var(--ink-600)]"
+                className="btn-quiet col-span-2 inline-flex min-h-10 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-[var(--ink-600)] sm:col-span-1 sm:py-2.5"
               >
                 <History className="size-4" />
                 Historique
@@ -121,7 +117,7 @@ export function EpargneClient({
         </div>
       </section>
 
-      <nav className="flex items-center gap-1 p-1 bg-black/[0.04] rounded-[1.2rem]">
+      <nav className="flex items-center gap-1 rounded-[1.1rem] bg-black/[0.04] p-1 sm:rounded-[1.2rem]">
         <button
           onClick={() => {
             setManualTab("boxes");
@@ -130,7 +126,7 @@ export function EpargneClient({
             window.history.replaceState({}, "", url.toString());
           }}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-xl transition-all",
+            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-colors duration-150 sm:text-sm",
             tab === "boxes"
               ? "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
               : "text-ink-500 hover:text-ink-700",
@@ -147,7 +143,7 @@ export function EpargneClient({
             window.history.replaceState({}, "", url.toString());
           }}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 py-2 text-sm font-semibold rounded-xl transition-all",
+            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-colors duration-150 sm:text-sm",
             tab === "calculators"
               ? "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
               : "text-ink-500 hover:text-ink-700",
@@ -159,10 +155,10 @@ export function EpargneClient({
       </nav>
 
       {tab === "boxes" ? (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div>
           {isEmpty ? (
-            <section className="app-surface rounded-2xl p-6 text-center">
-              <Sparkles className="size-8 mx-auto text-coral-500" />
+            <section className="app-surface rounded-2xl p-5 text-center sm:p-6">
+              <Sparkles className="mx-auto size-7 text-coral-500 sm:size-8" />
               <h3 className="mt-3 text-lg font-bold">Commencez par une enveloppe</h3>
               <p className="mt-1 text-sm text-ink-700 max-w-md mx-auto">
                 Choisissez un modèle (épargne précaution, vacances, voiture…) ou créez la vôtre.
@@ -199,7 +195,7 @@ export function EpargneClient({
           ) : null}
         </div>
       ) : (
-        <section className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <section className="space-y-4">
           <div className="px-1 flex items-center justify-between">
             <div>
               <p className="section-kicker text-coral-500">Utiliser</p>

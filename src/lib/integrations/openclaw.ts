@@ -523,8 +523,8 @@ export async function buildOpenClawDiscovery(request: Request, householdId: stri
     household,
     auth: {
       type: "api_key",
-      keyHeader: "x-makemenage-key",
-      householdHeader: "x-makemenage-household",
+      keyHeader: "x-quotidy-key",
+      householdHeader: "x-quotidy-household",
       authorizationHeader: "Authorization: Bearer <key>",
     },
     endpoints: {

@@ -2,9 +2,8 @@
 
 import { format, startOfToday, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Clock, ListTodo, Wrench } from "lucide-react";
+import { Clock, ListTodo, Plane, Wrench } from "lucide-react";
 import type { CalendarOccurrence } from "@/components/calendar/calendar-month";
-import { hexToRgba } from "@/lib/colors";
 
 type CalendarDesktopViewProps = {
   viewType: "tasks" | "minutes";
@@ -18,8 +17,9 @@ type CalendarDesktopViewProps = {
     startDate: Date;
     endDate: Date;
     notes: string | null;
-    member: { displayName: string; color: string };
+    member: { id: string; displayName: string; color: string };
   }[];
+  isAssigneeAbsent: (occurrence: CalendarOccurrence) => boolean;
   setSelectedDay: (day: Date) => void;
   setSelectedOccurrenceId: (id: string) => void;
   getOccurrenceStyle: (status: string, baseColor: string) => { className: string; style: React.CSSProperties };
@@ -33,6 +33,7 @@ export function CalendarDesktopView({
   month,
   occurrences,
   dayAbsences,
+  isAssigneeAbsent,
   setSelectedDay,
   setSelectedOccurrenceId,
   getOccurrenceStyle,
@@ -145,26 +146,26 @@ export function CalendarDesktopView({
                       {activeAbsences.map((absence) => (
                         <div
                           key={absence.id}
-                          className="rounded-lg px-2 py-1 text-[9px] font-bold shadow-sm"
-                          style={{
-                            backgroundColor: hexToRgba(absence.member.color, 0.1),
-                            color: "var(--ink-950)",
-                            border: `1px solid ${hexToRgba(absence.member.color, 0.2)}`,
-                          }}
+                          className="rounded-lg px-2 py-1 text-[9px] font-bold shadow-sm border border-[rgba(56,115,93,0.22)] bg-[rgba(56,115,93,0.1)] text-leaf-700"
                         >
                           <div className="flex items-center gap-1.5">
-                            <span className="size-1.5 rounded-full shadow-inner" style={{ backgroundColor: absence.member.color }} />
+                            <Plane className="size-2.5 shrink-0" aria-hidden="true" />
+                            <span
+                              className="size-1.5 rounded-full shadow-inner shrink-0"
+                              style={{ backgroundColor: absence.member.color }}
+                            />
                             <p className="truncate">Abs. {absence.member.displayName.split(" ")[0]}</p>
                           </div>
                         </div>
                       ))}
                       {dayOccurrences.slice(0, 4).map((o) => {
                         const { className, style } = getOccurrenceStyle(o.status, o.taskTemplate.color ?? "#D8643D");
+                        const absentAssignee = isAssigneeAbsent(o);
                         return (
                           <div
-                            aria-label={`${o.taskTemplate.title} · ${o.assignedMember?.displayName ?? "À attribuer"}`}
+                            aria-label={`${o.taskTemplate.title} · ${o.assignedMember?.displayName ?? "À attribuer"}${absentAssignee ? " · membre absent" : ""}`}
                             key={o.id}
-                            className={`rounded-lg px-2 py-1 text-[9px] font-bold transition-all hover:brightness-95 flex items-center justify-between gap-1 ${className}`}
+                            className={`rounded-lg px-2 py-1 text-[9px] font-bold transition-all hover:brightness-95 flex items-center justify-between gap-1 ${className} ${absentAssignee ? "ring-1 ring-leaf-500/50" : ""}`}
                             role="group"
                             style={style}
                             onClick={(e) => {
@@ -176,9 +177,14 @@ export function CalendarDesktopView({
                               <span className="size-1.5 rounded-full shadow-inner shrink-0" style={{ backgroundColor: o.taskTemplate.color ?? "#D8643D" }} />
                               <p className="truncate">{o.taskTemplate.title}</p>
                             </div>
-                            {o.isManuallyModified && (
-                              <Wrench className="size-2 shrink-0 text-coral-600" />
-                            )}
+                            <div className="flex items-center gap-1 shrink-0">
+                              {absentAssignee && (
+                                <Plane className="size-2 text-leaf-600" aria-label="Membre absent" />
+                              )}
+                              {o.isManuallyModified && (
+                                <Wrench className="size-2 text-coral-600" />
+                              )}
+                            </div>
                           </div>
                         );
                       })}

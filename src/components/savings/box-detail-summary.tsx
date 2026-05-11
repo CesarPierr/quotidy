@@ -40,11 +40,11 @@ export function BoxDetailSummary({
   const progress = target && target > 0 ? Math.min(100, (box.balance / target) * 100) : null;
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="space-y-4">
       {/* Balance Card - Becomes compact when an action is active to save vertical space */}
       <div
         className={cn(
-          "rounded-2xl transition-all duration-300",
+          "rounded-2xl",
           actionType ? "p-3 flex items-center justify-between" : "p-6 text-center"
         )}
         style={{ background: `${box.color}1A` }}
@@ -58,7 +58,7 @@ export function BoxDetailSummary({
           </p>
           <p
             className={cn(
-              "font-bold tabular-nums tracking-tight transition-all",
+              "font-bold tabular-nums tracking-tight",
               actionType ? "text-xl mt-0" : "text-5xl mt-2",
               box.balance < 0 ? "text-red-700" : "text-ink-950",
             )}
@@ -95,10 +95,10 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "deposit" ? null : "deposit")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all active:scale-95",
+            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
             actionType === "deposit"
-              ? "bg-leaf-500 border-[var(--leaf-600)] text-white shadow-lg ring-2 ring-[var(--leaf-200)]"
-              : "bg-[var(--leaf-50)] border-[var(--leaf-100)] text-[var(--leaf-700)] hover:bg-[var(--leaf-100)] opacity-70"
+              ? "bg-leaf-500 border-[var(--leaf-600)] text-white shadow-md"
+              : "bg-[var(--leaf-50)] border-[var(--leaf-100)] text-[var(--leaf-700)] hover:bg-[var(--leaf-100)] opacity-80"
           )}
         >
           <ArrowDown className="size-5" />
@@ -107,10 +107,10 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "withdrawal" ? null : "withdrawal")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all active:scale-95",
+            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
             actionType === "withdrawal"
-              ? "bg-coral-500 border-[var(--coral-600)] text-white shadow-lg ring-2 ring-[var(--coral-200)]"
-              : "bg-red-50 border-red-100 text-red-700 hover:bg-red-100 opacity-70"
+              ? "bg-coral-500 border-[var(--coral-600)] text-white shadow-md"
+              : "bg-red-50 border-red-100 text-red-700 hover:bg-red-100 opacity-80"
           )}
         >
           <ArrowUp className="size-5" />
@@ -119,10 +119,10 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "transfer" ? null : "transfer")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all active:scale-95",
+            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
             actionType === "transfer"
-              ? "bg-blue-600 border-blue-700 text-white shadow-lg ring-2 ring-blue-200"
-              : "bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100 opacity-70"
+              ? "bg-blue-600 border-blue-700 text-white shadow-md"
+              : "bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100 opacity-80"
           )}
         >
           <ArrowLeftRight className="size-5" />
@@ -132,7 +132,7 @@ export function BoxDetailSummary({
 
       {/* Dynamic Form Display */}
       {actionType ? (
-        <div className="app-surface rounded-2xl p-5 border border-black/[0.03] animate-in fade-in zoom-in-95 duration-200">
+        <div className="app-surface rounded-2xl p-5 border border-black/[0.03]">
           <div className="flex items-center justify-between mb-5">
             <h4 className="text-xs uppercase tracking-widest font-bold text-ink-500">
               {actionType === "deposit" ? "Nouveau versement" : actionType === "withdrawal" ? "Nouveau retrait" : "Nouveau transfert"}

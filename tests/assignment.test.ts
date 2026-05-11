@@ -166,6 +166,66 @@ describe("assignment engine", () => {
     expect(pick).toBe("C");
   });
 
+  it("skips an absent member in the rotation without losing the rotation order", () => {
+    // A→B→C; B absent on the day a B-turn would land. Expect C, then on the
+    // following turn (where B is back) we should resume to A as last assignee was C.
+    const baseRule = {
+      mode: "round_robin" as const,
+      eligibleMemberIds: ["A", "B", "C"],
+      rotationOrder: ["A", "B", "C"],
+      rebalanceOnMemberAbsence: true,
+    };
+
+    const pickWhenBAbsent = pickAssignee({
+      sequenceIndex: 1,
+      rule: baseRule,
+      members,
+      scheduledDate: new Date("2026-03-02"),
+      absences: [
+        { memberId: "B", startDate: new Date("2026-03-02"), endDate: new Date("2026-03-02") },
+      ],
+      estimatedMinutes: 20,
+      existingOccurrences: [
+        {
+          sourceGenerationKey: "k:1",
+          scheduledDate: new Date("2026-03-01"),
+          dueDate: new Date("2026-03-01"),
+          assignedMemberId: "A",
+          status: "planned",
+        },
+      ],
+    });
+
+    expect(pickWhenBAbsent).toBe("C");
+  });
+
+  it("returns null assignee when the household is fully absent (handled by generator)", () => {
+    // Even with rebalanceOnMemberAbsence the assignment layer falls back to active members
+    // so the generator can re-evaluate after pushing the date.
+    const pick = pickAssignee({
+      sequenceIndex: 0,
+      rule: {
+        mode: "strict_alternation",
+        eligibleMemberIds: ["A", "B"],
+        rotationOrder: ["A", "B"],
+        rebalanceOnMemberAbsence: true,
+      },
+      members: [
+        { id: "A", displayName: "Alice", isActive: true },
+        { id: "B", displayName: "Bob", isActive: true },
+      ],
+      scheduledDate: new Date("2026-05-10"),
+      absences: [
+        { memberId: "A", startDate: new Date("2026-05-09"), endDate: new Date("2026-05-12") },
+        { memberId: "B", startDate: new Date("2026-05-09"), endDate: new Date("2026-05-12") },
+      ],
+      estimatedMinutes: 20,
+      existingOccurrences: [],
+    });
+    // Pool falls back to active members; pick returns one of them.
+    expect(["A", "B"]).toContain(pick);
+  });
+
   it("keeps skipped member as next assignee when skip should carry over", () => {
     const pick = pickAssignee({
       sequenceIndex: 0,

@@ -33,23 +33,33 @@ describe("OnboardingWizard", () => {
 
     await user.click(screen.getByRole("button", { name: /c'est parti/i }));
     expect(screen.getByText("Quel type de foyer ?")).toBeInTheDocument();
+    expect(screen.getByText("Solo")).toBeInTheDocument();
     expect(screen.getByText("Couple")).toBeInTheDocument();
     expect(screen.getByText("Coloc")).toBeInTheDocument();
     expect(screen.getByText("Famille")).toBeInTheDocument();
     expect(screen.getByText("Personnalisé")).toBeInTheDocument();
   });
 
-  test("selecting Couple pack pre-selects 3 tasks", async () => {
+  test("selecting Solo pack pre-selects 5 minimal tasks", async () => {
+    const user = userEvent.setup();
+    render(<OnboardingWizard householdId="hh_1" householdName="Maison" currentMemberName="Pierre" />);
+
+    await user.click(screen.getByRole("button", { name: /c'est parti/i }));
+    await user.click(screen.getByText("Solo"));
+
+    expect(screen.getByText("Choisissez vos tâches")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ajouter 5 tâche/i })).toBeInTheDocument();
+  });
+
+  test("selecting Couple pack pre-selects 6 tasks", async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard householdId="hh_1" householdName="Maison" currentMemberName="Pierre" />);
 
     await user.click(screen.getByRole("button", { name: /c'est parti/i }));
     await user.click(screen.getByText("Couple"));
 
-    // Now on task selection step
     expect(screen.getByText("Choisissez vos tâches")).toBeInTheDocument();
-    // Button should show "Ajouter 3 tâches"
-    expect(screen.getByRole("button", { name: /ajouter 3 tâche/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /ajouter 6 tâche/i })).toBeInTheDocument();
   });
 
   test("selecting Personnalisé pack starts with 0 tasks selected", async () => {

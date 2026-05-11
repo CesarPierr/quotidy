@@ -105,14 +105,9 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(216, 100, 61, 0.24), transparent 32%),
-    radial-gradient(circle at top right, rgba(239, 226, 205, 0.82), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(56, 115, 93, 0.18), transparent 24%),
-    var(--sand-50);
+  background-color: var(--sand-50);
   color: var(--ink-950);
   font-family: var(--font-sans), sans-serif;
-  min-height: 100vh;
   min-height: 100vh;
   /* optimizeLegibility can cause issues on iOS (flicker/missing text) */
   text-rendering: auto;
@@ -129,9 +124,14 @@ body::before {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 26%),
-    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.12), transparent 18%);
-  opacity: 0.8;
+    radial-gradient(circle at top left, rgba(216, 100, 61, 0.22), transparent 40%),
+    radial-gradient(circle at top right, rgba(239, 226, 205, 0.7), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(56, 115, 93, 0.15), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 25%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.9;
   z-index: -1;
 }
 
@@ -830,3 +830,55 @@ button:not(:disabled),
 }
 
 /* Dark Mode overrides removed (handled automatically by root variables) */
+
+/* ─── View Transitions ───────────────────────────────────────────────── */
+::view-transition-old(root) {
+  animation: vt-fade-out 160ms var(--ease-standard) forwards;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in 160ms var(--ease-standard) forwards;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Navigation Progress Bar ────────────────────────────────────────── */
+.nav-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--coral-500), var(--leaf-500));
+  transform-origin: left;
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-progress-bar[data-phase="loading"] {
+  animation: nav-progress-fill 8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.nav-progress-bar[data-phase="completing"] {
+  animation: nav-progress-complete 280ms var(--ease-standard) forwards;
+}
+
+@keyframes nav-progress-fill {
+  0%   { transform: scaleX(0); opacity: 1; }
+  50%  { transform: scaleX(0.6); opacity: 1; }
+  100% { transform: scaleX(0.92); opacity: 1; }
+}
+
+@keyframes nav-progress-complete {
+  0%   { transform: scaleX(0.92); opacity: 1; }
+  40%  { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+

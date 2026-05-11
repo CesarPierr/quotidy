@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Calculator,
@@ -30,31 +30,44 @@ const SUGGESTED_TASKS = [
   { title: "Nettoyage salle de bain", room: "Salle de bain", estimatedMinutes: 20, emoji: "🚿", recurrenceLabel: "Hebdo" },
   { title: "Lessive", room: "Buanderie", estimatedMinutes: 10, emoji: "👕", recurrenceLabel: "Hebdo" },
   { title: "Courses", room: "Tout l'appartement", estimatedMinutes: 45, emoji: "🛒", recurrenceLabel: "Hebdo" },
+  { title: "Changer les draps", room: "Chambre parentale", estimatedMinutes: 10, emoji: "🛏️", recurrenceLabel: "Bi-hebdo" },
+  { title: "Plantes & arrosage", room: "Tout l'appartement", estimatedMinutes: 5, emoji: "🪴", recurrenceLabel: "Hebdo" },
+  { title: "Nettoyage cuisine en profondeur", room: "Cuisine", estimatedMinutes: 25, emoji: "🧽", recurrenceLabel: "Hebdo" },
 ] as const;
 
-type PackId = "couple" | "coloc" | "famille" | "custom";
+// Each persona pre-cherche-picks a curation of suggested tasks designed for the
+// shape of that household, NOT just a quantity slider. The user can adjust at
+// the next step. Indices reference SUGGESTED_TASKS above.
+type PackId = "solo" | "couple" | "coloc" | "famille" | "custom";
 
 const PACKS: Array<{ id: PackId; emoji: string; label: string; desc: string; taskIndices: number[] }> = [
+  {
+    id: "solo",
+    emoji: "🧍",
+    label: "Solo",
+    desc: "Une personne, l'essentiel sans surcharge",
+    taskIndices: [1, 2, 4, 5, 7], // vaisselle, poubelles, lessive, courses, plantes
+  },
   {
     id: "couple",
     emoji: "💑",
     label: "Couple",
-    desc: "L'essentiel pour 2 personnes",
-    taskIndices: [0, 1, 2],
+    desc: "Deux adultes, équité et rotation",
+    taskIndices: [0, 1, 2, 3, 4, 5], // base + sdb
   },
   {
     id: "coloc",
     emoji: "🏠",
     label: "Coloc",
-    desc: "Rotation pour 3 personnes et plus",
-    taskIndices: [0, 1, 2, 3, 4],
+    desc: "Trois personnes ou plus, rotation claire",
+    taskIndices: [0, 1, 2, 3, 4, 5, 8], // base + cuisine en profondeur
   },
   {
     id: "famille",
     emoji: "👨‍👩‍👧",
     label: "Famille",
-    desc: "Toutes les tâches du foyer",
-    taskIndices: [0, 1, 2, 3, 4, 5],
+    desc: "Adultes et enfants, plus large",
+    taskIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8], // tout sauf custom
   },
   {
     id: "custom",
@@ -86,6 +99,19 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
   const { success, error: showError } = useToast();
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === step);
+  useEffect(() => {
+    const payload = JSON.stringify({ event: "onboarding.step_viewed", props: { householdId, step } });
+    if ("sendBeacon" in navigator) {
+      navigator.sendBeacon("/api/metrics", new Blob([payload], { type: "application/json" }));
+      return;
+    }
+    fetch("/api/metrics", {
+      method: "POST",
+      body: payload,
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+    }).catch(() => undefined);
+  }, [householdId, step]);
 
   function selectPack(pack: (typeof PACKS)[number]) {
     if (pack.id === "custom") {
@@ -123,7 +149,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
         }
       }
       success(`${tasksToCreate.length} tâches créées !`);
-      setStep("savings");
+      setStep("invite");
     } catch {
       showError("Erreur lors de la création des tâches.");
     } finally {
@@ -140,6 +166,24 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
     });
   }
 
+  async function disableSavingsForHousehold() {
+    try {
+      const csrfMatch = document.cookie.match(/(?:^|;\s*)__csrf=([^;]+)/);
+      const headers: HeadersInit = csrfMatch?.[1]
+        ? { "x-csrf-token": csrfMatch[1], "x-requested-with": "fetch" }
+        : { "x-requested-with": "fetch" };
+      const formData = new FormData();
+      formData.set("savingsEnabled", "false");
+      await fetch(`/api/households/${householdId}/preferences`, {
+        method: "POST",
+        body: formData,
+        headers,
+      });
+    } catch {
+      // Best-effort — onboarding shouldn't fail on a preference toggle.
+    }
+  }
+
   async function completeOnboarding() {
     setIsCreating(true);
     try {
@@ -152,6 +196,12 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
       });
       
       if (!res.ok) throw new Error("Failed to complete");
+      navigator.sendBeacon?.(
+        "/api/metrics",
+        new Blob([JSON.stringify({ event: "onboarding.completed", props: { householdId } })], {
+          type: "application/json",
+        }),
+      );
       
       router.refresh();
     } catch {
@@ -340,7 +390,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
           <div>
             <h2 className="display-title text-2xl sm:text-3xl">Gérez votre budget</h2>
             <p className="mt-3 text-sm text-ink-700 max-w-md mx-auto leading-relaxed">
-              Hearthly intègre un module <strong>Épargne</strong> pour suivre vos caisses communes, 
+              Quotidy intègre un module <strong>Épargne</strong> pour suivre vos caisses communes, 
               les projets de vacances ou les dettes. Remplissez-les manuellement ou via des règles automatiques.
             </p>
           </div>
@@ -352,9 +402,23 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
           >
             Créer ma première caisse <ArrowRight className="size-4" />
           </button>
-          <div>
-            <button className="text-xs text-ink-400 hover:text-ink-700 font-medium" onClick={() => setStep("calc")}>
-              Passer cette étape
+          <div className="flex flex-col gap-2 items-center pt-1">
+            <button
+              className="text-xs text-ink-500 hover:text-ink-800 font-medium"
+              onClick={() => setStep("calc")}
+              type="button"
+            >
+              Plus tard — passer pour l&apos;instant
+            </button>
+            <button
+              className="text-xs text-ink-400 hover:text-coral-600 font-medium underline-offset-4 hover:underline"
+              onClick={async () => {
+                await disableSavingsForHousehold();
+                setStep("invite");
+              }}
+              type="button"
+            >
+              Je n&apos;utilise pas le module Épargne
             </button>
           </div>
         </div>
@@ -503,7 +567,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
             </div>
             <h2 className="display-title text-2xl sm:text-3xl">Invitez votre équipe</h2>
             <p className="mt-2 text-sm text-ink-700">
-              Hearthly prend tout son sens à plusieurs. Générez un lien d&apos;accès pour les membres de votre foyer.
+              Quotidy prend tout son sens à plusieurs. Générez un lien d&apos;accès pour les membres de votre foyer.
             </p>
           </div>
 

@@ -66,94 +66,157 @@ enum IntegrationProvider {
   mcp_openclaw
 }
 
+enum FeedbackKind {
+  bug
+  idea
+  question
+  abuse
+  billing
+  security
+}
+
+enum FeedbackStatus {
+  open
+  triaged
+  resolved
+  archived
+}
+
+enum DataRequestStatus {
+  requested
+  processing
+  completed
+  rejected
+}
+
+enum BillingInterval {
+  month
+  year
+  one_time
+}
+
+enum SubscriptionStatus {
+  beta
+  trialing
+  active
+  past_due
+  canceled
+  inactive
+}
+
 model User {
-  id                 String             @id @default(cuid())
-  email              String             @unique
-  passwordHash       String
-  displayName        String
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  lastLoginAt        DateTime?
-  sessions           Session[]
-  passwordResetTokens PasswordResetToken[]
-  memberships        HouseholdMember[]
-  households         Household[]        @relation("HouseholdOwner")
-  acceptedInvitations HouseholdInvite[] @relation("AcceptedHouseholdInvites")
+  id                     String                  @id @default(cuid())
+  email                  String                  @unique
+  passwordHash           String
+  displayName            String
+  isSiteAdmin            Boolean                 @default(false)
+  emailVerifiedAt        DateTime?
+  deletedAt              DateTime?
+  termsAcceptedAt        DateTime?
+  privacyAcceptedAt      DateTime?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  lastLoginAt            DateTime?
+  sessions               Session[]
+  passwordResetTokens    PasswordResetToken[]
+  memberships            HouseholdMember[]
+  households             Household[]             @relation("HouseholdOwner")
+  acceptedInvitations    HouseholdInvite[]       @relation("AcceptedHouseholdInvites")
+  feedbackReports        FeedbackReport[]
+  uxEvents               UxEvent[]
+  adminAuditEvents       AdminAuditEvent[]       @relation("AdminAuditActor")
+  dataExportRequests     DataExportRequest[]
+  deletionRequests       DeletionRequest[]
+  supporterContributions SupporterContribution[]
+  billingCustomers       BillingCustomer[]
 }
 
 model Session {
-  id         String   @id @default(cuid())
-  tokenHash  String   @unique
-  userId     String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([expiresAt])
-}
-
-model PasswordResetToken {
   id        String   @id @default(cuid())
   tokenHash String   @unique
   userId    String
   expiresAt DateTime
-  usedAt    DateTime?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
 }
 
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
 model Household {
-  id              String            @id @default(cuid())
-  name            String
-  timezone        String
-  createdByUserId String
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  createdBy       User              @relation("HouseholdOwner", fields: [createdByUserId], references: [id])
-  members         HouseholdMember[]
-  invites         HouseholdInvite[]
-  integrations    HouseholdIntegration[]
-  tasks           TaskTemplate[]
-  occurrences     TaskOccurrence[]
-  holidays        HouseholdHoliday[]
-  savingsBoxes    SavingsBox[]
-  savingsCalculators SavingsCalculator[]
+  id                     String                  @id @default(cuid())
+  name                   String
+  timezone               String
+  /// When false, the Épargne (savings) module is hidden from this household's
+  /// navigation and onboarding skips its dedicated steps. The data and routes
+  /// remain accessible if the user toggles it back on later.
+  savingsEnabled         Boolean                 @default(true)
+  createdByUserId        String
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  createdBy              User                    @relation("HouseholdOwner", fields: [createdByUserId], references: [id])
+  members                HouseholdMember[]
+  invites                HouseholdInvite[]
+  integrations           HouseholdIntegration[]
+  tasks                  TaskTemplate[]
+  occurrences            TaskOccurrence[]
+  holidays               HouseholdHoliday[]
+  savingsBoxes           SavingsBox[]
+  savingsCalculators     SavingsCalculator[]
+  feedbackReports        FeedbackReport[]
+  uxEvents               UxEvent[]
+  adminAuditEvents       AdminAuditEvent[]
+  dataExportRequests     DataExportRequest[]
+  deletionRequests       DeletionRequest[]
+  supporterContributions SupporterContribution[]
+  billingCustomers       BillingCustomer[]
+  subscriptions          Subscription[]
+  featureEntitlements    FeatureEntitlement[]
 
   @@index([createdByUserId])
 }
 
 model HouseholdMember {
-  id                    String             @id @default(cuid())
+  id                    String                @id @default(cuid())
   householdId           String
   userId                String?
   displayName           String
   color                 String
   role                  HouseholdRole
-  isActive              Boolean            @default(true)
-  weightingFactor       Float              @default(1)
+  isActive              Boolean               @default(true)
+  weightingFactor       Float                 @default(1)
   weeklyCapacityMinutes Int?
   onboardingCompletedAt DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  household             Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  user                  User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  household             Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  user                  User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
   availabilities        MemberAvailability[]
-  createdTasks          TaskTemplate[]     @relation("TaskTemplateCreator")
-  createdInvitations    HouseholdInvite[]  @relation("CreatedHouseholdInvites")
-  assignedOccurrences   TaskOccurrence[]   @relation("OccurrenceAssignee")
-  completedOccurrences  TaskOccurrence[]   @relation("OccurrenceCompleter")
+  createdTasks          TaskTemplate[]        @relation("TaskTemplateCreator")
+  createdInvitations    HouseholdInvite[]     @relation("CreatedHouseholdInvites")
+  assignedOccurrences   TaskOccurrence[]      @relation("OccurrenceAssignee")
+  completedOccurrences  TaskOccurrence[]      @relation("OccurrenceCompleter")
   actionLogs            OccurrenceActionLog[]
   occurrenceComments    OccurrenceComment[]
   pushSubscriptions     PushSubscription[]
 
+  @@unique([householdId, userId])
   @@index([householdId])
   @@index([userId])
-  @@unique([householdId, userId])
 }
 
 model HouseholdInvite {
@@ -210,96 +273,96 @@ model MemberAvailability {
 }
 
 model RecurrenceRule {
-  id                 String         @id @default(cuid())
-  type               RecurrenceType
-  mode               RecurrenceMode @default(SLIDING)
-  interval           Int            @default(1)
-  weekdays           Json?
-  dayOfMonth         Int?
-  anchorDate         DateTime
-  generateTimeOfDay  String?
-  dueOffsetDays      Int            @default(0)
-  config             Json?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  task               TaskTemplate?
+  id                String         @id @default(cuid())
+  type              RecurrenceType
+  mode              RecurrenceMode @default(SLIDING)
+  interval          Int            @default(1)
+  weekdays          Json?
+  dayOfMonth        Int?
+  anchorDate        DateTime
+  generateTimeOfDay String?
+  dueOffsetDays     Int            @default(0)
+  config            Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  task              TaskTemplate?
 }
 
 model AssignmentRule {
-  id                           String          @id @default(cuid())
+  id                           String         @id @default(cuid())
   mode                         AssignmentMode
   eligibleMemberIds            Json
   fixedMemberId                String?
   rotationOrder                Json?
   fairnessWindowDays           Int?
-  preserveRotationOnSkip       Boolean         @default(true)
-  preserveRotationOnReschedule Boolean         @default(true)
-  rebalanceOnMemberAbsence     Boolean         @default(true)
-  lockAssigneeAfterGeneration  Boolean         @default(true)
+  preserveRotationOnSkip       Boolean        @default(true)
+  preserveRotationOnReschedule Boolean        @default(true)
+  rebalanceOnMemberAbsence     Boolean        @default(true)
+  lockAssigneeAfterGeneration  Boolean        @default(true)
   config                       Json?
-  createdAt                    DateTime        @default(now())
-  updatedAt                    DateTime        @updatedAt
+  createdAt                    DateTime       @default(now())
+  updatedAt                    DateTime       @updatedAt
   task                         TaskTemplate?
 }
 
 model TaskTemplate {
-  id               String          @id @default(cuid())
-  householdId      String
-  title            String
-  description      String?
-  category         String?
-  room             String?
-  icon             String?
-  color            String          @default("#D8643D")
-  tags             Json?
-  estimatedMinutes Int             @default(30)
-  difficulty       Int?
-  priority         Int             @default(2)
-  isActive         Boolean         @default(true)
-  isCollective     Boolean         @default(false)
-  startsOn         DateTime
-  endsOn           DateTime?
-  lastCompletedAt  DateTime?
-  recurrenceRuleId String          @unique
-  assignmentRuleId String          @unique
+  id                String           @id @default(cuid())
+  householdId       String
+  title             String
+  description       String?
+  category          String?
+  room              String?
+  icon              String?
+  color             String           @default("#D8643D")
+  tags              Json?
+  estimatedMinutes  Int              @default(30)
+  difficulty        Int?
+  priority          Int              @default(2)
+  isActive          Boolean          @default(true)
+  isCollective      Boolean          @default(false)
+  startsOn          DateTime
+  endsOn            DateTime?
+  lastCompletedAt   DateTime?
+  recurrenceRuleId  String           @unique
+  assignmentRuleId  String           @unique
   createdByMemberId String?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  household        Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  recurrenceRule   RecurrenceRule  @relation(fields: [recurrenceRuleId], references: [id], onDelete: Cascade)
-  assignmentRule   AssignmentRule  @relation(fields: [assignmentRuleId], references: [id], onDelete: Cascade)
-  createdByMember  HouseholdMember? @relation("TaskTemplateCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
-  occurrences      TaskOccurrence[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  household         Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  recurrenceRule    RecurrenceRule   @relation(fields: [recurrenceRuleId], references: [id], onDelete: Cascade)
+  assignmentRule    AssignmentRule   @relation(fields: [assignmentRuleId], references: [id], onDelete: Cascade)
+  createdByMember   HouseholdMember? @relation("TaskTemplateCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  occurrences       TaskOccurrence[]
 
   @@index([householdId])
 }
 
 model TaskOccurrence {
-  id                  String               @id @default(cuid())
-  householdId         String
-  taskTemplateId      String
-  scheduledDate       DateTime
-  dueDate             DateTime
-  assignedMemberId    String?
-  status              OccurrenceStatus     @default(planned)
-  sourceGenerationKey String               @unique
-  generationVersion   Int                  @default(1)
+  id                    String                @id @default(cuid())
+  householdId           String
+  taskTemplateId        String
+  scheduledDate         DateTime
+  dueDate               DateTime
+  assignedMemberId      String?
+  status                OccurrenceStatus      @default(planned)
+  sourceGenerationKey   String                @unique
+  generationVersion     Int                   @default(1)
   originalScheduledDate DateTime
-  completedAt         DateTime?
-  completedByMemberId String?
-  actualMinutes       Int?
-  notes               String?
-  wasCompletedAlone   Boolean?
-  isManuallyModified  Boolean              @default(false)
-  rescheduleCount     Int                  @default(0)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  household           Household            @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  taskTemplate        TaskTemplate         @relation(fields: [taskTemplateId], references: [id], onDelete: Cascade)
-  assignedMember      HouseholdMember?     @relation("OccurrenceAssignee", fields: [assignedMemberId], references: [id], onDelete: SetNull)
-  completedByMember   HouseholdMember?     @relation("OccurrenceCompleter", fields: [completedByMemberId], references: [id], onDelete: SetNull)
-  logs                OccurrenceActionLog[]
-  comments            OccurrenceComment[]
+  completedAt           DateTime?
+  completedByMemberId   String?
+  actualMinutes         Int?
+  notes                 String?
+  wasCompletedAlone     Boolean?
+  isManuallyModified    Boolean               @default(false)
+  rescheduleCount       Int                   @default(0)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  household             Household             @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  taskTemplate          TaskTemplate          @relation(fields: [taskTemplateId], references: [id], onDelete: Cascade)
+  assignedMember        HouseholdMember?      @relation("OccurrenceAssignee", fields: [assignedMemberId], references: [id], onDelete: SetNull)
+  completedByMember     HouseholdMember?      @relation("OccurrenceCompleter", fields: [completedByMemberId], references: [id], onDelete: SetNull)
+  logs                  OccurrenceActionLog[]
+  comments              OccurrenceComment[]
 
   @@index([householdId, scheduledDate])
   @@index([householdId, status, scheduledDate])
@@ -349,14 +412,14 @@ model OccurrenceComment {
 }
 
 model PushSubscription {
-  id         String   @id @default(cuid())
-  memberId   String
-  endpoint   String   @unique
-  p256dh     String
-  auth       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  member     HouseholdMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  id        String          @id @default(cuid())
+  memberId  String
+  endpoint  String          @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  member    HouseholdMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@index([memberId])
 }
@@ -407,64 +470,64 @@ model SavingsBox {
   name              String
   kind              SavingsBoxKind @default(savings)
   icon              String?
-  color             String     @default("#D8643D")
-  targetAmount      Decimal?   @db.Decimal(12, 2)
+  color             String         @default("#D8643D")
+  targetAmount      Decimal?       @db.Decimal(12, 2)
   targetDate        DateTime?
-  allowNegative     Boolean    @default(false)
-  isArchived        Boolean    @default(false)
-  sortOrder         Int        @default(0)
+  allowNegative     Boolean        @default(false)
+  isArchived        Boolean        @default(false)
+  sortOrder         Int            @default(0)
   notes             String?
   createdByMemberId String?
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-  household       Household              @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  autoFillRule    SavingsAutoFillRule?
-  entries         SavingsEntry[]
-  outTransfers    SavingsTransfer[]      @relation("TransferFrom")
-  inTransfers     SavingsTransfer[]      @relation("TransferTo")
-  calculators     SavingsCalculator[]
-  calculatorRuns  SavingsCalculatorRun[]
+  household      Household              @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  autoFillRule   SavingsAutoFillRule?
+  entries        SavingsEntry[]
+  outTransfers   SavingsTransfer[]      @relation("TransferFrom")
+  inTransfers    SavingsTransfer[]      @relation("TransferTo")
+  calculators    SavingsCalculator[]
+  calculatorRuns SavingsCalculatorRun[]
 
   @@index([householdId, isArchived, sortOrder])
 }
 
 model SavingsAutoFillRule {
-  id              String         @id @default(cuid())
-  boxId           String         @unique
-  amount          Decimal        @db.Decimal(12, 2)
-  type            RecurrenceType
-  interval        Int            @default(1)
-  weekdays        Json?
-  dayOfMonth      Int?
-  anchorDate      DateTime
-  startsOn        DateTime
-  endsOn          DateTime?
-  isPaused        Boolean        @default(false)
-  lastAppliedOn   DateTime?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  boxId         String         @unique
+  amount        Decimal        @db.Decimal(12, 2)
+  type          RecurrenceType
+  interval      Int            @default(1)
+  weekdays      Json?
+  dayOfMonth    Int?
+  anchorDate    DateTime
+  startsOn      DateTime
+  endsOn        DateTime?
+  isPaused      Boolean        @default(false)
+  lastAppliedOn DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   box SavingsBox @relation(fields: [boxId], references: [id], onDelete: Cascade)
 }
 
 model SavingsEntry {
-  id              String           @id @default(cuid())
-  boxId           String
-  householdId     String
-  type            SavingsEntryType
-  amount          Decimal          @db.Decimal(12, 2)
-  occurredOn      DateTime
-  reason          String?
-  authorMemberId  String?
-  transferId      String?
-  autoFillRuleId  String?
-  autoFillKey     String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id             String           @id @default(cuid())
+  boxId          String
+  householdId    String
+  type           SavingsEntryType
+  amount         Decimal          @db.Decimal(12, 2)
+  occurredOn     DateTime
+  reason         String?
+  authorMemberId String?
+  transferId     String?
+  autoFillRuleId String?
+  autoFillKey    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
-  box      SavingsBox       @relation(fields: [boxId], references: [id], onDelete: Cascade)
-  transfer SavingsTransfer? @relation(fields: [transferId], references: [id], onDelete: SetNull)
+  box           SavingsBox            @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  transfer      SavingsTransfer?      @relation(fields: [transferId], references: [id], onDelete: SetNull)
   calculatorRun SavingsCalculatorRun?
 
   @@unique([autoFillRuleId, autoFillKey])
@@ -484,8 +547,8 @@ model SavingsTransfer {
   authorMemberId String?
   createdAt      DateTime @default(now())
 
-  fromBox SavingsBox      @relation("TransferFrom", fields: [fromBoxId], references: [id], onDelete: Cascade)
-  toBox   SavingsBox      @relation("TransferTo", fields: [toBoxId], references: [id], onDelete: Cascade)
+  fromBox SavingsBox     @relation("TransferFrom", fields: [fromBoxId], references: [id], onDelete: Cascade)
+  toBox   SavingsBox     @relation("TransferTo", fields: [toBoxId], references: [id], onDelete: Cascade)
   entries SavingsEntry[]
 
   @@index([householdId, occurredOn])
@@ -494,68 +557,247 @@ model SavingsTransfer {
 }
 
 model SavingsCalculator {
-  id             String                         @id @default(cuid())
-  householdId    String
-  boxId          String?
-  name           String
-  description    String?
-  formula        String
-  reasonTemplate String?
-  resultMode     SavingsCalculatorResultMode    @default(deposit)
-  negativeMode   SavingsCalculatorNegativeMode  @default(clamp_to_zero)
-  roundingMode   SavingsCalculatorRoundingMode  @default(cents)
-  isArchived     Boolean                        @default(false)
-  sortOrder      Int                            @default(0)
+  id                String                        @id @default(cuid())
+  householdId       String
+  boxId             String?
+  name              String
+  description       String?
+  formula           String
+  reasonTemplate    String?
+  resultMode        SavingsCalculatorResultMode   @default(deposit)
+  negativeMode      SavingsCalculatorNegativeMode @default(clamp_to_zero)
+  roundingMode      SavingsCalculatorRoundingMode @default(cents)
+  isArchived        Boolean                       @default(false)
+  sortOrder         Int                           @default(0)
   createdByMemberId String?
-  createdAt      DateTime                       @default(now())
-  updatedAt      DateTime                       @updatedAt
+  createdAt         DateTime                      @default(now())
+  updatedAt         DateTime                      @updatedAt
 
-  household      Household                      @relation(fields: [householdId], references: [id], onDelete: Cascade)
-  box            SavingsBox?                    @relation(fields: [boxId], references: [id], onDelete: SetNull)
-  fields         SavingsCalculatorField[]
-  runs           SavingsCalculatorRun[]
+  household Household                @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  box       SavingsBox?              @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  fields    SavingsCalculatorField[]
+  runs      SavingsCalculatorRun[]
 
   @@index([householdId, isArchived, sortOrder])
   @@index([boxId, isArchived, sortOrder])
 }
 
 model SavingsCalculatorField {
-  id             String                     @id @default(cuid())
-  calculatorId   String
-  key            String
-  label          String
-  type           SavingsCalculatorFieldType @default(number)
-  defaultValue   Decimal?                   @db.Decimal(12, 4)
-  helperText     String?
-  isRequired     Boolean                    @default(true)
-  sortOrder      Int                        @default(0)
-  createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
+  id           String                     @id @default(cuid())
+  calculatorId String
+  key          String
+  label        String
+  type         SavingsCalculatorFieldType @default(number)
+  defaultValue Decimal?                   @db.Decimal(12, 4)
+  helperText   String?
+  isRequired   Boolean                    @default(true)
+  sortOrder    Int                        @default(0)
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
 
-  calculator     SavingsCalculator          @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  calculator SavingsCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
 
   @@unique([calculatorId, key])
   @@index([calculatorId, sortOrder])
 }
 
 model SavingsCalculatorRun {
-  id             String            @id @default(cuid())
+  id             String           @id @default(cuid())
   calculatorId   String
   householdId    String
   boxId          String?
   inputValues    Json
-  rawResult      Decimal           @db.Decimal(12, 4)
-  resultAmount   Decimal           @db.Decimal(12, 2)
+  rawResult      Decimal          @db.Decimal(12, 4)
+  resultAmount   Decimal          @db.Decimal(12, 2)
   entryType      SavingsEntryType
-  entryId        String?           @unique
+  entryId        String?          @unique
   authorMemberId String?
-  createdAt      DateTime          @default(now())
+  createdAt      DateTime         @default(now())
 
-  calculator     SavingsCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
-  box            SavingsBox?       @relation(fields: [boxId], references: [id], onDelete: Cascade)
-  entry          SavingsEntry?     @relation(fields: [entryId], references: [id], onDelete: SetNull)
+  calculator SavingsCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  box        SavingsBox?       @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  entry      SavingsEntry?     @relation(fields: [entryId], references: [id], onDelete: SetNull)
 
   @@index([calculatorId, createdAt])
   @@index([householdId, createdAt])
   @@index([boxId, createdAt])
+}
+
+model FeedbackReport {
+  id             String         @id @default(cuid())
+  kind           FeedbackKind
+  status         FeedbackStatus @default(open)
+  message        String
+  url            String?
+  digest         String?
+  userAgent      String?
+  reporterUserId String?
+  householdId    String?
+  githubUrl      String?
+  adminNotes     String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  reporter       User?          @relation(fields: [reporterUserId], references: [id], onDelete: SetNull)
+  household      Household?     @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@index([householdId, createdAt])
+}
+
+model UxEvent {
+  id          String     @id @default(cuid())
+  event       String
+  userId      String?
+  householdId String?
+  path        String?
+  props       Json?
+  createdAt   DateTime   @default(now())
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  household   Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([event, createdAt])
+  @@index([userId, createdAt])
+  @@index([householdId, createdAt])
+}
+
+model AdminAuditEvent {
+  id          String     @id @default(cuid())
+  actorUserId String?
+  householdId String?
+  action      String
+  targetType  String?
+  targetId    String?
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  actor       User?      @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  household   Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([action, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([householdId, createdAt])
+}
+
+model DataExportRequest {
+  id          String            @id @default(cuid())
+  userId      String
+  householdId String?
+  status      DataRequestStatus @default(requested)
+  completedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  household   Household?        @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([householdId, createdAt])
+  @@index([status, createdAt])
+}
+
+model DeletionRequest {
+  id          String            @id @default(cuid())
+  userId      String?
+  householdId String?
+  status      DataRequestStatus @default(requested)
+  reason      String?
+  completedAt DateTime?
+  metadata    Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  household   Household?        @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([householdId, createdAt])
+  @@index([status, createdAt])
+}
+
+model SupporterContribution {
+  id          String     @id @default(cuid())
+  userId      String?
+  householdId String?
+  provider    String     @default("manual")
+  providerRef String?
+  amountCents Int?
+  currency    String     @default("EUR")
+  message     String?
+  isPublic    Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  household   Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([householdId, createdAt])
+  @@index([provider, providerRef])
+}
+
+model Plan {
+  id            String          @id @default(cuid())
+  code          String          @unique
+  name          String
+  description   String?
+  priceCents    Int             @default(0)
+  currency      String          @default("EUR")
+  interval      BillingInterval @default(month)
+  isActive      Boolean         @default(true)
+  entitlements  Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  subscriptions Subscription[]
+
+  @@index([isActive, code])
+}
+
+model BillingCustomer {
+  id                 String     @id @default(cuid())
+  userId             String?
+  householdId        String?
+  provider           String     @default("stripe")
+  providerCustomerId String
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  user               User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  household          Household? @relation(fields: [householdId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, providerCustomerId])
+  @@index([userId])
+  @@index([householdId])
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  householdId            String
+  planId                 String?
+  status                 SubscriptionStatus @default(beta)
+  provider               String             @default("internal")
+  providerSubscriptionId String?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  household              Household          @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  plan                   Plan?              @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@unique([provider, providerSubscriptionId])
+  @@index([householdId, status])
+  @@index([planId])
+}
+
+model FeatureEntitlement {
+  id          String    @id @default(cuid())
+  householdId String
+  feature     String
+  enabled     Boolean   @default(true)
+  limitValue  Int?
+  source      String    @default("beta")
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, feature])
+  @@index([feature, enabled])
+  @@index([expiresAt])
 }

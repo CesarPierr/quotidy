@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/auth";
+import { APP_NAME } from "@/lib/brand";
+import { QuotidyLogo } from "@/components/shared/quotidy-logo";
 
 const features = [
   {
@@ -97,12 +99,7 @@ export default async function HomePage() {
       {/* Nav */}
       <header className="sticky top-0 z-20 mx-auto max-w-6xl px-4 pt-4 sm:px-6">
         <div className="app-surface flex items-center justify-between rounded-[2rem] px-5 py-3.5">
-          <div className="flex items-center gap-2">
-            <div className="flex size-7 items-center justify-center rounded-lg bg-coral-500 text-white shadow-sm">
-              <House className="size-4" />
-            </div>
-            <span className="font-bold tracking-tight">Hearthly</span>
-          </div>
+          <QuotidyLogo size={28} />
           <div className="flex items-center gap-2">
             <Link
               className="hidden px-4 py-2 text-sm font-semibold text-ink-700 hover:text-ink-950 sm:inline-flex"
@@ -263,10 +260,14 @@ export default async function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-line py-8 text-center text-sm text-ink-500">
-        <p>© {new Date().getFullYear()} Hearthly · Auto-hébergeable · Conçu avec soin</p>
+        <p>© {new Date().getFullYear()} {APP_NAME} · Bêta ouverte · Conçu avec soin</p>
         <div className="mt-2 flex justify-center gap-4 text-xs">
           <Link href="/login" className="hover:text-ink-700">Connexion</Link>
           <Link href="/register" className="hover:text-ink-700">Inscription</Link>
+          <Link href="/privacy" className="hover:text-ink-700">Confidentialité</Link>
+          <Link href="/terms" className="hover:text-ink-700">CGU</Link>
+          <Link href="/contact" className="hover:text-ink-700">Contact</Link>
+          <Link href="/support" className="hover:text-ink-700">Soutenir</Link>
         </div>
       </footer>
     </main>

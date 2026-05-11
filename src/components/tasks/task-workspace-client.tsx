@@ -1,6 +1,8 @@
 "use client";
 
 import { addDays, isSameDay, startOfDay } from "date-fns";
+import Link from "next/link";
+import { CircleCheckBig, ListPlus, SearchX } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FocusSession } from "@/components/dashboard/focus-session";
 import { OccurrenceCard } from "@/components/tasks/occurrence-card";
@@ -43,6 +45,10 @@ type TaskWorkspaceClientProps = {
   members: { id: string; displayName: string }[];
   occurrences: WorkspaceOccurrence[];
   autoStartSession?: boolean;
+  /**
+   * Defines the scope of tasks to show. Now fully controlled by the parent dashboard.
+   */
+  scope: "mine" | "household";
 };
 
 export function TaskWorkspaceClient({
@@ -52,9 +58,10 @@ export function TaskWorkspaceClient({
   members,
   occurrences,
   autoStartSession,
+  scope,
 }: TaskWorkspaceClientProps) {
   const { success, error: showError } = useToast();
-  const [scope, setScope] = useState<"mine" | "household">(currentMemberId ? "mine" : "household");
+  const effectiveScope = scope;
   const [search, setSearch] = useState("");
   const [roomFilter, setRoomFilter] = useState("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
@@ -77,7 +84,7 @@ export function TaskWorkspaceClient({
 
   const today = startOfDay(new Date());
   const baseOccurrences =
-    scope === "mine" && currentMemberId
+    effectiveScope === "mine" && currentMemberId
       ? normalizedOccurrences.filter((occurrence) => occurrence.assignedMemberId === currentMemberId)
       : normalizedOccurrences;
 
@@ -303,8 +310,7 @@ export function TaskWorkspaceClient({
         setOverdueOnly={setOverdueOnly}
         filterType={filterType}
         setFilterType={setFilterType}
-        scope={scope}
-        setScope={setScope}
+        scope={effectiveScope}
         rooms={rooms}
         members={members}
         currentMemberId={currentMemberId}
@@ -314,13 +320,13 @@ export function TaskWorkspaceClient({
         filteredCount={filteredActiveOccurrences.length}
       />
 
-      <section className="app-surface rounded-[2rem] p-5 sm:p-6 pt-0">
-        <div className="mt-6 space-y-8">
+      <section className="app-surface rounded-[1.6rem] p-3.5 pt-0 sm:rounded-[2rem] sm:p-6 sm:pt-0">
+        <div className="mt-4 space-y-5 sm:mt-6 sm:space-y-8">
           {timelineGroups.length > 0 ? (
             timelineGroups.map((group) => (
-              <div key={group.label} className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-ink-500">
+              <div key={group.label} className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <h4 className="text-[0.66rem] font-bold uppercase tracking-[0.16em] text-ink-500 sm:text-xs sm:tracking-[0.2em]">
                     {group.label}
                   </h4>
                   <div className="h-px flex-1 bg-line" />
@@ -344,29 +350,49 @@ export function TaskWorkspaceClient({
               </div>
             ))
           ) : (
-            <div className="rounded-[1.6rem] border border-line bg-glass-bg p-8 text-center text-sm text-ink-700">
-              {search 
-                ? "Aucune tâche ne correspond à votre recherche."
-                : "Rien de prévu pour le moment. Profitez-en !"}
+            <div className="rounded-[1.3rem] border border-line bg-glass-bg p-5 text-center text-sm text-ink-700 sm:rounded-[1.6rem] sm:p-8">
+              {search ? (
+                <SearchX className="mx-auto size-7 text-coral-500" aria-hidden="true" />
+              ) : (
+                <CircleCheckBig className="mx-auto size-7 text-leaf-600" aria-hidden="true" />
+              )}
+              <h4 className="mt-3 text-base font-bold text-ink-950">
+                {search ? "Aucune tâche trouvée" : "Rien à faire maintenant"}
+              </h4>
+              <p className="mx-auto mt-1 max-w-sm text-sm leading-6">
+                {search
+                  ? "Essayez un autre mot-clé ou retirez les filtres actifs."
+                  : "La vue est à jour. Vous pouvez créer une routine si quelque chose manque."}
+              </p>
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="mt-4 block w-full text-xs font-bold text-coral-600 hover:underline"
+                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-white/70 px-4 text-xs font-bold text-coral-600 hover:bg-white dark:bg-[#262830]/70"
+                  type="button"
                 >
                   Réinitialiser la recherche
                 </button>
               )}
+              {!search && manageable ? (
+                <Link
+                  className="btn-secondary mt-4 inline-flex min-h-10 items-center justify-center gap-2 px-4 text-xs font-bold"
+                  href={`/app/settings/tasks?household=${householdId}&tab=wizard`}
+                >
+                  <ListPlus className="size-4" aria-hidden="true" />
+                  Ajouter une routine
+                </Link>
+              ) : null}
             </div>
           )}
         </div>
 
         {filterType === "active" && !search && (
-          <div className="mt-8 flex flex-col items-center gap-3 border-t border-line pt-8">
+          <div className="mt-5 flex flex-col items-center gap-3 border-t border-line pt-5 sm:mt-8 sm:pt-8">
             <div className="flex gap-2">
               {horizon === 3 && (
                 <button
                   onClick={() => setHorizon(7)}
-                  className="rounded-full bg-glass-bg border border-line px-6 py-2.5 text-xs font-bold text-ink-700 transition-all hover:bg-sand-100 hover:scale-105 active:scale-95 shadow-sm"
+                  className="rounded-full border border-line bg-glass-bg px-4 py-2 text-xs font-bold text-ink-700 shadow-sm transition-all active:scale-95 hover:bg-sand-100 sm:px-6 sm:py-2.5 sm:hover:scale-105"
                 >
                   Étendre à la semaine
                 </button>
@@ -374,7 +400,7 @@ export function TaskWorkspaceClient({
               {horizon === 7 && (
                 <button
                   onClick={() => setHorizon(30)}
-                  className="rounded-full bg-[var(--ink-50)] px-6 py-2.5 text-xs font-bold text-ink-700 transition-all hover:bg-[var(--ink-100)] hover:scale-105 active:scale-95 shadow-sm"
+                  className="rounded-full bg-[var(--ink-50)] px-4 py-2 text-xs font-bold text-ink-700 shadow-sm transition-all active:scale-95 hover:bg-[var(--ink-100)] sm:px-6 sm:py-2.5 sm:hover:scale-105"
                 >
                   Étendre au mois
                 </button>
@@ -382,7 +408,7 @@ export function TaskWorkspaceClient({
               {horizon > 3 && (
                 <button
                   onClick={() => setHorizon(3)}
-                  className="rounded-full bg-[var(--ink-50)] px-6 py-2.5 text-xs font-bold text-ink-400 transition-all hover:bg-[var(--ink-100)] hover:text-[var(--ink-600)]"
+                  className="rounded-full bg-[var(--ink-50)] px-4 py-2 text-xs font-bold text-ink-400 transition-all hover:bg-[var(--ink-100)] hover:text-[var(--ink-600)] sm:px-6 sm:py-2.5"
                 >
                   Réduire
                 </button>

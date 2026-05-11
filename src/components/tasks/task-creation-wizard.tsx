@@ -92,12 +92,12 @@ export function TaskCreationWizard({ members, compact = false }: TaskCreationWiz
 
   const trigger = compact ? (
     <button
-      className="flex size-11 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-all active:scale-95 hover:bg-coral-600"
+      className="flex size-10 items-center justify-center rounded-full bg-coral-500 text-white shadow-lg transition-all active:scale-95 hover:bg-coral-600 sm:size-11"
       onClick={() => setIsOpen(true)}
       type="button"
       title="Nouvelle tâche"
     >
-      <Plus className="size-6" />
+      <Plus className="size-5 sm:size-6" />
     </button>
   ) : (
     <button

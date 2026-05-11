@@ -229,7 +229,7 @@ export function OccurrenceCard({
   return (
     <>
       <article
-        className={`relative overflow-hidden rounded-2xl border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] sm:rounded-[1.7rem] sm:p-5 ${meta.pulse ? "ring-2 ring-[rgba(127,29,29,0.18)] shadow-[0_8px_24px_rgba(127,29,29,0.18)]" : ""}`}
+        className={`relative overflow-hidden rounded-[1.15rem] border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)] sm:rounded-[1.7rem] sm:p-5 ${meta.pulse ? "ring-2 ring-[rgba(127,29,29,0.18)] shadow-[0_8px_24px_rgba(127,29,29,0.18)]" : ""}`}
         onClick={() => setShowSheet(true)}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -243,22 +243,22 @@ export function OccurrenceCard({
       >
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 top-0 h-1 sm:h-1.5"
+          className="absolute inset-x-0 top-0 h-0.5 sm:h-1.5"
           style={{ backgroundColor: meta.accent }}
         />
 
         <div className="flex items-start gap-3 pt-1">
           <span
-            className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full sm:size-10"
+            className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full sm:size-10"
             style={{ backgroundColor: meta.surface, color: meta.accent, border: `1px solid ${meta.border}` }}
           >
-            <StatusIcon className="size-4 sm:size-5" />
+            <StatusIcon className="size-3.5 sm:size-5" />
           </span>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="text-sm font-bold leading-tight sm:text-lg">
+                <h3 className="line-clamp-2 text-sm font-bold leading-tight sm:text-lg">
                   {occurrence.taskTemplate.title}
                   {occurrence.taskTemplate.isCollective && !archived ? (
                     <span className="ml-1.5 inline-flex items-center rounded-full bg-[rgba(47,109,136,0.12)] px-1.5 py-0.5 text-[0.6rem] font-bold uppercase text-sky-600">
@@ -266,33 +266,33 @@ export function OccurrenceCard({
                     </span>
                   ) : null}
                 </h3>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink-700">
+                <div className="mt-1 flex flex-wrap items-center gap-1 text-[0.68rem] text-ink-700 sm:gap-1.5 sm:text-xs">
                   {occurrence.taskTemplate.room ? (() => {
                     const RoomIcon = getRoomIcon(occurrence.taskTemplate.room, occurrence.taskTemplate.icon);
                     return (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-glass-bg border border-line px-2 py-0.5 font-medium">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-glass-bg px-1.5 py-0.5 font-medium sm:px-2">
                         <RoomIcon className="size-3 opacity-85" />
                         {occurrence.taskTemplate.room}
                       </span>
                     );
                   })() : null}
-                  <span className="rounded-full bg-glass-bg border border-line px-2 py-0.5 font-medium">
+                  <span className="rounded-full border border-line bg-glass-bg px-1.5 py-0.5 font-medium sm:px-2">
                     {formatMinutes(occurrence.taskTemplate.estimatedMinutes)}
                   </span>
                   {occurrence.actualMinutes !== null ? (
-                    <span className="rounded-full bg-glass-bg border border-line px-2 py-0.5 font-medium">
+                    <span className="rounded-full border border-line bg-glass-bg px-1.5 py-0.5 font-medium sm:px-2">
                       Réel {formatMinutes(occurrence.actualMinutes)}
                     </span>
                   ) : null}
                   {occurrence.assignedMember ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-glass-bg border border-line px-2 py-0.5 font-medium">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-line bg-glass-bg px-1.5 py-0.5 font-medium sm:px-2">
                       <span className="size-2 rounded-full" style={{ backgroundColor: occurrence.assignedMember.color }} />
                       {occurrence.assignedMember.displayName}
                     </span>
                   ) : null}
                   {occurrence.rescheduleCount && occurrence.rescheduleCount > 0 ? (
                     <span
-                      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium"
+                      className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-medium sm:px-2"
                       style={{ borderColor: "rgba(216, 100, 61, 0.25)", backgroundColor: "rgba(216, 100, 61, 0.08)", color: "var(--coral-600)" }}
                       title={`Reportée ${occurrence.rescheduleCount} fois`}
                     >
@@ -307,7 +307,7 @@ export function OccurrenceCard({
               </div>
 
               <span
-                className="shrink-0 rounded-lg bg-glass-bg border border-line px-2 py-1 text-[0.65rem] font-bold uppercase tracking-wider"
+                className="shrink-0 rounded-lg border border-line bg-glass-bg px-1.5 py-0.5 text-[0.58rem] font-bold uppercase tracking-[0.08em] sm:px-2 sm:py-1 sm:text-[0.65rem] sm:tracking-wider"
                 style={{ color: meta.accent }}
                 title={scheduledDate.toLocaleDateString("fr-FR")}
               >
@@ -329,7 +329,7 @@ export function OccurrenceCard({
         </div>
 
         {!compact && canEditOccurrence && !archived && (currentStatus === "overdue" || currentStatus === "due") ? (
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pt-1">
+          <div className="mt-2.5 hidden flex-wrap items-center gap-1.5 pt-1 sm:flex">
             <span className="text-[0.65rem] font-bold uppercase tracking-wider text-ink-500">
               Reporter à :
             </span>
@@ -372,10 +372,10 @@ export function OccurrenceCard({
         ) : null}
 
         {!compact && canEditOccurrence && !archived ? (
-          <div className="mt-3 flex items-center gap-2 pt-1">
+          <div className="mt-2.5 grid grid-cols-[1fr_1fr_2.75rem] items-center gap-2 pt-1 sm:mt-3 sm:flex">
             <button
               aria-label={`Marquer "${occurrence.taskTemplate.title}" comme terminée`}
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-[var(--status-completed-border)] bg-[var(--status-completed-surface)] px-3 py-3 text-xs font-bold text-[var(--status-completed-accent)] transition-all active:scale-[0.97] disabled:opacity-40 sm:text-sm"
+              className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[var(--status-completed-border)] bg-[var(--status-completed-surface)] px-2 py-2 text-xs font-bold text-[var(--status-completed-accent)] transition-all active:scale-[0.97] disabled:opacity-40 sm:min-h-[44px] sm:px-3 sm:py-3 sm:text-sm"
               aria-busy={isSubmitting}
               disabled={isSubmitting}
               onClick={(event) => {
@@ -390,7 +390,7 @@ export function OccurrenceCard({
 
             <button
               aria-label={`Passer "${occurrence.taskTemplate.title}"`}
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-glass-bg px-3 py-3 text-xs font-bold text-ink-700 transition-all active:scale-[0.97] disabled:opacity-40 sm:text-sm"
+              className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-line bg-glass-bg px-2 py-2 text-xs font-bold text-ink-700 transition-all active:scale-[0.97] disabled:opacity-40 sm:min-h-[44px] sm:px-3 sm:py-3 sm:text-sm"
               aria-busy={isSubmitting}
               disabled={isSubmitting}
               onClick={(event) => {
@@ -405,7 +405,7 @@ export function OccurrenceCard({
 
             <button
               aria-label={`Plus d'actions pour ${occurrence.taskTemplate.title}`}
-              className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-glass-bg text-ink-500 transition-all active:scale-90"
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-line bg-glass-bg text-ink-500 transition-all active:scale-90 sm:size-11"
               onClick={(event) => {
                 stopEvent(event);
                 setShowSheet(true);
@@ -418,9 +418,9 @@ export function OccurrenceCard({
         ) : null}
 
         {!compact && canEditOccurrence && archived ? (
-          <div className="mt-3 flex items-center gap-2 pt-1">
+          <div className="mt-2.5 grid grid-cols-[1fr_2.75rem] items-center gap-2 pt-1 sm:mt-3 sm:flex">
             <button
-              className="flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-xl border border-[rgba(47,109,136,0.16)] bg-glass-bg px-3 py-3 text-xs font-bold text-sky-600 transition-all active:scale-[0.97] disabled:opacity-40 sm:text-sm"
+              className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border border-[rgba(47,109,136,0.16)] bg-glass-bg px-2 py-2 text-xs font-bold text-sky-600 transition-all active:scale-[0.97] disabled:opacity-40 sm:min-h-[44px] sm:px-3 sm:py-3 sm:text-sm"
               disabled={isSubmitting}
               onClick={(event) => {
                 stopEvent(event);
@@ -433,7 +433,7 @@ export function OccurrenceCard({
             </button>
             <button
               aria-label={`Plus d'actions pour ${occurrence.taskTemplate.title}`}
-              className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-glass-bg text-ink-500 transition-all active:scale-90"
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-line bg-glass-bg text-ink-500 transition-all active:scale-90 sm:size-11"
               onClick={(event) => {
                 stopEvent(event);
                 setShowSheet(true);

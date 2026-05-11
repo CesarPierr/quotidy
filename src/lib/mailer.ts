@@ -9,7 +9,7 @@ function createTransport() {
   const port = parseInt(process.env.SMTP_PORT ?? "587", 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const from = process.env.SMTP_FROM ?? "noreply@makemenage.local";
+  const from = process.env.SMTP_FROM ?? "noreply@hearthly.local";
 
   if (!host) {
     // Dev fallback: log to console instead of sending

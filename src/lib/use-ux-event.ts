@@ -12,7 +12,13 @@ export function useUxEvent(event: string, props?: Record<string, unknown>) {
     if (fired.current) return;
     fired.current = true;
 
-    const payload = JSON.stringify({ event, props });
+    const payload = JSON.stringify({
+      event,
+      props: {
+        ...(props ?? {}),
+        path: typeof window !== "undefined" ? window.location.pathname + window.location.search : undefined,
+      },
+    });
     try {
       if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
         const blob = new Blob([payload], { type: "application/json" });

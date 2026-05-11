@@ -13,6 +13,24 @@ export const loginSchema = z.object({
   password: z.string().min(8).max(128),
 });
 
+export const accountProfileSchema = z.object({
+  displayName: z.string().trim().min(2).max(60),
+});
+
+export const accountEmailSchema = z.object({
+  email: z.email().transform((value) => value.toLowerCase()),
+  password: z.string().min(8).max(128),
+});
+
+export const accountPasswordSchema = z.object({
+  currentPassword: z.string().min(8).max(128),
+  newPassword: z.string().min(8).max(128),
+  confirmPassword: z.string().min(8).max(128),
+}).refine((value) => value.newPassword === value.confirmPassword, {
+  message: "passwords_mismatch",
+  path: ["confirmPassword"],
+});
+
 export const householdSchema = z.object({
   name: z.string().min(2).max(80),
   timezone: z.string().min(2).max(60).default(process.env.DEFAULT_TIMEZONE ?? "Europe/Paris"),

@@ -1,15 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CalendarDays, Compass, Home, LayoutGrid, LogOut, Moon, PiggyBank, Settings2, Sun } from "lucide-react";
+import { CalendarDays, Compass, Home, LayoutGrid, LogOut, PiggyBank, Settings2 } from "lucide-react";
 
 import { FeatureTour } from "@/components/onboarding/feature-tour";
+import { FeedbackButton } from "@/components/shared/feedback-button";
 import { PWAInstallBanner } from "@/components/shared/pwa-install-banner";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { useTheme } from "@/components/shared/theme-provider";
+import { QuotidyLogo } from "@/components/shared/quotidy-logo";
 import { mobileSections } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,9 @@ type AppShellProps = {
   children: React.ReactNode;
   householdName?: string;
   currentHouseholdId?: string;
+  /** Per-household feature snapshot. Used to hide tabs when a household has
+   * disabled a module (e.g. Épargne). Falls back to "everything enabled". */
+  households?: Array<{ id: string; name: string; savingsEnabled: boolean }>;
 };
 
 const navIcons = {
@@ -62,37 +66,42 @@ function isActivePath(pathname: string, href: string) {
       pathname.startsWith("/app/my-tasks")
     );
   }
-  if (href === "/app") return pathname === "/app";
+  if (href === "/app") {
+    return pathname === "/app" || pathname.startsWith("/app/foyer");
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function ThemeIconButton() {
-  const { theme, setTheme } = useTheme();
-  const next = { light: "dark", dark: "system", system: "light" } as const;
-  const Icon = theme === "dark" ? Moon : Sun;
-  return (
-    <button
-      aria-label={`Thème : ${theme === "light" ? "clair" : theme === "dark" ? "sombre" : "automatique"}`}
-      className="btn-secondary p-2"
-      onClick={() => setTheme(next[theme])}
-      type="button"
-    >
-      <Icon className="size-4" />
-    </button>
-  );
-}
-
-export function AppShell({ children, householdName, currentHouseholdId }: AppShellProps) {
+export function AppShell({ children, householdName, currentHouseholdId, households }: AppShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const householdIdFromUrl = searchParams.get("household");
   const activeHouseholdId = currentHouseholdId ?? householdIdFromUrl;
   const suffix = activeHouseholdId ? `?household=${activeHouseholdId}` : "";
+
+  // Resolve the active household — fall back to the first one if URL is silent.
+  const activeHousehold =
+    households?.find((h) => h.id === activeHouseholdId) ?? households?.[0] ?? null;
+  const savingsEnabled = activeHousehold?.savingsEnabled ?? true;
+
+  const visibleSidebarSections = mobileSections.filter(
+    (s) => savingsEnabled || s.href !== "/app/epargne",
+  );
+  const visibleMobileTabs = mobileMainTabs.filter(
+    (t) => savingsEnabled || t.href !== "/app/epargne",
+  );
   const [tourOpen, setTourOpen] = useState(false);
 
-  const activeSection =
-    mobileSections.find((item) => isActivePath(pathname, item.href)) ?? mobileSections[0];
-  const activeMeta = sectionMeta[activeSection.href as keyof typeof sectionMeta];
+  // Prefetch all main tab routes on mount for instant navigation
+  useEffect(() => {
+    const routes = ["/app", "/app/planifier", "/app/epargne", "/app/settings"];
+    for (const route of routes) {
+      router.prefetch(`${route}${suffix}`);
+    }
+    // Also prefetch the foyer route for the Moi/Foyer toggle
+    router.prefetch(`/app/foyer${suffix}`);
+  }, [router, suffix]);
 
   const [navVisible, setNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -123,17 +132,6 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
     if (searchParams.get("tour") === "1") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTourOpen(true);
-      return;
-    }
-    if (typeof window === "undefined") return;
-    try {
-      const seen = window.localStorage.getItem("mm.tour.v1.completed");
-      const dismissed = window.sessionStorage.getItem("mm.tour.v1.dismissed");
-      if (!seen && !dismissed && pathname === "/app") {
-        setTourOpen(true);
-      }
-    } catch {
-      // localStorage may be unavailable
     }
   }, [pathname, searchParams]);
 
@@ -152,12 +150,7 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
       <nav className="hidden lg:sticky lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:w-64 lg:flex-col">
         <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
           <div className="app-surface glow-card rounded-[2rem] p-6">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-xl bg-coral-500 text-white shadow-lg shadow-coral-500/20">
-                <Home className="size-5" />
-              </div>
-              <p className="font-display text-xl font-bold tracking-tight text-ink-950">Hearthly</p>
-            </div>
+            <QuotidyLogo />
             <h2 className="mt-4 text-sm font-bold text-ink-950">{householdName ?? "Votre foyer"}</h2>
             <p className="mt-1.5 text-xs leading-relaxed text-ink-600">
               Organisez vos routines et votre budget. Partagez les responsabilités équitablement.
@@ -165,7 +158,7 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
           </div>
           
           <div className="flex flex-col gap-2">
-            {mobileSections.map((item) => {
+            {visibleSidebarSections.map((item) => {
               const href = `${item.href}${suffix}`;
               const active = isActivePath(pathname, item.href);
               const Icon = navIcons[item.href as keyof typeof navIcons];
@@ -213,6 +206,7 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
             </div>
           </button>
           <ThemeToggle />
+          <FeedbackButton className="w-full justify-center px-4 py-3 text-sm" />
           <form action="/api/auth/logout" method="post">
             <button
               className="btn-quiet flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50"
@@ -227,52 +221,6 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
 
       {/* Main Content Area */}
       <div className="flex flex-1 min-w-0 flex-col px-3 pb-[8rem] pt-3 sm:px-5 lg:px-0 lg:pb-0 lg:pt-0">
-        {!["/app", "/app/planifier"].includes(pathname) && (
-          <header className="app-surface glow-card sticky top-3 z-20 mb-4 rounded-[1.8rem] px-4 py-3 sm:py-4 sm:px-5 lg:static lg:top-0 lg:mb-6">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 lg:hidden mb-1">
-                  <div className="flex size-5 items-center justify-center rounded bg-coral-500 text-white shadow-sm">
-                    <Home className="size-3" />
-                  </div>
-                  <p className="section-kicker !tracking-normal !normal-case text-[0.65rem] font-bold">Hearthly</p>
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 lg:mt-0">
-                  <h1 className="display-title text-xl leading-tight sm:text-3xl">
-                    {activeMeta.title}
-                  </h1>
-                  <span className="stat-pill px-2.5 py-0.5 text-[0.65rem] font-medium text-ink-700 lg:hidden">
-                    {householdName ?? "Votre foyer"}
-                  </span>
-                </div>
-                <p className="mt-1 hidden text-sm text-ink-700 sm:block">
-                  {activeMeta.description}
-                </p>
-              </div>
-              <div className="flex shrink-0 items-center gap-2 lg:hidden">
-                <button
-                  aria-label="Découvrir l'application"
-                  className="btn-secondary p-2"
-                  onClick={() => setTourOpen(true)}
-                  type="button"
-                >
-                  <Compass className="size-4" />
-                </button>
-                <ThemeIconButton />
-                <form action="/api/auth/logout" method="post">
-                  <button
-                    className="btn-secondary inline-flex items-center gap-2 px-3 py-2 text-xs sm:text-sm"
-                    type="submit"
-                  >
-                    <LogOut className="size-4" />
-                    <span className="hidden sm:inline">Déconnexion</span>
-                  </button>
-                </form>
-              </div>
-            </div>
-          </header>
-        )}
-
         <main className="flex-1">{children}</main>
 
         <PWAInstallBanner />
@@ -285,8 +233,11 @@ export function AppShell({ children, householdName, currentHouseholdId }: AppShe
           )}
           style={{ paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom, 0px))" }}
         >
-          <div className="grid grid-cols-4 gap-1">
-            {mobileMainTabs.map((item) => {
+          <div
+            className="grid gap-1"
+            style={{ gridTemplateColumns: `repeat(${visibleMobileTabs.length}, minmax(0, 1fr))` }}
+          >
+            {visibleMobileTabs.map((item) => {
               const href = `${item.href}${suffix}`;
               const active = isActivePath(pathname, item.href);
               const Icon = navIcons[item.href];

@@ -163,7 +163,7 @@ export function IntegrationSettingsPanel({
           {settings.hasApiKey ? `Clé active: ${settings.apiKeyPreview ?? "masquée"}` : "Aucune clé générée pour le moment."}
         </p>
         <p className="mt-1 text-xs text-ink-500">
-          Les outils externes peuvent utiliser `x-makemenage-key` et `x-makemenage-household`.
+          Les outils externes peuvent utiliser <code>x-quotidy-key</code> et <code>x-quotidy-household</code> (les anciens en-têtes <code>x-hearthly-*</code> restent acceptés).
         </p>
       </div>
 

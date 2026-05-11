@@ -1,13 +1,10 @@
-import dynamic from "next/dynamic";
 import { startOfDay } from "date-fns";
+import dynamic from "next/dynamic";
 
 import { ClientForm } from "@/components/shared/client-form";
-import { HomeHeader } from "@/components/layout/home-header";
-import { TaskWorkspaceClient } from "@/components/tasks/task-workspace-client";
-import { UxEventTracker } from "@/components/shared/ux-event-tracker";
-import { WeekKanban } from "@/components/tasks/week-kanban";
-import { buildLoadMetrics, buildRollingCompletionMetrics, calculateStreak } from "@/lib/analytics";
+import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { requireUser } from "@/lib/auth";
+import { buildLoadMetrics, buildRollingCompletionMetrics, calculateStreak } from "@/lib/analytics";
 import { canManageHousehold, getCurrentHouseholdContext } from "@/lib/households";
 
 const OnboardingWizard = dynamic(
@@ -16,8 +13,49 @@ const OnboardingWizard = dynamic(
 );
 
 type DashboardPageProps = {
-  searchParams: Promise<{ household?: string; onboarding?: string; joined?: string; join?: string; start?: string }>;
+  searchParams: Promise<{ household?: string; onboarding?: string; joined?: string; join?: string; start?: string; view?: string }>;
 };
+
+/**
+ * Pre-compute header metrics for a given view (moi vs foyer).
+ * This runs once on the server so the client can switch views instantly.
+ */
+function computeViewMetrics(
+  context: NonNullable<Awaited<ReturnType<typeof getCurrentHouseholdContext>>>,
+  view: "moi" | "foyer",
+  fallbackName: string,
+) {
+  const currentMemberId = context.currentMember?.id ?? null;
+  const isPersonal = view === "moi";
+
+  const headerOccurrences = isPersonal && currentMemberId
+    ? context.occurrences.filter((o) => o.assignedMemberId === currentMemberId)
+    : context.occurrences;
+  const headerWeekOccurrences = isPersonal && currentMemberId
+    ? context.weekOccurrences.filter((o) => o.assignedMemberId === currentMemberId)
+    : context.weekOccurrences;
+
+  const today = startOfDay(new Date());
+  const todayCount = headerOccurrences.filter(
+    (o) =>
+      ["planned", "due", "rescheduled"].includes(o.status) &&
+      startOfDay(o.scheduledDate).getTime() === today.getTime(),
+  ).length;
+  const overdueCount = headerOccurrences.filter((o) => o.status === "overdue").length;
+  const weekDone = headerWeekOccurrences.filter((o) => o.status === "completed").length;
+  const weekTotal = headerWeekOccurrences.filter((o) => o.status !== "cancelled").length;
+
+  const firstName = (context.currentMember?.displayName ?? fallbackName).split(" ")[0];
+
+  return {
+    headerName: isPersonal ? firstName : context.household.name,
+    scopeLabel: isPersonal ? "Mes tâches" : "Foyer entier",
+    todayCount,
+    overdueCount,
+    weekDone,
+    weekTotal,
+  };
+}
 
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await requireUser();
@@ -26,11 +64,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   const dashboardMessage =
     params.joined === "1"
-      ? "Nouveau foyer relié au compte. Vous pouvez maintenant passer d’un foyer à l’autre."
+      ? "Nouveau foyer relié au compte. Vous pouvez maintenant passer d'un foyer à l'autre."
       : params.join === "invalid_code"
-        ? "Code d’invitation introuvable ou expiré."
+        ? "Code d'invitation introuvable ou expiré."
         : params.join === "invalid"
-          ? "Lien d’invitation invalide ou expiré."
+          ? "Lien d'invitation invalide ou expiré."
           : null;
 
   if (!context) {
@@ -87,7 +125,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <h3 className="text-lg font-semibold">Rejoindre un foyer</h3>
             <label className="field-label">
               <span>Code</span>
-              <input className="field" type="text" name="code" placeholder="Code d’invitation" required />
+              <input className="field" type="text" name="code" placeholder="Code d'invitation" required />
             </label>
             <button className="btn-secondary px-5 py-3 font-semibold" type="submit">
               Rejoindre
@@ -117,99 +155,53 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     );
   }
 
+  // Pre-compute metrics for BOTH views on the server so the client can
+  // toggle between Moi and Foyer instantly with zero network requests.
+  const moiMetrics = computeViewMetrics(context, "moi", user.displayName);
+  const foyerMetrics = computeViewMetrics(context, "foyer", user.displayName);
+
   const streak = calculateStreak(context.occurrences);
   const loadData = buildLoadMetrics(context.household.members, context.occurrences);
   const rollingData = buildRollingCompletionMetrics(context.household.members, context.occurrences);
 
-  const today = startOfDay(new Date());
-  const todayCount = context.occurrences.filter(
-    (o) =>
-      ["planned", "due", "rescheduled"].includes(o.status) &&
-      startOfDay(o.scheduledDate).getTime() === today.getTime(),
-  ).length;
-  const overdueCount = context.occurrences.filter((o) => o.status === "overdue").length;
-  const weekDone = context.weekOccurrences.filter((o) => o.status === "completed").length;
-  const weekTotal = context.weekOccurrences.filter((o) => o.status !== "cancelled").length;
+  const recentActivity = context.actionLogs
+    .filter((log) => log.actionType !== "created")
+    .slice(0, 5)
+    .map((log) => ({
+      id: log.id,
+      actionType: log.actionType,
+      createdAt: log.createdAt,
+      actorName: log.actorMember?.displayName ?? "Le système",
+      taskTitle: log.occurrence.taskTemplate.title,
+    }));
 
-  const firstName = (context.currentMember?.displayName ?? user.displayName).split(" ")[0];
+  const completedCount = context.occurrences.filter((o) => o.status === "completed").length;
+
+  // Determine initial view: honour ?view=foyer query param, default to "moi"
+  const initialView = params.view === "foyer" ? "foyer" : "moi";
 
   return (
-    <div className="space-y-4">
-      <UxEventTracker
-        event="home.rendered"
-        props={{ todayCount, overdueCount, weekTotal, taskCount: context.tasks.length }}
-      />
-      {dashboardMessage ? (
-        <div className="app-surface rounded-[1.7rem] border border-[rgba(56,115,93,0.12)] px-4 py-3 text-sm leading-6 text-leaf-600">
-          {dashboardMessage}
-        </div>
-      ) : null}
-
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <div className="flex-1">
-          <HomeHeader
-            firstName={firstName}
-            todayCount={todayCount}
-            overdueCount={overdueCount}
-            weekDone={weekDone}
-            weekTotal={weekTotal}
-            streak={streak}
-            memberStats={loadData.byMember}
-            rollingMetrics={rollingData}
-            householdId={context.household.id}
-            recentActivity={context.actionLogs
-              .filter((log) => log.actionType !== "created")
-              .slice(0, 5)
-              .map((log) => ({
-                id: log.id,
-                actionType: log.actionType,
-                createdAt: log.createdAt,
-                actorName: log.actorMember?.displayName ?? "Le système",
-                taskTitle: log.occurrence.taskTemplate.title,
-              }))}
-          />
-        </div>
-        <div className="hidden sm:block" />
-      </div>
-
-      <TaskWorkspaceClient
-        householdId={context.household.id}
-        manageable={canManageHousehold(context.membership.role)}
-        currentMemberId={context.currentMember?.id}
-        members={context.household.members.map((member) => ({
-          id: member.id,
-          displayName: member.displayName,
-        }))}
-        occurrences={context.occurrences}
-        autoStartSession={params.start === "session"}
-      />
-
-      <aside aria-label="Vue d'ensemble de la semaine">
-        <details className="app-surface group rounded-[2rem] p-5 sm:p-6 [&[open]>summary>span.chev]:rotate-180">
-          <summary className="flex cursor-pointer items-center justify-between gap-3 list-none">
-            <div>
-              <p className="section-kicker">Vue d&apos;ensemble</p>
-              <h3 className="display-title mt-1 text-xl">Ma semaine</h3>
-            </div>
-            <span className="chev rounded-full border border-line bg-white/70 dark:bg-[#262830]/70 p-1.5 text-ink-500 transition-transform">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
-            </span>
-          </summary>
-          <div className="mt-4">
-            <WeekKanban occurrences={context.weekOccurrences} currentMemberId={context.currentMember?.id} />
-          </div>
-        </details>
-      </aside>
-
-      <footer className="pb-8 pt-4 text-center">
-        <a
-          href={`/app/history?household=${context.household.id}`}
-          className="btn-quiet px-6 py-3 text-sm font-semibold inline-flex items-center gap-2"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20v-6M9 20V10M15 20V4M3 20h18" /></svg>
-          Voir tout le journal d&apos;activité
-        </a>
-      </footer>
-    </div>
+    <DashboardClient
+      householdId={context.household.id}
+      householdName={context.household.name}
+      manageable={canManageHousehold(context.membership.role)}
+      currentMemberId={context.currentMember?.id ?? null}
+      members={context.household.members.map((member) => ({
+        id: member.id,
+        displayName: member.displayName,
+      }))}
+      moiMetrics={moiMetrics}
+      foyerMetrics={foyerMetrics}
+      streak={streak}
+      memberStats={loadData.byMember}
+      rollingMetrics={rollingData}
+      recentActivity={recentActivity}
+      occurrences={context.occurrences}
+      weekOccurrences={context.weekOccurrences}
+      completedCount={completedCount}
+      initialView={initialView}
+      autoStartSession={params.start === "session"}
+      dashboardMessage={dashboardMessage}
+    />
   );
 }

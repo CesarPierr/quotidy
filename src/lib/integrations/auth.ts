@@ -7,8 +7,12 @@ import type { IntegrationProvider } from "@prisma/client";
 import { db } from "@/lib/db";
 
 export const OPENCLAW_PROVIDER: IntegrationProvider = "mcp_openclaw";
-export const INTEGRATION_KEY_HEADER = "x-makemenage-key";
-export const INTEGRATION_HOUSEHOLD_HEADER = "x-makemenage-household";
+// Canonical headers (post-rebrand). The `x-hearthly-*` legacy aliases below remain
+// accepted indefinitely so existing third-party integrations don't break.
+export const INTEGRATION_KEY_HEADER = "x-quotidy-key";
+export const INTEGRATION_HOUSEHOLD_HEADER = "x-quotidy-household";
+const LEGACY_INTEGRATION_KEY_HEADER = "x-hearthly-key";
+const LEGACY_INTEGRATION_HOUSEHOLD_HEADER = "x-hearthly-household";
 
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -38,7 +42,9 @@ export function getIntegrationKeyPreview(apiKey: string) {
 }
 
 export function readIntegrationApiKey(request: Request) {
-  const headerValue = request.headers.get(INTEGRATION_KEY_HEADER)?.trim();
+  const headerValue =
+    request.headers.get(INTEGRATION_KEY_HEADER)?.trim() ??
+    request.headers.get(LEGACY_INTEGRATION_KEY_HEADER)?.trim();
 
   if (headerValue) {
     return headerValue;
@@ -60,7 +66,9 @@ export function readIntegrationApiKey(request: Request) {
 }
 
 export function readIntegrationHouseholdId(request: Request, fallback?: string | null) {
-  const headerValue = request.headers.get(INTEGRATION_HOUSEHOLD_HEADER)?.trim();
+  const headerValue =
+    request.headers.get(INTEGRATION_HOUSEHOLD_HEADER)?.trim() ??
+    request.headers.get(LEGACY_INTEGRATION_HOUSEHOLD_HEADER)?.trim();
 
   if (headerValue) {
     return headerValue;

@@ -1,6 +1,6 @@
-import { startOfDay } from "date-fns";
+import { addDays, startOfDay } from "date-fns";
 
-import { pickAssignee } from "@/lib/scheduling/assignment";
+import { isHouseholdFullyAbsent, pickAssignee } from "@/lib/scheduling/assignment";
 import { buildGenerationKey, computeDueDate, generateRecurrenceDates, getStableSequenceIndex } from "@/lib/scheduling/recurrence";
 import type {
   AbsenceInput,
@@ -72,15 +72,32 @@ export function generateOccurrences(params: {
       startOfDay(occurrence.scheduledDate) < today,
   );
 
-  recurrenceDates.forEach((scheduledDate) => {
+  // Resolve the next day where at least one eligible member is available.
+  // Used to push occurrences out of a household-wide absence window so they
+  // surface to the family on return rather than landing on absent assignees.
+  const resolveAvailableDate = (initialDate: Date) => {
+    const horizonDays = 60;
+    let cursor = startOfDay(initialDate);
+    for (let i = 0; i <= horizonDays; i++) {
+      if (!isHouseholdFullyAbsent(template.assignment, members, cursor, absences)) {
+        return cursor;
+      }
+      cursor = addDays(cursor, 1);
+    }
+    return startOfDay(initialDate);
+  };
+
+  recurrenceDates.forEach((originalDate) => {
     const sequenceIndex = getStableSequenceIndex(
       template.recurrence,
-      scheduledDate,
+      originalDate,
       isSliding ? { baseDate, baseIndex } : undefined,
     );
+    // Generation key stays anchored to the *intended* recurrence date so that
+    // re-runs of the generator are idempotent even when the date is shifted.
     const sourceGenerationKey = buildGenerationKey(
       template.id,
-      scheduledDate,
+      originalDate,
       template.recurrence.mode,
       sequenceIndex,
     );
@@ -95,6 +112,15 @@ export function generateOccurrences(params: {
     ) {
       return;
     }
+
+    const scheduledDate = isHouseholdFullyAbsent(
+      template.assignment,
+      members,
+      originalDate,
+      absences,
+    )
+      ? resolveAvailableDate(originalDate)
+      : originalDate;
 
     const assignedMemberId = pickAssignee({
       sequenceIndex,

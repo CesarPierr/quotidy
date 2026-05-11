@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Rocket } from "lucide-react";
+import { AlertCircle, ChevronDown, Rocket, Search, SlidersHorizontal } from "lucide-react";
 import { TaskCreationWizard } from "@/components/tasks/task-creation-wizard";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,6 @@ type TaskWorkspaceFiltersProps = {
   filterType: "active" | "history";
   setFilterType: (value: "active" | "history") => void;
   scope: "mine" | "household";
-  setScope: (value: "mine" | "household") => void;
   rooms: string[];
   members: { id: string; displayName: string }[];
   currentMemberId?: string | null;
@@ -38,7 +37,6 @@ export function TaskWorkspaceFilters({
   filterType,
   setFilterType,
   scope,
-  setScope,
   rooms,
   members,
   currentMemberId,
@@ -47,107 +45,35 @@ export function TaskWorkspaceFilters({
   householdId,
   filteredCount,
 }: TaskWorkspaceFiltersProps) {
+  const hasAdvancedFilters = roomFilter !== "all" || (scope === "household" && assigneeFilter !== "all") || search.length > 0 || overdueOnly;
+
   return (
     <>
-      <section className="app-surface flex flex-col gap-4 rounded-[2rem] p-4 sm:p-5">
-        <div className="relative">
-          <input
-            className="field h-11 w-full px-4 text-sm"
-            onChange={(event) => {
-              setSearch(event.currentTarget.value);
-            }}
-            placeholder="Rechercher une tâche, pièce..."
-            type="search"
-            value={search}
-          />
-        </div>
-
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            className="field h-11 min-w-[140px] flex-1 px-3 text-sm font-semibold sm:flex-none"
-            onChange={(event) => {
-              setRoomFilter(event.currentTarget.value);
-            }}
-            value={roomFilter}
-          >
-            <option value="all">Toutes les pièces</option>
-            {rooms.map((room) => (
-              <option key={room} value={room}>
-                {room}
-              </option>
-            ))}
-          </select>
-
-          {scope === "household" && members.length > 1 && (
-            <select
-              className="field h-11 min-w-[140px] flex-1 px-3 text-sm font-semibold sm:flex-none"
-              onChange={(event) => {
-                setAssigneeFilter(event.currentTarget.value);
-              }}
-              value={assigneeFilter}
-            >
-              <option value="all">Tout le monde</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.displayName}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {(roomFilter !== "all" || (scope === "household" && assigneeFilter !== "all") || search || overdueOnly) && (
-            <button 
-              onClick={() => {
-                setRoomFilter("all");
-                setAssigneeFilter("all");
-                setSearch("");
-                setOverdueOnly(false);
-              }}
-              className="ml-auto text-[0.65rem] font-bold uppercase tracking-wider text-coral-600 hover:underline"
-            >
-              Réinitialiser
-            </button>
-          )}
-        </div>
-      </section>
-
-      <section className="app-surface rounded-[2rem] p-5 sm:p-6 pb-0">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <h3 className="display-title text-3xl">
+      <section className="app-surface rounded-[1.35rem] p-3 sm:rounded-[1.6rem] sm:p-4">
+        <div className="grid gap-3 xl:grid-cols-[minmax(13rem,auto)_1fr_auto] xl:items-center">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <h3 className="display-title min-w-0 truncate text-2xl leading-tight sm:text-[1.65rem]">
               {search ? "Tâches correspondantes" : "Tâches à venir"}
             </h3>
-            <div aria-live="polite" className="mt-1 flex items-center gap-1.5 rounded-full border border-line bg-glass-bg px-2.5 py-1 text-[11px] font-bold text-ink-500">
+            <div aria-live="polite" className="flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-glass-bg px-2.5 py-1 text-[11px] font-bold text-ink-500">
               <span className="size-1.5 rounded-full bg-coral-500" />
               {filteredCount}
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-            {currentMemberId && (
-              <button
-                onClick={() => setScope(scope === "mine" ? "household" : "mine")}
-                className="btn-quiet flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold"
-                type="button"
-              >
-                <div className={cn("size-2 rounded-full", scope === "mine" ? "bg-coral-500" : "bg-[var(--ink-300)]")} />
-                {scope === "mine" ? "Tout le foyer" : "Mes tâches"}
-              </button>
-            )}
-
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center xl:justify-end">
             <button
               onClick={() => setFilterType(filterType === "active" ? "history" : "active")}
-              className="btn-quiet flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold"
+              className="btn-quiet flex min-h-9 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-[0.72rem] font-bold sm:justify-start sm:gap-2 sm:px-3 sm:text-xs"
               type="button"
             >
               <div className={cn("size-2 rounded-full", filterType === "active" ? "bg-leaf-500" : "bg-[var(--ink-300)]")} />
-              {filterType === "active" ? "Historique" : "À faire"}
+              <span className="truncate">{filterType === "active" ? "Historique" : "À faire"}</span>
             </button>
 
             <button
               className={cn(
-                "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold transition-all",
+                "flex min-h-9 items-center justify-center gap-1.5 rounded-xl border px-2 py-2 text-[0.72rem] font-bold transition-all sm:justify-start sm:gap-2 sm:px-3 sm:text-xs",
                 overdueOnly
                   ? "border-[var(--status-overdue-border)] bg-[var(--status-overdue-surface)] text-[var(--status-overdue-accent)] shadow-sm"
                   : "btn-quiet text-ink-500"
@@ -164,7 +90,7 @@ export function TaskWorkspaceFilters({
             {!activeRunningSession && (
               <>
                 <button
-                  className="btn-primary inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold"
+                  className="btn-primary col-span-2 inline-flex min-h-9 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold sm:col-span-1 sm:px-4"
                   onClick={() => setShowOptimizedPicker(true)}
                   type="button"
                 >
@@ -180,6 +106,80 @@ export function TaskWorkspaceFilters({
             )}
           </div>
         </div>
+
+        <details className="group mt-3 border-t border-line pt-3" open={hasAdvancedFilters || undefined}>
+          <summary className="flex cursor-pointer items-center justify-between gap-3 list-none text-[0.68rem] font-bold uppercase tracking-[0.14em] text-ink-500">
+            <span className="inline-flex items-center gap-2">
+              <SlidersHorizontal className="size-3.5" aria-hidden="true" />
+              {hasAdvancedFilters ? "Filtres actifs" : "Recherche et filtres"}
+            </span>
+            <span className="inline-flex size-7 items-center justify-center rounded-full border border-line bg-white/70 text-ink-500 transition-transform group-open:rotate-180 dark:bg-[#262830]/70">
+              <ChevronDown className="size-3.5" aria-hidden="true" />
+            </span>
+          </summary>
+
+          <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(18rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] lg:items-center">
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-500" aria-hidden="true" />
+              <input
+                className="field h-10 w-full pl-9 pr-3 text-sm sm:h-11"
+                onChange={(event) => {
+                  setSearch(event.currentTarget.value);
+                }}
+                placeholder="Rechercher une tâche, pièce..."
+                type="search"
+                value={search}
+              />
+            </label>
+
+            <select
+              className="field h-10 min-w-0 px-3 text-sm font-semibold sm:h-11 sm:min-w-[150px]"
+              onChange={(event) => {
+                setRoomFilter(event.currentTarget.value);
+              }}
+              value={roomFilter}
+            >
+              <option value="all">Toutes les pièces</option>
+              {rooms.map((room) => (
+                <option key={room} value={room}>
+                  {room}
+                </option>
+              ))}
+            </select>
+
+            {scope === "household" && members.length > 1 ? (
+              <select
+                className="field h-10 min-w-0 px-3 text-sm font-semibold sm:h-11 sm:min-w-[150px]"
+                onChange={(event) => {
+                  setAssigneeFilter(event.currentTarget.value);
+                }}
+                value={assigneeFilter}
+              >
+                <option value="all">Tout le monde</option>
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.displayName}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+
+            {hasAdvancedFilters ? (
+              <button
+                onClick={() => {
+                  setRoomFilter("all");
+                  setAssigneeFilter("all");
+                  setSearch("");
+                  setOverdueOnly(false);
+                }}
+                className="justify-self-start text-[0.65rem] font-bold uppercase tracking-wider text-coral-600 hover:underline sm:justify-self-end"
+                type="button"
+              >
+                Réinitialiser
+              </button>
+            ) : null}
+          </div>
+        </details>
       </section>
     </>
   );

@@ -28,11 +28,14 @@ type RunningSessionOccurrenceLike = {
   status: string;
 };
 
+// Internal localStorage key — kept under the legacy "quotidy:" namespace on purpose so
+// that users with an in-flight running session don't lose it through the Hearthly rebrand.
+// This string is never exposed in UI; renaming it would silently drop active sessions.
 export function getRunningSessionStorageKey(
   householdId: string,
   currentMemberId?: string | null,
 ) {
-  return `makemenage:running-session:${householdId}:${currentMemberId ?? "shared"}`;
+  return `quotidy:running-session:${householdId}:${currentMemberId ?? "shared"}`;
 }
 
 /** React event timeStamps are relative to performance.timeOrigin; convert to wall-clock. */

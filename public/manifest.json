@@ -1,6 +1,6 @@
 {
-  "name": "Hearthly",
-  "short_name": "Hearthly",
+  "name": "Quotidy",
+  "short_name": "Quotidy",
   "description": "Répartition équitable du ménage et de l'épargne pour votre foyer.",
   "start_url": "/app",
   "display": "standalone",

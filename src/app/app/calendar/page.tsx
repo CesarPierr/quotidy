@@ -72,6 +72,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         endDate: availability.endDate,
         notes: availability.notes,
         member: {
+          id: member.id,
           displayName: member.displayName,
           color: member.color,
         },
@@ -90,17 +91,17 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const nextDaysHref = baseHref(`&monthOffset=${monthOffset}&dayOffset=${dayOffset + 4}`);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-      <section className="space-y-6">
-        <div className="app-surface glow-card rounded-[2rem] p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="grid gap-4 sm:gap-6 xl:grid-cols-[1fr_380px]">
+      <section className="space-y-4 sm:space-y-6">
+        <div className="px-1">
+          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="section-kicker">Planifier</p>
-              <h2 className="display-title mt-2 truncate text-3xl leading-tight sm:text-4xl">
+              <p className="section-kicker text-[0.62rem] sm:text-xs">Planifier</p>
+              <h2 className="display-title mt-1 truncate text-2xl leading-tight sm:mt-2 sm:text-4xl">
                 {format(startDate, "d MMM", { locale: fr })} — {format(endDate, "d MMM yyyy", { locale: fr })}
               </h2>
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <p className="text-sm leading-6 text-ink-700">
+              <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3 sm:gap-3">
+                <p className="text-xs leading-5 text-ink-700 sm:text-sm sm:leading-6">
                   Prochains jours et organisation.
                 </p>
                 <Link
@@ -139,20 +140,20 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </Link>
               </div>
 
-              <div className="flex w-full items-center justify-between gap-2 sm:hidden">
+              <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:hidden">
                 <Link
                   href={prevDaysHref}
-                  className="btn-secondary flex flex-1 items-center justify-center gap-2 py-3 text-xs font-bold"
+                  className="btn-secondary flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-xs font-bold"
                 >
                   <ChevronLeft className="size-4" />
-                  Précédent
+                  Préc.
                 </Link>
-                <Link href={todayHref} className="btn-secondary px-4 py-3 text-xs font-bold">
+                <Link href={todayHref} className="btn-secondary flex min-h-10 items-center px-3 py-2 text-xs font-bold">
                   Auj.
                 </Link>
                 <Link
                   href={nextDaysHref}
-                  className="btn-secondary flex flex-1 items-center justify-center gap-2 py-3 text-xs font-bold"
+                  className="btn-secondary flex min-h-10 items-center justify-center gap-1.5 px-2 py-2 text-xs font-bold"
                 >
                   Suivant
                   <ChevronRight className="size-4" />
@@ -161,7 +162,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-4 hidden flex-wrap items-center gap-2 sm:flex">
             <span className="accent-pill">
               <span className="accent-pill-dot" style={{ backgroundColor: "var(--coral-500)" }} />
               Tâche du planning
@@ -176,10 +177,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-4" role="group" aria-label="Filtrer">
+          <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar sm:mt-4 sm:flex-wrap sm:overflow-visible" role="group" aria-label="Filtrer">
             <Link
               href={`/app/calendar?household=${context.household.id}&monthOffset=${monthOffset}&dayOffset=${dayOffset}${isModifiedFilter ? "&modified=1" : ""}`}
-              className={`accent-pill transition-all ${!activeMember ? "ring-2 ring-[var(--sky-500)] ring-offset-1 font-semibold" : "opacity-60 hover:opacity-100"}`}
+              className={`accent-pill shrink-0 transition-all ${!activeMember ? "ring-2 ring-[var(--sky-500)] ring-offset-1 font-semibold" : "opacity-60 hover:opacity-100"}`}
               aria-current={!activeMember ? "true" : undefined}
             >
               Tous les membres
@@ -188,7 +189,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
               <Link
                 key={m.id}
                 href={`/app/calendar?household=${context.household.id}&monthOffset=${monthOffset}&dayOffset=${dayOffset}&member=${m.id}${isModifiedFilter ? "&modified=1" : ""}`}
-                className={`accent-pill transition-all ${activeMember?.id === m.id ? "ring-2 ring-offset-1 font-semibold" : "opacity-60 hover:opacity-100"}`}
+                className={`accent-pill shrink-0 transition-all ${activeMember?.id === m.id ? "ring-2 ring-offset-1 font-semibold" : "opacity-60 hover:opacity-100"}`}
                 style={activeMember?.id === m.id ? ({ "--tw-ring-color": m.color } as React.CSSProperties) : undefined}
                 aria-current={activeMember?.id === m.id ? "true" : undefined}
               >

@@ -27,12 +27,15 @@ export function verifyIcalToken(token: string): IcalTokenPayload | null {
   const encoded = token.slice(0, dot);
   const sig = token.slice(dot + 1);
   const expected = crypto.createHmac("sha256", secret()).update(encoded).digest("base64url");
+  const sigBuffer = Buffer.from(sig);
+  const expectedBuffer = Buffer.from(expected);
 
-  if (!crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  if (sigBuffer.length !== expectedBuffer.length) return null;
+  if (!crypto.timingSafeEqual(sigBuffer, expectedBuffer)) return null;
 
   const payload = Buffer.from(encoded, "base64url").toString();
   const parts = payload.split(":");
-  if (parts.length < 1) return null;
+  if (!parts[0] || parts.length > 2) return null;
 
   return {
     householdId: parts[0],

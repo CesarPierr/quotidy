@@ -16,28 +16,28 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hearthly",
-    template: "%s · Hearthly",
+    default: "Quotidy",
+    template: "%s · Quotidy",
   },
   description: "Organisez vos routines et votre budget. Partagez les responsabilités équitablement.",
   keywords: ["gestion foyer", "tâches ménagères", "épargne partagée", "planning familial", "équité"],
-  authors: [{ name: "Hearthly" }],
+  authors: [{ name: "Quotidy" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Hearthly",
+    title: "Quotidy",
   },
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    title: "Hearthly — Gestion équitable du foyer",
+    title: "Quotidy — Gestion équitable du foyer",
     description: "Organisez vos routines et votre budget. Partagez les responsabilités équitablement.",
-    siteName: "Hearthly",
+    siteName: "Quotidy",
   },
   twitter: {
     card: "summary",
-    title: "Hearthly",
+    title: "Quotidy",
     description: "Organisez vos routines et votre budget. Partagez les responsabilités équitablement.",
   },
   other: {

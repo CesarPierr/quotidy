@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const SESSION_COOKIE = "makemenage_session";
+// Read both during the rebrand transition; sessions issued before the rename
+// remain valid until they expire naturally (max 21 days).
+const SESSION_COOKIE = "quotidy_session";
+const LEGACY_SESSION_COOKIE = "hearthly_session";
 const CSRF_COOKIE = "__csrf";
 // Routes that don't require a CSRF token (unauthenticated, form-based public flows,
 // or native-form endpoints protected by SameSite=Lax cookies)
@@ -10,13 +13,25 @@ const CSRF_EXEMPT_PREFIXES = [
   "/api/invitations/",   // accept invitation via native form on /join/[token]
   "/api/households",      // household create/leave via native form
   "/api/metrics",         // UX telemetry beacon (sendBeacon can't set custom headers)
+  "/api/feedback",        // bug-report can fire from a crashed shell where the CSRF cookie was lost
 ];
 
-async function deriveCsrfToken(sessionToken: string): Promise<string> {
-  const secret = process.env.CSRF_SECRET ?? "makemenage-csrf-default";
-  if (!process.env.CSRF_SECRET && process.env.NODE_ENV === "production") {
-    console.warn("[security] CSRF_SECRET is not set — using a hardcoded default. Set CSRF_SECRET in production.");
+function resolveCsrfSecret(): string {
+  const secret = process.env.CSRF_SECRET;
+  if (secret && secret.length >= 16) return secret;
+
+  // Hard-fail in production: a predictable secret is equivalent to no CSRF protection.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "[security] CSRF_SECRET must be set to a strong random string (>=16 chars) in production.",
+    );
   }
+  // Dev fallback only — not safe for production traffic.
+  return "quotidy-dev-only-csrf-fallback";
+}
+
+async function deriveCsrfToken(sessionToken: string): Promise<string> {
+  const secret = resolveCsrfSecret();
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(secret),
@@ -77,7 +92,9 @@ function maybeCleanup() {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const sessionToken = request.cookies.get(SESSION_COOKIE)?.value;
+  const sessionToken =
+    request.cookies.get(SESSION_COOKIE)?.value ??
+    request.cookies.get(LEGACY_SESSION_COOKIE)?.value;
   const rateLimitDisabled = process.env.RATE_LIMIT_DISABLED === "1";
   const csrfDisabled = process.env.CSRF_DISABLED === "1";
   const requestStart = Date.now();
@@ -122,9 +139,18 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Per-request correlation id — propagated through downstream logs/errors so a single
+  // user complaint can be traced across rate-limit hits, CSRF failures and route handlers.
+  const requestId =
+    request.headers.get("x-request-id")?.slice(0, 64) ??
+    crypto.randomUUID();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-request-id", requestId);
+
   // Set __csrf cookie on page requests when authenticated (JS-readable double-submit).
   // Always overwrite — if CSRF_SECRET rotates, stale cookies self-heal on the next page load.
-  const response = NextResponse.next();
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("x-request-id", requestId);
   if (sessionToken) {
     const csrfToken = await deriveCsrfToken(sessionToken);
     const isSecure = request.nextUrl.protocol === "https:";
@@ -152,6 +178,7 @@ export async function middleware(request: NextRequest) {
           method: request.method,
           path: pathname,
           duration_ms: duration,
+          request_id: requestId,
         }),
       );
     }
