@@ -102,13 +102,16 @@
 
 html {
   scroll-behavior: smooth;
+  background-color: var(--sand-50);
 }
 
 body {
   background-color: var(--sand-50);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--ink-950);
   font-family: var(--font-sans), sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   /* optimizeLegibility can cause issues on iOS (flicker/missing text) */
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
@@ -121,13 +124,15 @@ body {
 body::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
   background:
     radial-gradient(circle at top left, rgba(216, 100, 61, 0.22), transparent 40%),
     radial-gradient(circle at top right, rgba(239, 226, 205, 0.7), transparent 35%),
-    radial-gradient(circle at bottom right, rgba(56, 115, 93, 0.15), transparent 30%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 25%);
+    radial-gradient(circle at bottom right, rgba(56, 115, 93, 0.15), transparent 30%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   background-size: cover;
