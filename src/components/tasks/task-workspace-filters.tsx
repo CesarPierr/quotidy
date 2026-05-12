@@ -18,7 +18,6 @@ type TaskWorkspaceFiltersProps = {
   scope: "mine" | "household";
   rooms: string[];
   members: { id: string; displayName: string }[];
-  currentMemberId?: string | null;
   activeRunningSession: boolean;
   setShowOptimizedPicker: (value: boolean) => void;
   householdId: string;
@@ -39,7 +38,6 @@ export function TaskWorkspaceFilters({
   scope,
   rooms,
   members,
-  currentMemberId,
   activeRunningSession,
   setShowOptimizedPicker,
   householdId,

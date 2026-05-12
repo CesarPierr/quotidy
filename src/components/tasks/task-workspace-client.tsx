@@ -313,7 +313,6 @@ export function TaskWorkspaceClient({
         scope={effectiveScope}
         rooms={rooms}
         members={members}
-        currentMemberId={currentMemberId}
         activeRunningSession={Boolean(activeRunningSession)}
         setShowOptimizedPicker={setShowOptimizedPicker}
         householdId={householdId}

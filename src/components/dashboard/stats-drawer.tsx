@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
-import { ArrowRight, BarChart2, CheckCircle2, Pencil, RotateCcw, SkipForward } from "lucide-react";
+import { BarChart2, CheckCircle2 } from "lucide-react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 
 export type MemberStat = {
@@ -51,16 +48,7 @@ export type StatsDrawerProps = {
   globalStats?: GlobalStats;
 };
 
-function getActivityMeta(actionType: string) {
-  if (actionType === "completed") return { icon: CheckCircle2, verb: "a validé", accent: "var(--leaf-600)" };
-  if (actionType === "skipped") return { icon: SkipForward, verb: "a passé", accent: "var(--ink-500)" };
-  if (actionType === "rescheduled") return { icon: RotateCcw, verb: "a reporté", accent: "var(--sky-600)" };
-  if (actionType === "edited") return { icon: Pencil, verb: "a modifié", accent: "var(--coral-600)" };
-  if (actionType === "reassigned") return { icon: ArrowRight, verb: "a réattribué", accent: "var(--coral-600)" };
-  return { icon: ArrowRight, verb: "a mis à jour", accent: "var(--ink-500)" };
-}
-
-export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivity = [], householdId, globalStats }: StatsDrawerProps) {
+export function StatsDrawer({ streak, memberStats, rollingMetrics, globalStats }: StatsDrawerProps) {
   const [open, setOpen] = useState(false);
 
   const totalByPeriod = rollingMetrics.map((p) => {

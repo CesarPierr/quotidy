@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { CalendarDays, Compass, Home, LayoutGrid, LogOut, PiggyBank, Settings2 } from "lucide-react";
+import { CalendarDays, Compass, LayoutGrid, LogOut, PiggyBank, Settings2 } from "lucide-react";
 
 import { FeatureTour } from "@/components/onboarding/feature-tour";
 import { FeedbackButton } from "@/components/shared/feedback-button";
