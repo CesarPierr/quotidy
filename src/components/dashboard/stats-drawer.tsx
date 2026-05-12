@@ -35,12 +35,20 @@ export type ActivityEntry = {
   taskTitle: string;
 };
 
+export type GlobalStats = {
+  completedTasks: number;
+  completedMinutes: number;
+  upcomingTasks: number;
+  upcomingMinutes: number;
+};
+
 export type StatsDrawerProps = {
   streak: number;
   memberStats: MemberStat[];
   rollingMetrics: RollingPeriod[];
   recentActivity?: ActivityEntry[];
   householdId?: string;
+  globalStats?: GlobalStats;
 };
 
 function getActivityMeta(actionType: string) {
@@ -52,7 +60,7 @@ function getActivityMeta(actionType: string) {
   return { icon: ArrowRight, verb: "a mis à jour", accent: "var(--ink-500)" };
 }
 
-export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivity = [], householdId }: StatsDrawerProps) {
+export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivity = [], householdId, globalStats }: StatsDrawerProps) {
   const [open, setOpen] = useState(false);
 
   const totalByPeriod = rollingMetrics.map((p) => ({
@@ -93,6 +101,40 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
             </div>
           )}
 
+          {globalStats && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="soft-panel px-4 py-4 border border-[var(--leaf-500)]/20 bg-[var(--leaf-500)]/5 dark:bg-[var(--leaf-500)]/10">
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-leaf-600 mb-1 flex items-center gap-1.5">
+                  <CheckCircle2 className="size-3.5" />
+                  Impact
+                </p>
+                <div className="flex items-baseline gap-1.5 mt-2">
+                  <span className="text-3xl font-bold text-ink-950">
+                    {Math.floor(globalStats.completedMinutes / 60) > 0 ? `${Math.floor(globalStats.completedMinutes / 60)}h` : ""}
+                    {globalStats.completedMinutes % 60 > 0 ? `${(globalStats.completedMinutes % 60).toString().padStart(Math.floor(globalStats.completedMinutes / 60) > 0 ? 2 : 1, "0")}m` : (globalStats.completedMinutes === 0 ? "0m" : "")}
+                  </span>
+                </div>
+                <p className="text-xs text-ink-500 font-medium mt-1">
+                  <strong>{globalStats.completedTasks}</strong> tâches validées
+                </p>
+              </div>
+              <div className="soft-panel px-4 py-4 border border-[var(--sky-500)]/20 bg-[var(--sky-500)]/5 dark:bg-[var(--sky-500)]/10">
+                <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-sky-600 mb-1 flex items-center gap-1.5">
+                  <BarChart2 className="size-3.5" />
+                  À venir
+                </p>
+                <div className="flex items-baseline gap-1.5 mt-2">
+                  <span className="text-3xl font-bold text-ink-950">{globalStats.upcomingTasks}</span>
+                  <span className="text-sm font-semibold text-ink-500">tâches</span>
+                </div>
+                <p className="text-xs text-ink-500 font-medium mt-1">
+                  ~ {Math.floor(globalStats.upcomingMinutes / 60) > 0 ? `${Math.floor(globalStats.upcomingMinutes / 60)}h` : ""}
+                  {globalStats.upcomingMinutes % 60 > 0 ? `${(globalStats.upcomingMinutes % 60).toString().padStart(Math.floor(globalStats.upcomingMinutes / 60) > 0 ? 2 : 1, "0")}m` : (globalStats.upcomingMinutes === 0 ? "0m" : "")} de charge
+                </p>
+              </div>
+            </div>
+          )}
+
           <div>
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ink-500 mb-3">
               Complétions récentes
@@ -107,46 +149,7 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
             </div>
           </div>
 
-          {recentActivity.length > 0 && (
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ink-500">
-                  Dernières activités
-                </p>
-                {householdId ? (
-                  <Link
-                    href={`/app/settings/activity?household=${householdId}`}
-                    className="text-[0.65rem] font-semibold text-coral-600 hover:underline"
-                  >
-                    Tout voir →
-                  </Link>
-                ) : null}
-              </div>
-              <ul className="space-y-1.5" aria-label="Activité récente">
-                {recentActivity.slice(0, 5).map((entry) => {
-                  const { icon: Icon, verb, accent } = getActivityMeta(entry.actionType);
-                  return (
-                    <li key={entry.id} className="flex items-center gap-2.5 rounded-xl px-2 py-1.5">
-                      <span
-                        className="flex size-6 shrink-0 items-center justify-center rounded-full"
-                        style={{ backgroundColor: `${accent}18`, color: accent }}
-                      >
-                        <Icon className="size-3" aria-hidden="true" />
-                      </span>
-                      <p className="min-w-0 flex-1 text-xs leading-4">
-                        <strong className="font-semibold text-ink-950">{entry.actorName}</strong>{" "}
-                        {verb}{" "}
-                        <span className="font-semibold text-ink-950">{entry.taskTitle}</span>{" "}
-                        <span className="text-ink-500">
-                          {formatDistanceToNow(new Date(entry.createdAt), { locale: fr, addSuffix: true })}
-                        </span>
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+
 
           {memberStats.length > 0 && (
             <div>

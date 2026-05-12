@@ -233,6 +233,10 @@ textarea {
   background: rgba(255, 255, 255, 0.96);
 }
 
+.field-with-icon {
+  padding-left: 2.75rem !important;
+}
+
 .field-label {
   display: grid;
   gap: 0.45rem;

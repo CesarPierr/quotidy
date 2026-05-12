@@ -99,6 +99,17 @@ export function DashboardClient({
   const isPersonal = view === "moi";
   const metrics = isPersonal ? moiMetrics : foyerMetrics;
 
+  const globalStats = {
+    completedTasks: occurrences.filter(o => o.status === "completed").length,
+    completedMinutes: occurrences
+      .filter(o => o.status === "completed")
+      .reduce((sum, o) => sum + (o.actualMinutes ?? o.taskTemplate.estimatedMinutes), 0),
+    upcomingTasks: occurrences.filter(o => ["planned", "due", "rescheduled", "overdue"].includes(o.status)).length,
+    upcomingMinutes: occurrences
+      .filter(o => ["planned", "due", "rescheduled", "overdue"].includes(o.status))
+      .reduce((sum, o) => sum + o.taskTemplate.estimatedMinutes, 0),
+  };
+
   return (
     <div className="space-y-4">
       <UxEventTracker
@@ -134,6 +145,7 @@ export function DashboardClient({
         rollingMetrics={rollingMetrics}
         recentActivity={recentActivity}
         householdId={householdId}
+        globalStats={globalStats}
       />
 
       <TaskWorkspaceClient

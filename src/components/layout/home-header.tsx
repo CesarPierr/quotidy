@@ -16,6 +16,12 @@ type HomeHeaderProps = {
   rollingMetrics: RollingPeriod[];
   recentActivity?: ActivityEntry[];
   householdId?: string;
+  globalStats?: {
+    completedTasks: number;
+    completedMinutes: number;
+    upcomingTasks: number;
+    upcomingMinutes: number;
+  };
 };
 
 export function HomeHeader({
@@ -30,12 +36,13 @@ export function HomeHeader({
   rollingMetrics,
   recentActivity,
   householdId,
+  globalStats,
 }: HomeHeaderProps) {
   const dayLabel = format(new Date(), "EEEE d MMMM", { locale: fr });
   const progressPct = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
 
   return (
-    <section className="app-surface rounded-[1.35rem] p-3.5 sm:rounded-[1.6rem] sm:p-4">
+    <section className="relative app-surface rounded-[1.35rem] p-3.5 sm:rounded-[1.6rem] sm:p-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(15rem,1fr)_minmax(20rem,34rem)_auto] lg:items-start">
         <div className="min-w-0">
           <p className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:text-xs sm:tracking-[0.16em]">
@@ -100,13 +107,16 @@ export function HomeHeader({
           ) : null}
         </div>
 
-        <StatsDrawer
-          streak={streak}
-          memberStats={memberStats}
-          rollingMetrics={rollingMetrics}
-          recentActivity={recentActivity}
-          householdId={householdId}
-        />
+        <div className="absolute right-3.5 top-3.5 lg:static lg:right-auto lg:top-auto">
+          <StatsDrawer
+            streak={streak}
+            memberStats={memberStats}
+            rollingMetrics={rollingMetrics}
+            recentActivity={recentActivity}
+            householdId={householdId}
+            globalStats={globalStats}
+          />
+        </div>
       </div>
     </section>
   );

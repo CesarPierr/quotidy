@@ -119,10 +119,10 @@ export function TaskWorkspaceFilters({
           </summary>
 
           <div className="mt-3 grid gap-2 lg:grid-cols-[minmax(18rem,1fr)_minmax(10rem,14rem)_minmax(10rem,14rem)_auto] lg:items-center">
-            <label className="relative block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-500" aria-hidden="true" />
+            <label className="group relative block">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-400 transition-colors duration-200 group-focus-within:text-coral-500" aria-hidden="true" />
               <input
-                className="field h-10 w-full pl-9 pr-3 text-sm sm:h-11"
+                className="field field-with-icon h-10 w-full pr-3 text-sm transition-all duration-200 sm:h-11"
                 onChange={(event) => {
                   setSearch(event.currentTarget.value);
                 }}

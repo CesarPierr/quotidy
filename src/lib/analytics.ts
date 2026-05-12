@@ -64,7 +64,7 @@ export function buildRollingCompletionMetrics(members: MemberLike[], occurrences
   const activeMembers = members.filter((member) => member.isActive);
   const now = new Date();
 
-  return [7, 14, 30].map((days) => {
+  return [3, 7, 15].map((days) => {
     const threshold = subDays(now, days);
     const completed = occurrences.filter(
       (occurrence) =>
