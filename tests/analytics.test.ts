@@ -47,7 +47,7 @@ describe("analytics", () => {
     expect(metrics.fairness[1]?.deltaMinutes).toBeLessThan(0);
   });
 
-  it("computes rolling completion stats over 7, 14, and 30 days", () => {
+  it("computes rolling completion stats over 3, 7, and 15 days", () => {
     const metrics = buildRollingCompletionMetrics(
       [
         { id: "A", displayName: "Alice", color: "#000", isActive: true },
@@ -66,7 +66,7 @@ describe("analytics", () => {
           assignedMemberId: "B",
           completedByMemberId: "B",
           actualMinutes: null,
-          completedAt: new Date("2026-04-02T12:00:00Z"),
+          completedAt: new Date("2026-04-18T12:00:00Z"),
           status: "completed",
           taskTemplate: { estimatedMinutes: 20 },
         },
@@ -74,20 +74,21 @@ describe("analytics", () => {
           assignedMemberId: "B",
           completedByMemberId: "B",
           actualMinutes: 18,
-          completedAt: new Date("2026-03-10T12:00:00Z"),
+          completedAt: new Date("2026-04-10T12:00:00Z"),
           status: "completed",
           taskTemplate: { estimatedMinutes: 20 },
         },
       ],
     );
 
-    expect(metrics[0]?.days).toBe(7);
+    expect(metrics[0]?.days).toBe(3);
     expect(metrics[0]?.byMember[0]?.completedCount).toBe(1);
     expect(metrics[0]?.byMember[0]?.minutesSpent).toBe(35);
     expect(metrics[0]?.byMember[1]?.completedCount).toBe(0);
-    expect(metrics[1]?.days).toBe(14);
-    expect(metrics[2]?.days).toBe(30);
-    expect(metrics[2]?.byMember[1]?.completedCount).toBe(1);
-    expect(metrics[2]?.byMember[1]?.minutesSpent).toBe(20);
+    expect(metrics[1]?.days).toBe(7);
+    expect(metrics[1]?.byMember[1]?.completedCount).toBe(1);
+    expect(metrics[2]?.days).toBe(15);
+    expect(metrics[2]?.byMember[1]?.completedCount).toBe(2);
+    expect(metrics[2]?.byMember[1]?.minutesSpent).toBe(38);
   });
 });

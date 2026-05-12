@@ -101,7 +101,7 @@ describe("OpenClaw integration", () => {
       regenerateKey: true,
     });
 
-    expect(result.apiKey).toMatch(/^mmg_oc_/);
+    expect(result.apiKey).toMatch(/^qtd_oc_/);
     expect(result.integration.isEnabled).toBe(true);
     expect(dbMocks.householdIntegrationUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
