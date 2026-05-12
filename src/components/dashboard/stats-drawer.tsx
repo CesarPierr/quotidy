@@ -63,10 +63,11 @@ function getActivityMeta(actionType: string) {
 export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivity = [], householdId, globalStats }: StatsDrawerProps) {
   const [open, setOpen] = useState(false);
 
-  const totalByPeriod = rollingMetrics.map((p) => ({
-    days: p.days,
-    total: p.byMember.reduce((s, m) => s + m.completedCount, 0),
-  }));
+  const totalByPeriod = rollingMetrics.map((p) => {
+    const totalCount = p.byMember.reduce((s, m) => s + m.completedCount, 0);
+    const totalMinutes = p.byMember.reduce((s, m) => s + m.minutesSpent, 0);
+    return { days: p.days, totalCount, totalMinutes };
+  });
 
   return (
     <>
@@ -121,7 +122,7 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
               <div className="soft-panel px-4 py-4 border border-[var(--sky-500)]/20 bg-[var(--sky-500)]/5 dark:bg-[var(--sky-500)]/10">
                 <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-sky-600 mb-1 flex items-center gap-1.5">
                   <BarChart2 className="size-3.5" />
-                  À venir
+                  À venir (7j)
                 </p>
                 <div className="flex items-baseline gap-1.5 mt-2">
                   <span className="text-3xl font-bold text-ink-950">{globalStats.upcomingTasks}</span>
@@ -140,10 +141,17 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
               Complétions récentes
             </p>
             <div className="grid grid-cols-3 gap-2">
-              {totalByPeriod.map(({ days, total }) => (
-                <div key={days} className="soft-panel text-center px-3 py-4">
-                  <p className="text-2xl font-bold text-ink-950">{total}</p>
-                  <p className="mt-1 text-[0.65rem] text-ink-500">{days} derniers jours</p>
+              {totalByPeriod.map(({ days, totalCount, totalMinutes }) => (
+                <div key={days} className="soft-panel text-center px-3 py-3">
+                  <div className="flex items-baseline justify-center gap-1.5">
+                    <span className="text-2xl font-bold text-ink-950">{totalCount}</span>
+                    <span className="text-[0.65rem] text-ink-500 font-medium">tâches</span>
+                  </div>
+                  <p className="mt-0.5 text-xs font-semibold text-leaf-600">
+                    {Math.floor(totalMinutes / 60) > 0 ? `${Math.floor(totalMinutes / 60)}h` : ""}
+                    {totalMinutes % 60 > 0 ? `${(totalMinutes % 60).toString().padStart(Math.floor(totalMinutes / 60) > 0 ? 2 : 1, "0")}m` : "0m"}
+                  </p>
+                  <p className="mt-1.5 text-[0.6rem] uppercase tracking-wider text-ink-500">{days} derniers jours</p>
                 </div>
               ))}
             </div>
@@ -154,7 +162,7 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
           {memberStats.length > 0 && (
             <div>
               <p className="text-[0.65rem] font-bold uppercase tracking-[0.14em] text-ink-500 mb-3">
-                Charge par membre (30j)
+                Répartition des responsabilités (30j)
               </p>
               <div className="space-y-2">
                 {memberStats.map((m) => {
@@ -170,8 +178,8 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
                           />
                           <span className="truncate font-medium text-ink-950">{m.displayName}</span>
                         </div>
-                        <span className="shrink-0 text-xs text-ink-500">
-                          {m.completedCount} tâche{m.completedCount > 1 ? "s" : ""} · {Math.round(m.completionRate)}%
+                        <span className="shrink-0 text-xs font-semibold text-ink-700">
+                          {Math.floor(m.plannedMinutes / 60) > 0 ? `${Math.floor(m.plannedMinutes / 60)}h` : ""}{m.plannedMinutes % 60}m à charge
                         </span>
                       </div>
                       <div className="h-1.5 rounded-full bg-line overflow-hidden">
@@ -180,6 +188,9 @@ export function StatsDrawer({ streak, memberStats, rollingMetrics, recentActivit
                           style={{ width: `${barWidth}%`, backgroundColor: m.color }}
                         />
                       </div>
+                      <p className="text-[0.65rem] text-ink-500 text-right mt-0.5">
+                        dont {Math.round(m.completionRate)}% réalisées ({m.completedCount} tâches)
+                      </p>
                     </div>
                   );
                 })}

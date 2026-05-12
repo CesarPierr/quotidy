@@ -99,15 +99,20 @@ export function DashboardClient({
   const isPersonal = view === "moi";
   const metrics = isPersonal ? moiMetrics : foyerMetrics;
 
+  const now = new Date();
+  const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const upcomingTasksArr = occurrences.filter(o => 
+    ["planned", "due", "rescheduled", "overdue"].includes(o.status) &&
+    new Date(o.scheduledDate) <= next7Days
+  );
+
   const globalStats = {
     completedTasks: occurrences.filter(o => o.status === "completed").length,
     completedMinutes: occurrences
       .filter(o => o.status === "completed")
       .reduce((sum, o) => sum + (o.actualMinutes ?? o.taskTemplate.estimatedMinutes), 0),
-    upcomingTasks: occurrences.filter(o => ["planned", "due", "rescheduled", "overdue"].includes(o.status)).length,
-    upcomingMinutes: occurrences
-      .filter(o => ["planned", "due", "rescheduled", "overdue"].includes(o.status))
-      .reduce((sum, o) => sum + o.taskTemplate.estimatedMinutes, 0),
+    upcomingTasks: upcomingTasksArr.length,
+    upcomingMinutes: upcomingTasksArr.reduce((sum, o) => sum + o.taskTemplate.estimatedMinutes, 0),
   };
 
   return (
