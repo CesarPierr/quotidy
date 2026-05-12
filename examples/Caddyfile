@@ -1,4 +1,4 @@
-http://{$APP_HOST} {
+{$APP_HOST} {
   encode gzip zstd
   reverse_proxy app:3000
 }

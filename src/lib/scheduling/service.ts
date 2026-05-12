@@ -1,6 +1,6 @@
 import "server-only";
 
-import { addDays, endOfDay, startOfDay } from "date-fns";
+import { addDays, differenceInDays, endOfDay, startOfDay } from "date-fns";
 import { db } from "@/lib/db";
 import { generateOccurrences } from "@/lib/scheduling/generator";
 import { buildGenerationKey, computeDueDate, computeNextAnchorAfter } from "@/lib/scheduling/recurrence";
@@ -126,8 +126,9 @@ export async function syncHouseholdOccurrences(
       }
 
       const isPastOrDone = ["completed", "skipped"].includes(existing.status);
+      const isSliding = task.recurrenceRule?.mode === "SLIDING";
       const isRescheduled = existing.status === "rescheduled";
-      const isProtected = (existing.isManuallyModified || isRescheduled) && !options?.forceOverwriteManual;
+      const isProtected = (existing.isManuallyModified || (isRescheduled && !isSliding)) && !options?.forceOverwriteManual;
 
       if (isPastOrDone) {
         continue;
@@ -233,23 +234,11 @@ export async function realignOverdueRecurrences(householdId: string) {
     if (!nextOccurrence) continue;
 
     const rule = task.recurrenceRule;
-    const newAnchor = computeNextAnchorAfter(
-      {
-        type: rule.type,
-        mode: rule.mode,
-        interval: rule.interval,
-        weekdays: parseNumberArray(rule.weekdays),
-        dayOfMonth: rule.dayOfMonth,
-        anchorDate: rule.anchorDate,
-        dueOffsetDays: rule.dueOffsetDays,
-        config: rule.config,
-      },
-      today,
-    );
+    const delayDeltaDays = differenceInDays(today, startOfDay(latestOverdue.scheduledDate));
+    
+    if (delayDeltaDays <= 0) continue;
 
-    if (startOfDay(nextOccurrence.scheduledDate) >= startOfDay(newAnchor)) {
-      continue;
-    }
+    const newAnchor = addDays(startOfDay(rule.anchorDate), delayDeltaDays);
 
     await db.recurrenceRule.update({
       where: { id: rule.id },
@@ -564,11 +553,12 @@ export async function rescheduleOccurrence(params: {
     });
 
     if (ruleRecord) {
-      // For FIXED mode, we still move the anchor to the new date to "baseline" it.
-      if (ruleRecord.mode === "FIXED") {
+      // Propagation: shift the anchor by the same delta to move the whole future sequence.
+      const deltaDays = differenceInDays(startOfDay(params.scheduledDate), startOfDay(existing.scheduledDate));
+      if (deltaDays !== 0) {
         await db.recurrenceRule.update({
           where: { id: existing.taskTemplate.recurrenceRuleId },
-          data: { anchorDate: params.scheduledDate },
+          data: { anchorDate: addDays(startOfDay(ruleRecord.anchorDate), deltaDays) },
         });
       }
 

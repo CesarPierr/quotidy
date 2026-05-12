@@ -43,6 +43,7 @@
 .docker-compose.prod.yml.tmp
 quotidy-db-data/
 quotidy-postgres-prod-data/
+/backups/
 
 # vercel
 .vercel

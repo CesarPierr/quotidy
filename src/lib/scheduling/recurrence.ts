@@ -95,11 +95,18 @@ export function generateRecurrenceDates(
 
   if (rule.type === "weekly") {
     const weekdays = (rule.weekdays?.length ? rule.weekdays : [getDay(anchor)]).sort();
+    const interval = Math.max(1, rule.interval || 1);
     let cursor = start;
+
+    if (isSliding && options?.baseDate) {
+      // In sliding mode, we must at least move past the current occurrence.
+      // We start looking for the next weekday from tomorrow.
+      cursor = addDays(anchor, 1);
+    }
 
     while (!isAfter(cursor, end)) {
       if (!isBefore(cursor, anchor) && weekdays.includes(getDay(cursor))) {
-        // In sliding mode, we might want to skip the base day itself
+        // In sliding mode, we skip the base day itself
         if (!(isSliding && options?.baseDate && sameDay(cursor, anchor))) {
           dates.push(cursor);
         }
