@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, LogOut } from "lucide-react";
+import { ChevronsUpDown, Compass, HomeIcon, LogOut } from "lucide-react";
 
+import { BottomSheet, BottomSheetAction } from "@/components/ui/bottom-sheet";
 import { FeatureTour } from "@/components/onboarding/feature-tour";
 import { FeedbackButton } from "@/components/shared/feedback-button";
 import { PWAInstallBanner } from "@/components/shared/pwa-install-banner";
@@ -42,6 +43,12 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
   const visibleSidebarSections = visibleSections(savingsEnabled);
   const currentApp = appSections.find((s) => isActivePath(pathname, s.href));
   const [tourOpen, setTourOpen] = useState(false);
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+
+  function goTo(href: string) {
+    setSwitcherOpen(false);
+    router.push(`${href}${suffix}`);
+  }
 
   // Prefetch the 5 apps on mount for instant navigation
   useEffect(() => {
@@ -145,18 +152,61 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
 
       {/* Main Content Area */}
       <div className="flex flex-1 min-w-0 flex-col px-3 pb-6 sm:px-5 lg:px-0 lg:pb-0">
-        {/* Mobile top bar — logo returns to the launcher; shows the current app */}
+        {/* Mobile top bar — logo = home (launcher); app name = one-tap app switcher */}
         <div
-          className="app-surface sticky top-0 z-30 mb-3 flex items-center gap-3 rounded-b-2xl px-4 py-2.5 lg:hidden"
-          style={{ paddingTop: "calc(0.625rem + env(safe-area-inset-top, 0px))" }}
+          className="app-surface sticky top-0 z-30 mb-3 flex items-center gap-2 rounded-b-2xl px-3 py-2 lg:hidden"
+          style={{ paddingTop: "calc(0.5rem + env(safe-area-inset-top, 0px))" }}
         >
-          <Link aria-label="Accueil" href={`/app${suffix}`} className="flex items-center">
+          <Link
+            aria-label="Accueil"
+            href={`/app${suffix}`}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl hover:bg-black/[0.04]"
+          >
             <QuotidyLogo size={26} withText={false} />
           </Link>
-          <Link href={`/app${suffix}`} className="min-w-0 truncate text-sm font-bold text-ink-950">
-            {currentApp?.label ?? "Quotidy"}
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={switcherOpen}
+            onClick={() => setSwitcherOpen(true)}
+            className="flex min-w-0 flex-1 items-center gap-1.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-black/[0.04] active:scale-[0.99]"
+          >
+            <span className="min-w-0 truncate text-sm font-bold text-ink-950">
+              {currentApp?.label ?? "Quotidy"}
+            </span>
+            <ChevronsUpDown className="size-4 shrink-0 text-ink-500" />
+          </button>
+          <Link
+            aria-label="Accueil"
+            href={`/app${suffix}`}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl text-ink-500 hover:bg-black/[0.04]"
+          >
+            <HomeIcon className="size-5" />
           </Link>
         </div>
+
+        {/* Mobile app switcher — one tap to any of the 5 apps from anywhere */}
+        <BottomSheet isOpen={switcherOpen} onClose={() => setSwitcherOpen(false)} title="Aller à…">
+          <div className="space-y-1">
+            <BottomSheetAction
+              icon={HomeIcon}
+              label="Accueil"
+              hint="Le tableau de bord des apps"
+              onClick={() => goTo("/app")}
+            />
+            <div className="my-1 h-px bg-line" />
+            {visibleSidebarSections.map((s) => (
+              <BottomSheetAction
+                key={s.href}
+                icon={s.icon}
+                label={s.label}
+                hint={s.description}
+                onClick={() => goTo(s.href)}
+                variant={isActivePath(pathname, s.href) ? "success" : "default"}
+              />
+            ))}
+          </div>
+        </BottomSheet>
 
         <main className="flex-1">{children}</main>
 

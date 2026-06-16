@@ -80,7 +80,12 @@ export async function POST(request: Request) {
       event,
       userId: user.id,
       householdId: membership?.householdId ?? null,
-      path: sanitizedProps && typeof sanitizedProps.path === "string" ? sanitizedProps.path : null,
+      // Store pathname only — strip any query string to avoid persisting PII
+      // that could appear in URLs.
+      path:
+        sanitizedProps && typeof sanitizedProps.path === "string"
+          ? sanitizedProps.path.split("?")[0]
+          : null,
       props: sanitizedProps,
     },
   });
