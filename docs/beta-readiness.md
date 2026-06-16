@@ -18,8 +18,8 @@ Vérifier aussi :
 ## RGPD minimal
 
 - Pages publiques : `/privacy`, `/terms`, `/contact`.
-- Export utilisateur : `/api/me/export`, exposé dans Réglages → Zone sensible.
-- Suppression compte : `/api/me/delete`, exposée dans Réglages → Zone sensible.
+- Export utilisateur : `/api/me/export`, exposé dans Compte → Données & RGPD.
+- Suppression compte : `/api/me/delete`, exposée via Foyer → Zone sensible.
 - Les signalements et événements UX sont persistés afin de suivre support et activation.
 
 ## Sécurité opérationnelle

@@ -1,5 +1,7 @@
 # Documentation
 
+Historique des versions : [../CHANGELOG.md](../CHANGELOG.md) · vue d'ensemble : [../README.md](../README.md)
+
 | Document | Sujet |
 |---|---|
 | [setup-dev.md](setup-dev.md) | Setup environnement de développement |

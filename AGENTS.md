@@ -14,28 +14,33 @@ A household chore-coordination and shared savings web app for couples / colocs /
 - Vitest 4 (unit)
 - PWA: manifest + service worker in `public/`
 - Auth: cookie sessions in `src/lib/auth.ts`
-- MCP server exposed via `scripts/mcp/server.ts`
+- Five top-level "spaces" driven by `src/lib/app-sections.ts` (Tâches, Aide-mémoire, Épargne, Foyer, Compte)
 
 ## Layout
 
 ```
 src/
   app/
-    app/              authenticated UI (App Router segments)
-      page.tsx        dashboard (today-first on mobile)
-      my-tasks/
-      calendar/
-      history/
-      settings/       sub-routes: team, access, planning, danger, households, integrations, savings, holidays, activity
-    api/              JSON endpoints (households, tasks, occurrences, members, auth, ...)
+    app/              authenticated UI — one folder per space
+      page.tsx        home launcher (grid of the 5 spaces) + onboarding gate
+      taches/         aujourd-hui, calendar, routines, disponibilites
+      aide-memoire/   foyer notes + reusable checklists
+      epargne/        savings boxes + calculators
+      foyer/          matrix hub: membres, invitations, foyers, activite, zone-sensible
+      compte/         profile, security, RGPD, notifications
+      admin/          aggregated PII-free metrics
+      settings/       legacy redirect stubs only (old links)
+    api/              JSON / FormData endpoints (households, tasks, occurrences, members, auth, metrics, ...)
     page.tsx          public landing
   components/
     tasks/            occurrence-card, task-creation-steps, filters
     savings/          box-card, transfer-sheet, calculators
     calendar/         month-view, mobile-agenda, sync-panel
-    dashboard/        focus-session, stats-drawer
-    settings/         integration-settings, push-toggle
-    layout/           app-shell, home-header
+    dashboard/        section-launcher, focus-session, stats
+    foyer/            membres + matrix sub-sections
+    onboarding/       3-step starter + feature tour
+    settings/         push-toggle, feature toggles
+    layout/           app-shell (desktop sidebar + mobile Retour/Accueil)
     shared/           theme-toggle, pwa-banner
     ui/               primitives: dialog, bottom-sheet, toast
   lib/
@@ -59,7 +64,6 @@ npm run typecheck        # tsc --noEmit
 npm test                 # vitest run --coverage
 npm run db:migrate       # after any schema.prisma change
 npm run db:generate      # regenerate prisma client
-npm run mcp:smoke        # MCP integration smoke test
 ```
 
 **Pre-commit gate** (run all three): `npm run lint && npm run typecheck && npm test`
@@ -82,13 +86,17 @@ npm run mcp:smoke        # MCP integration smoke test
 - **Rate limiter** ([src/middleware.ts](src/middleware.ts)) hits hard on auth/invites in tests. Set `RATE_LIMIT_DISABLED=1` in `.env.local` if it bothers you.
 - **Service worker** ([public/sw.js](public/sw.js)) caches aggressively. Bump `CACHE_VERSION` whenever you change cached assets, or browsers serve stale UI.
 - **Prisma migrations**: always `npm run db:migrate` locally — `db:push` skips migration history and breaks deploy.
-- **Tailwind 4** has no `tailwind.config.js`. Custom tokens live in `src/app/globals.css` under `@theme inline`. We use `@custom-variant dark` tied to `data-theme="dark"` for dark mode. Do not use dirty `.bg-white` global overrides.
+- **Tailwind 4** has no `tailwind.config.js`. Custom tokens live in `src/app/globals.css` under `@theme inline`. We use `@custom-variant dark` tied to `data-theme="dark"` for dark mode. Dark card/panel surfaces use the `surface` token (`dark:bg-surface`, opacity variants OK) — never the `#262830` literal. Do not use dirty `.bg-white` global overrides.
 - The scheduling engine (`src/lib/scheduling/`) has subtle invariants (overrides vs templates, absences vs skips). Always reproduce a bug as a Vitest case in `tests/` before changing the engine. Tests are the spec.
 
 ## Where the work stands
 
-- ✅ Mobile UX foundation shipped — bottom sheet, compact cards, toast system, PWA, onboarding, calendar agenda.
-- ✅ Savings & Budgeting — fully functional `epargne` module with transaction history, auto-fill calculation engine, and cross-currency precision.
-- ✅ Architecture — components extracted into strict domain folders (`tasks/`, `savings/`, `calendar/`, etc.). Tailwind v4 theming standardized without dirty global overrides.
-- ✅ Hardening Complete — rate limiting, CSP, CSRF, structured API logging (`src/lib/api.ts`), and native dark mode fully implemented. E2E tests removed in favor of robust Vitest unit tests.
-- 🟡 Engagement in progress — streak UI, comments on occurrences.
+- ✅ **5-space IA** — Tâches / Aide-mémoire / Épargne / Foyer / Compte, one source of truth in `src/lib/app-sections.ts`. Mobile nav = Retour + Accueil; Foyer is a card matrix.
+- ✅ **Savings & budgeting** — `epargne` module with transaction history, auto-fill calculation engine, cross-currency precision; smoother mobile sheets/animations.
+- ✅ **Aide-mémoire** — foyer notes (FIFO + auto-purge) and reusable checklists.
+- ✅ **Onboarding** — 3-step, skippable, resumable, zero mid-flow DB writes.
+- ✅ **Hardening** — rate limiting, CSP, CSRF, structured logging, hardened Docker (read-only / cap-drop / non-root), right-most XFF, PII-free telemetry. E2E removed in favor of Vitest units.
+- ✅ **Admin** — aggregated PII-free metrics + feedback triage (`src/lib/admin-stats.ts`).
+- 🟡 **Next** — externalize the in-memory rate limiter before multi-instance; richer equity stats.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
