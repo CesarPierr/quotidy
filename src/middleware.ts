@@ -58,9 +58,16 @@ const RATE_LIMIT_RULES = [
 ] as const;
 
 function getRateLimitKey(request: NextRequest, pattern: string): string {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? request.headers.get("x-real-ip")
-    ?? "unknown";
+  // Behind exactly one trusted reverse proxy (Caddy, configured to overwrite
+  // X-Forwarded-For with the real peer), the genuine client is the RIGHT-MOST
+  // X-Forwarded-For entry. Reading the left-most entry would let a remote
+  // attacker spoof the header to rotate their rate-limit identity and bypass
+  // the brute-force limits (or forge another user's IP for a targeted 429).
+  const xff = request.headers.get("x-forwarded-for");
+  const ip =
+    xff?.split(",").pop()?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
   return `${ip}:${pattern}`;
 }
 

@@ -10,7 +10,7 @@ import { isDataRequest, redirectTo } from "@/lib/request";
 export const POST = withHousehold<{ id: string }>(
   async ({ request, params, formData }) => {
     const householdId = params.id;
-    const fallback = `/app/settings/households?household=${householdId}`;
+    const fallback = `/app/foyer/foyers?household=${householdId}`;
 
     const data: { savingsEnabled?: boolean } = {};
     if (formData.has("savingsEnabled")) {

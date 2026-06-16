@@ -52,5 +52,5 @@ export async function POST(
     forceOverwriteManual: true, // We already reset them, but this ensures a clean sync
   });
 
-  return NextResponse.redirect(new URL(`/app/my-tasks?household=${householdId}#administration`, request.url), 303);
+  return NextResponse.redirect(new URL(`/app/taches/routines?household=${householdId}`, request.url), 303);
 }

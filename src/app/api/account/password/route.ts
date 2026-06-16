@@ -9,7 +9,7 @@ import { normalizeNextPath, redirectTo } from "@/lib/request";
 import { accountPasswordSchema } from "@/lib/validation";
 
 function destination(formData: FormData, code: string) {
-  const nextPath = normalizeNextPath(formData.get("nextPath")?.toString()) ?? "/app/settings/account";
+  const nextPath = normalizeNextPath(formData.get("nextPath")?.toString()) ?? "/app/compte";
   return `${nextPath}${nextPath.includes("?") ? "&" : "?"}account=${code}`;
 }
 

@@ -4,9 +4,10 @@ import { useState } from "react";
 import { TaskHistoryPanel, TemplateEditPanel } from "@/components/tasks/task-detail-panels";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { TaskDetailOccurrence } from "@/components/tasks/task-detail-occurrence";
+import { TaskDetailChecklist } from "@/components/tasks/task-detail-checklist";
 import { TaskDetailComments } from "@/components/tasks/task-detail-comments";
 
-type TabId = "occurrence" | "template" | "history" | "comments";
+type TabId = "occurrence" | "template" | "history" | "checklist" | "comments";
 
 type Occurrence = {
   id: string;
@@ -63,6 +64,7 @@ export function TaskDetailSheet({
     { id: "occurrence", label: "Cette fois-ci", show: true },
     { id: "template", label: "Modèle", show: Boolean(canEditTemplate && householdId && taskTemplateId) },
     { id: "history", label: "Historique", show: Boolean(taskTemplateId) },
+    { id: "checklist", label: "Checklist", show: Boolean(taskTemplateId) },
     { id: "comments", label: "Commentaires", show: true },
   ];
 
@@ -121,6 +123,10 @@ export function TaskDetailSheet({
 
         {tab === "history" && taskTemplateId ? (
           <TaskHistoryPanel taskId={taskTemplateId} open={isOpen && tab === "history"} />
+        ) : null}
+
+        {taskTemplateId ? (
+          <TaskDetailChecklist active={tab === "checklist"} taskTemplateId={taskTemplateId} />
         ) : null}
 
         <TaskDetailComments

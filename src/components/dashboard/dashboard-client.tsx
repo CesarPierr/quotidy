@@ -197,7 +197,7 @@ export function DashboardClient({
 
       <footer className="pb-8 pt-4 text-center">
         <a
-          href={`/app/history?household=${householdId}`}
+          href={`/app/foyer/activite?household=${householdId}`}
           className="btn-quiet px-6 py-3 text-sm font-semibold inline-flex items-center gap-2"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20v-6M9 20V10M15 20V4M3 20h18" /></svg>

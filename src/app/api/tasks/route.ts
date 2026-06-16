@@ -101,11 +101,11 @@ export async function POST(request: Request) {
   });
 
   if (!membership || !canManageHousehold(membership.role) || !eligibleMemberIds.length) {
-    return redirectTo(request, `/app/my-tasks?household=${householdId}#new-task`);
+    return redirectTo(request, `/app/taches/routines?household=${householdId}`);
   }
 
   if (!parsedTask.success) {
-    return redirectTo(request, `/app/my-tasks?household=${householdId}#new-task`);
+    return redirectTo(request, `/app/taches/routines?household=${householdId}`);
   }
 
   const validated = parsedTask.data;
@@ -155,5 +155,5 @@ export async function POST(request: Request) {
 
   await syncHouseholdOccurrences(householdId);
 
-  return redirectTo(request, `/app/my-tasks?household=${householdId}`);
+  return redirectTo(request, `/app/taches/routines?household=${householdId}`);
 }

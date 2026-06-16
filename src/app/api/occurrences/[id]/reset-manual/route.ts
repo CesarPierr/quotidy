@@ -42,8 +42,8 @@ export async function POST(
 
   // Redirect back to the overrides page or my-tasks
   const url = taskId 
-    ? `/app/my-tasks/overrides/${taskId}?household=${householdId}` 
-    : `/app/my-tasks?household=${householdId}`;
+    ? `/app/taches/routines/overrides/${taskId}?household=${householdId}` 
+    : `/app/taches/aujourd-hui?household=${householdId}`;
     
   return NextResponse.redirect(new URL(url, request.url), 303);
 }

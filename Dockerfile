@@ -23,5 +23,16 @@ COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src ./src
+
+# Run as a non-root user. HOME + npm cache point at /tmp so the process still
+# works when the container is started with a read-only root filesystem (the
+# compose file mounts a tmpfs at /tmp and /app/.next/cache).
+RUN groupadd --system --gid 1001 nodejs \
+ && useradd --system --uid 1001 --gid nodejs --home-dir /app nextjs \
+ && chown -R nextjs:nodejs /app
+ENV HOME=/tmp
+ENV NPM_CONFIG_CACHE=/tmp/.npm
+USER nextjs
+
 EXPOSE 3000
 CMD ["npm", "run", "start"]

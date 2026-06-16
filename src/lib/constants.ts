@@ -40,13 +40,6 @@ export const taskPalette = [
   "#7A6BA7",
 ];
 
-export const mobileSections = [
-  { href: "/app", label: "Aujourd'hui" },
-  { href: "/app/planifier", label: "Planifier" },
-  { href: "/app/epargne", label: "Épargne" },
-  { href: "/app/settings", label: "Réglages" },
-];
-
 export const roomSuggestions = [
   "Tout l'appartement",
   "Cuisine",

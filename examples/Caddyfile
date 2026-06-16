@@ -1,4 +1,34 @@
-{$APP_HOST} {
+# ─────────────────────────────────────────────────────────────────────────────
+# CURRENT: private access (LAN / Freebox WireGuard VPN).
+# Plain HTTP is acceptable here because WireGuard already encrypts the transport.
+# `header_up X-Forwarded-For {remote_host}` makes Caddy set the REAL client IP
+# authoritatively, so the app's rate-limiter can't be bypassed via a spoofed
+# X-Forwarded-For header.
+:80 {
   encode gzip zstd
-  reverse_proxy app:3000
+  reverse_proxy app:3000 {
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Real-IP {remote_host}
+  }
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WHEN GOING FULLY PUBLIC: comment out the :80 block above and uncomment this.
+# Requires APP_HOST set to a real hostname (e.g. a free DuckDNS name) with a DNS
+# record pointing at the box, plus forwarding ONLY 443 on the router. Caddy then
+# auto-provisions a Let's Encrypt cert, redirects 80→443, and (with HSTS) forces
+# HTTPS. Also set APP_BASE_URL=https://<host> in .env.production so the app
+# marks its session + CSRF cookies Secure.
+#
+# {$APP_HOST} {
+#   encode gzip zstd
+#   header {
+#     Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#     X-Content-Type-Options "nosniff"
+#     Referrer-Policy "strict-origin-when-cross-origin"
+#   }
+#   reverse_proxy app:3000 {
+#     header_up X-Forwarded-For {remote_host}
+#     header_up X-Real-IP {remote_host}
+#   }
+# }

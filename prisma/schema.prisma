@@ -165,6 +165,9 @@ model Household {
   /// navigation and onboarding skips its dedicated steps. The data and routes
   /// remain accessible if the user toggles it back on later.
   savingsEnabled         Boolean                 @default(true)
+  /// Retention window (in days) for completed foyer notes before they are
+  /// purged from the "Fait" list. Configurable per household; default one week.
+  noteRetentionDays      Int                     @default(7)
   createdByUserId        String
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
@@ -186,6 +189,8 @@ model Household {
   billingCustomers       BillingCustomer[]
   subscriptions          Subscription[]
   featureEntitlements    FeatureEntitlement[]
+  checklists             Checklist[]
+  householdNotes         HouseholdNote[]
 
   @@index([createdByUserId])
 }
@@ -213,6 +218,10 @@ model HouseholdMember {
   actionLogs            OccurrenceActionLog[]
   occurrenceComments    OccurrenceComment[]
   pushSubscriptions     PushSubscription[]
+  createdChecklists     Checklist[]           @relation("ChecklistCreator")
+  checkedChecklistItems ChecklistItem[]       @relation("ChecklistItemChecker")
+  createdNotes          HouseholdNote[]       @relation("HouseholdNoteCreator")
+  completedNotes        HouseholdNote[]       @relation("HouseholdNoteCompleter")
 
   @@unique([householdId, userId])
   @@index([householdId])
@@ -333,6 +342,7 @@ model TaskTemplate {
   assignmentRule    AssignmentRule   @relation(fields: [assignmentRuleId], references: [id], onDelete: Cascade)
   createdByMember   HouseholdMember? @relation("TaskTemplateCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
   occurrences       TaskOccurrence[]
+  checklists        Checklist[]
 
   @@index([householdId])
 }
@@ -800,4 +810,67 @@ model FeatureEntitlement {
   @@unique([householdId, feature])
   @@index([feature, enabled])
   @@index([expiresAt])
+}
+
+/// A reusable household checklist — e.g. "Sac pour le trek", "Affaires chez
+/// mamie". The list is a durable template: members tick items off when they
+/// use it, then "Réinitialiser" un-checks everything for the next time.
+/// Optionally linked to a recurring task template (see taskTemplateId).
+model Checklist {
+  id                String           @id @default(cuid())
+  householdId       String
+  createdByMemberId String?
+  taskTemplateId    String?
+  name              String
+  icon              String?
+  color             String           @default("#D8643D")
+  isArchived        Boolean          @default(false)
+  sortOrder         Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  household         Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdByMember   HouseholdMember? @relation("ChecklistCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  taskTemplate      TaskTemplate?    @relation(fields: [taskTemplateId], references: [id], onDelete: SetNull)
+  items             ChecklistItem[]
+
+  @@index([householdId, isArchived, sortOrder])
+  @@index([taskTemplateId])
+}
+
+model ChecklistItem {
+  id                String           @id @default(cuid())
+  checklistId       String
+  checkedByMemberId String?
+  label             String
+  isChecked         Boolean          @default(false)
+  sortOrder         Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  checklist         Checklist        @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  checkedByMember   HouseholdMember? @relation("ChecklistItemChecker", fields: [checkedByMemberId], references: [id], onDelete: SetNull)
+
+  @@index([checklistId, sortOrder])
+}
+
+/// A volatile, single-shot foyer reminder ("acheter du café", "appeler le
+/// plombier"). Behaves like a shared FIFO inbox: created → done → moved to the
+/// "Fait" list → purged after the household's noteRetentionDays window.
+model HouseholdNote {
+  id                  String           @id @default(cuid())
+  householdId         String
+  createdByMemberId   String?
+  completedByMemberId String?
+  title               String?
+  body                String
+  color               String           @default("#D8643D")
+  isPinned            Boolean          @default(false)
+  completedAt         DateTime?
+  sortOrder           Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  household           Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  createdByMember     HouseholdMember? @relation("HouseholdNoteCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  completedByMember   HouseholdMember? @relation("HouseholdNoteCompleter", fields: [completedByMemberId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, completedAt, isPinned, sortOrder])
 }

@@ -69,7 +69,7 @@ export function TaskWorkspaceClient({
   const [filterType, setFilterType] = useState<"active" | "history">("active");
   const [showOptimizedPicker, setShowOptimizedPicker] = useState(false);
   const [horizon, setHorizon] = useState<3 | 7 | 30>(3);
-  const dashboardPath = `/app?household=${householdId}`;
+  const dashboardPath = `/app/taches/aujourd-hui?household=${householdId}`;
 
   const normalizedOccurrences = useMemo(
     () =>
@@ -375,7 +375,7 @@ export function TaskWorkspaceClient({
               {!search && manageable ? (
                 <Link
                   className="btn-secondary mt-4 inline-flex min-h-10 items-center justify-center gap-2 px-4 text-xs font-bold"
-                  href={`/app/settings/tasks?household=${householdId}&tab=wizard`}
+                  href={`/app/taches/routines?household=${householdId}&tab=wizard`}
                 >
                   <ListPlus className="size-4" aria-hidden="true" />
                   Ajouter une routine

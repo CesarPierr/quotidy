@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
   if (!parsed.success) {
     const suffix = fallbackHouseholdId ? `?household=${fallbackHouseholdId}&absence=invalid` : "?absence=invalid";
-    return redirectTo(request, `/app/settings/planning${suffix}`);
+    return redirectTo(request, `/app/taches/disponibilites${suffix}`);
   }
 
   const target = await db.householdMember.findUnique({
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   });
 
   if (!target) {
-    return redirectTo(request, "/app/settings/planning?absence=invalid");
+    return redirectTo(request, "/app/taches/disponibilites?absence=invalid");
   }
 
   const membership = await db.householdMember.findFirst({
@@ -54,5 +54,5 @@ export async function POST(request: Request) {
     forceOverwriteManual: true,
   });
 
-  return redirectTo(request, `/app/settings/planning?household=${target.householdId}&absence=saved`);
+  return redirectTo(request, `/app/taches/disponibilites?household=${target.householdId}&absence=saved`);
 }

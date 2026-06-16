@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { normalizeNextPath, redirectTo } from "@/lib/request";
 
 function destination(formData: FormData, code: string, params?: Record<string, string | number>) {
-  const nextPath = normalizeNextPath(formData.get("nextPath")?.toString()) ?? "/app/settings/account";
+  const nextPath = normalizeNextPath(formData.get("nextPath")?.toString()) ?? "/app/compte";
   const search = new URLSearchParams({ account: code });
   for (const [key, value] of Object.entries(params ?? {})) {
     search.set(key, String(value));

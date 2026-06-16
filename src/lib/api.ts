@@ -93,7 +93,7 @@ export function withOccurrence<P extends { id: string }>(handler: OccurrenceHand
 
     const formData = await request.formData();
     const nextPath = normalizeNextPath(formData.get("nextPath")?.toString());
-    const defaultDestination = nextPath ?? `/app?household=${occurrence.householdId}`;
+    const defaultDestination = nextPath ?? `/app/taches/aujourd-hui?household=${occurrence.householdId}`;
 
     logInfo("api_occurrence_request", {
       path: request.url,

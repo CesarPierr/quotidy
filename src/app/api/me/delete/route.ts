@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       data: { status: "rejected", metadata: { reason: "missing_password" } },
     });
     return isFormPost
-      ? redirectTo(request, "/app/settings/danger?delete_account=missing_password")
+      ? redirectTo(request, "/app/foyer/zone-sensible?delete_account=missing_password")
       : NextResponse.json({ error: "Mot de passe requis" }, { status: 400 });
   }
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       data: { status: "rejected", metadata: { reason: "invalid_password" } },
     });
     return isFormPost
-      ? redirectTo(request, "/app/settings/danger?delete_account=invalid_password")
+      ? redirectTo(request, "/app/foyer/zone-sensible?delete_account=invalid_password")
       : NextResponse.json({ error: "Mot de passe invalide" }, { status: 401 });
   }
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       },
     });
     return isFormPost
-      ? redirectTo(request, "/app/settings/danger?delete_account=needs_transfer")
+      ? redirectTo(request, "/app/foyer/zone-sensible?delete_account=needs_transfer")
       : NextResponse.json(
           {
             error: "shared_households",

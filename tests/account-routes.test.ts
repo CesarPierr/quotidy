@@ -61,7 +61,7 @@ describe("account routes", () => {
     const response = await profilePost(formRequest({ displayName: "Pierre Nouveau" }));
 
     expect(response.status).toBe(303);
-    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/settings/account?account=profile_saved");
+    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/compte?account=profile_saved");
     expect(dbMocks.userUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
       data: { displayName: "Pierre Nouveau" },
@@ -81,7 +81,7 @@ describe("account routes", () => {
       password: "wrong-password",
     }));
 
-    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/settings/account?account=invalid_password");
+    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/compte?account=invalid_password");
     expect(dbMocks.userUpdate).not.toHaveBeenCalled();
   });
 
@@ -97,7 +97,7 @@ describe("account routes", () => {
       password: "current-password",
     }));
 
-    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/settings/account?account=email_saved");
+    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/compte?account=email_saved");
     expect(dbMocks.userUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
       data: {
@@ -119,7 +119,7 @@ describe("account routes", () => {
       confirmPassword: "new-password",
     }));
 
-    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/settings/account?account=password_saved");
+    expect(response.headers.get("location")).toBe("http://192.168.1.132/app/compte?account=password_saved");
     expect(dbMocks.transaction).toHaveBeenCalledTimes(1);
     expect(dbMocks.userUpdate).toHaveBeenCalledWith({
       where: { id: "user-1" },
@@ -140,7 +140,7 @@ describe("account routes", () => {
     const response = await revokeSessionsPost(formRequest({}));
 
     expect(response.headers.get("location")).toBe(
-      "http://192.168.1.132/app/settings/account?account=sessions_revoked&count=2",
+      "http://192.168.1.132/app/compte?account=sessions_revoked&count=2",
     );
     expect(dbMocks.sessionDeleteMany).toHaveBeenCalledWith({
       where: {

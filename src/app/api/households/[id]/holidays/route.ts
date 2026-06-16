@@ -15,7 +15,7 @@ const schema = z.object({
 export const POST = withHousehold<{ id: string }>(
   async ({ request, params, membership, formData }) => {
     const householdId = params.id;
-    const fallback = `/app/settings/holidays?household=${householdId}`;
+    const fallback = `/app/taches/disponibilites?household=${householdId}`;
 
     const parsed = schema.safeParse({
       startDate: formData.get("startDate"),

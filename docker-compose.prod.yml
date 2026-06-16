@@ -4,6 +4,11 @@ services:
   db:
     image: postgres:17
     restart: unless-stopped
+    networks:
+      - backend
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-quotidy}
       POSTGRES_USER: ${POSTGRES_USER:-quotidy}
@@ -21,6 +26,19 @@ services:
   app:
     build: .
     restart: unless-stopped
+    networks:
+      - frontend
+      - backend
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:mode=1777
+      - /app/.next/cache:mode=1777
+    mem_limit: 512m
+    cpus: 1.0
     depends_on:
       db:
         condition: service_healthy
@@ -55,6 +73,8 @@ services:
   reverse-proxy:
     image: caddy:2
     restart: unless-stopped
+    networks:
+      - frontend
     depends_on:
       app:
         condition: service_started
@@ -67,6 +87,11 @@ services:
       - ./examples/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+
+networks:
+  frontend:
+  backend:
+    internal: true
 
 volumes:
   postgres_prod_data:

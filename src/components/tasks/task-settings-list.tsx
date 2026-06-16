@@ -172,7 +172,7 @@ export function TaskSettingsList({
               {manualOverrideCount > 0 ? (
                 <Link
                   className="mt-1 inline-flex items-center rounded-full border border-[rgba(216,100,61,0.16)] bg-[rgba(216,100,61,0.08)] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-coral-600 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[rgba(216,100,61,0.14)] hover:shadow-[0_12px_24px_rgba(216,100,61,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(216,100,61,0.3)]"
-                  href={`/app/my-tasks/overrides/${task.id}?household=${householdId}`}
+                  href={`/app/taches/routines/overrides/${task.id}?household=${householdId}`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   {manualOverrideCount} occurrence{manualOverrideCount > 1 ? "s" : ""} future{manualOverrideCount > 1 ? "s" : ""} modifiée{manualOverrideCount > 1 ? "s" : ""}

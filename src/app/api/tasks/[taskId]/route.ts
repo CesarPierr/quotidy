@@ -10,7 +10,7 @@ export const POST = withHousehold<{ taskId: string }>(
   async ({ request, params, formData }) => {
     const { taskId } = params;
     const householdId = String(formData.get("householdId"));
-    const fallback = `/app/my-tasks?household=${householdId}#administration`;
+    const fallback = `/app/taches/routines?household=${householdId}`;
     const method = formData.get("_method");
 
     if (method === "DELETE") {

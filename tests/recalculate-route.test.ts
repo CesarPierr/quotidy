@@ -65,7 +65,7 @@ describe("recalculate route", () => {
 
     expect(response.status).toBe(303);
     expect(response.headers.get("location")).toBe(
-      "http://192.168.1.132/app/settings/planning?household=house-1&rebalance=done",
+      "http://192.168.1.132/app/taches/disponibilites?household=house-1&rebalance=done",
     );
     expect(schedulingMocks.syncHouseholdOccurrences).toHaveBeenCalledWith("house-1", {
       forceOverwriteManual: false,

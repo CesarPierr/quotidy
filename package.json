@@ -36,8 +36,6 @@
     "db:push": "prisma db push",
     "db:seed": "node --import tsx prisma/seed.ts",
     "db:seed:stress": "node --import tsx prisma/seed-stress.ts",
-    "mcp:server": "tsx scripts/mcp/server.ts",
-    "mcp:smoke": "tsx scripts/mcp/smoke-test.ts",
     "deploy:local-prod": "docker compose --env-file .env.production -f docker-compose.prod.yml up -d --build",
     "deploy:server-sync": "bash scripts/deploy/sync-to-server.sh",
     "deploy:install-local-cron": "bash scripts/server/install-local-cron.sh"
@@ -50,7 +48,7 @@
     "date-fns": "^4.1.0",
     "ical-generator": "^10.2.0",
     "lucide-react": "^1.8.0",
-    "next": "16.2.4",
+    "next": "^16.2.9",
     "nodemailer": "^8.0.6",
     "prisma": "^6.19.0",
     "react": "19.2.4",

@@ -116,7 +116,7 @@ export default function GlobalError({
               Retour à l&apos;accueil
             </a>
             <a
-              href={`/app/settings?report=1${error.digest ? `&digest=${encodeURIComponent(error.digest)}` : ""}`}
+              href={`/app/compte?report=1${error.digest ? `&digest=${encodeURIComponent(error.digest)}` : ""}`}
               style={{
                 marginTop: "0.25rem",
                 fontSize: "0.8rem",

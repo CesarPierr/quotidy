@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: Params) {
   const confirmed = formData.get("confirmDelete") === "on";
 
   if (!confirmed) {
-    return redirectTo(request, `/app/settings/danger?household=${id}&delete=confirm_required`);
+    return redirectTo(request, `/app/foyer/zone-sensible?household=${id}&delete=confirm_required`);
   }
 
   const result = await deleteHousehold({
@@ -28,5 +28,5 @@ export async function POST(request: Request, { params }: Params) {
     );
   }
 
-  return redirectTo(request, `/app/settings/danger?household=${id}&delete=${result.status}`);
+  return redirectTo(request, `/app/foyer/zone-sensible?household=${id}&delete=${result.status}`);
 }

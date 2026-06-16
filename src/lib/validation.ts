@@ -137,7 +137,7 @@ const amountString = z
 
 const positiveAmount = amountString.refine((n) => n >= 0, "Le montant doit être positif ou nul");
 
-const colorString = z
+export const colorString = z
   .string()
   .regex(/^#[0-9A-Fa-f]{6}$/, "Couleur invalide")
   .default("#D8643D");
@@ -260,4 +260,50 @@ export const savingsCalculatorSchema = z.object({
 export const savingsCalculatorRunSchema = z.object({
   targetBoxId: z.preprocess((value) => (value ? value : undefined), z.string().cuid().optional()),
   inputs: z.record(z.string(), z.string().max(80)),
+});
+
+// ─── Checklists & Foyer notes ────────────────────────────────────────────────
+
+export const checklistCreateSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  icon: z.string().max(40).optional(),
+  color: colorString,
+  taskTemplateId: z.preprocess((v) => (v ? v : undefined), z.string().cuid().optional()),
+});
+
+export const checklistUpdateSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  icon: z.string().max(40).optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Couleur invalide").optional(),
+  taskTemplateId: z.preprocess((v) => (v === "" ? null : v), z.string().cuid().nullable().optional()),
+  isArchived: z.coerce.boolean().optional(),
+  sortOrder: z.coerce.number().int().min(0).max(10000).optional(),
+});
+
+export const checklistItemCreateSchema = z.object({
+  label: z.string().trim().min(1).max(200),
+});
+
+export const checklistItemUpdateSchema = z.object({
+  label: z.string().trim().min(1).max(200).optional(),
+  isChecked: z.coerce.boolean().optional(),
+  sortOrder: z.coerce.number().int().min(0).max(10000).optional(),
+});
+
+export const householdNoteCreateSchema = z.object({
+  title: z.string().trim().max(120).optional(),
+  body: z.string().trim().min(1).max(1000),
+  color: colorString,
+});
+
+export const householdNoteUpdateSchema = z.object({
+  title: z.string().trim().max(120).optional(),
+  body: z.string().trim().min(1).max(1000).optional(),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Couleur invalide").optional(),
+  isPinned: z.coerce.boolean().optional(),
+  sortOrder: z.coerce.number().int().min(0).max(10000).optional(),
+});
+
+export const noteRetentionSchema = z.object({
+  noteRetentionDays: z.coerce.number().int().min(1).max(365),
 });

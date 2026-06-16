@@ -21,7 +21,7 @@ export const POST = withHousehold<{ id: string }>(
     const result = forceOverwriteManual ? "done_overwrite" : "done";
     return redirectTo(
       request,
-      `/app/settings/planning?household=${params.id}&rebalance=${result}`,
+      `/app/taches/disponibilites?household=${params.id}&rebalance=${result}`,
     );
   },
   { requireManage: true },

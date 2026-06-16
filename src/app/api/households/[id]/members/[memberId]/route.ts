@@ -6,7 +6,7 @@ import { memberSchema } from "@/lib/validation";
 
 export const POST = withHousehold<{ id: string; memberId: string }>(
   async ({ request, params, user, membership: actorMembership, formData }) => {
-    const fallback = `/app/settings/team?household=${params.id}`;
+    const fallback = `/app/foyer?household=${params.id}`;
 
     if (formData.get("_method") !== "PUT") {
       return redirectTo(request, fallback);

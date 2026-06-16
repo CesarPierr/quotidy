@@ -5,7 +5,7 @@ import { householdInviteSchema } from "@/lib/validation";
 
 export const POST = withHousehold<{ id: string }>(
   async ({ request, params, membership, formData }) => {
-    const fallback = `/app/settings/access?household=${params.id}`;
+    const fallback = `/app/foyer/invitations?household=${params.id}`;
 
     const parsed = householdInviteSchema.safeParse({
       householdId: params.id,

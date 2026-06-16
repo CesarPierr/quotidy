@@ -12,7 +12,7 @@ export const POST = withHousehold<{ id: string; holidayId: string }>(
       return NextResponse.json({ ok: true });
     }
 
-    return redirectTo(request, `/app/settings/holidays?household=${params.id}&deleted=1`);
+    return redirectTo(request, `/app/taches/disponibilites?household=${params.id}&deleted=1`);
   },
   { requireManage: true },
 );
