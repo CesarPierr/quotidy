@@ -17,6 +17,12 @@ export type AppSection = {
   accent: AccentKey;
   /** Hidden when the household has the Épargne module disabled. */
   savingsGated?: boolean;
+  /**
+   * Shown as a direct shortcut in the mobile bottom bar (alongside "Accueil").
+   * Non-primary apps live only in the Accueil launcher grid — which scales to
+   * any number of apps. Flip this to promote an app to the bar later.
+   */
+  primary?: boolean;
 };
 
 /**
@@ -31,6 +37,7 @@ export const appSections: AppSection[] = [
     description: "Jour, calendrier & routines",
     icon: ListTodo,
     accent: "coral",
+    primary: true,
   },
   {
     href: "/app/aide-memoire",
@@ -38,6 +45,7 @@ export const appSections: AppSection[] = [
     description: "Notes & listes du foyer",
     icon: NotebookPen,
     accent: "leaf",
+    primary: true,
   },
   {
     href: "/app/epargne",
@@ -53,6 +61,7 @@ export const appSections: AppSection[] = [
     description: "Membres, foyers & accès",
     icon: Users,
     accent: "ink",
+    primary: true,
   },
   {
     href: "/app/compte",
