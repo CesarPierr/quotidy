@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Compass, HomeIcon, LogOut } from "lucide-react";
+import { ChevronLeft, Compass, HomeIcon, LogOut } from "lucide-react";
 
 import { FeatureTour } from "@/components/onboarding/feature-tour";
 import { FeedbackButton } from "@/components/shared/feedback-button";
@@ -41,12 +41,10 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
   const savingsEnabled = activeHousehold?.savingsEnabled ?? true;
 
   const visibleSidebarSections = visibleSections(savingsEnabled);
-  // Mobile bottom bar: "Accueil" (the launcher grid = scalable hub for ALL apps)
-  // + the apps flagged `primary`. New apps surface in the grid automatically.
-  const bottomTabs = [
-    { href: "/app", label: "Accueil", icon: HomeIcon },
-    ...visibleSidebarSections.filter((s) => s.primary).map((s) => ({ href: s.href, label: s.label, icon: s.icon })),
-  ];
+  // The Accueil hub (`/app`) is the launcher and holds every app, so mobile
+  // navigation is just two natural primitives — Retour + Accueil — shown on each
+  // app surface. No per-app bar to grow: this scales to any number of apps.
+  const isHub = pathname === "/app";
   const [tourOpen, setTourOpen] = useState(false);
 
   // Prefetch the launcher + apps on mount for instant navigation
@@ -150,43 +148,35 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
       </nav>
 
       {/* Main Content Area */}
-      <div className="flex flex-1 min-w-0 flex-col px-3 pb-[7.5rem] pt-3 sm:px-5 lg:px-0 lg:pb-0 lg:pt-0">
+      <div className="flex flex-1 min-w-0 flex-col px-3 pb-8 pt-3 sm:px-5 lg:px-0 lg:pb-0 lg:pt-0">
+        {/* Mobile top nav — Retour + Accueil. The hub holds every app, so these
+            two primitives are all we need and they don't grow with app count. */}
+        {!isHub && (
+          <div className="sticky top-3 z-30 mb-3 lg:hidden">
+            <div className="app-surface flex items-center justify-between gap-2 rounded-2xl px-1.5 py-1.5">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Revenir en arrière"
+                className="flex min-h-[2.75rem] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-ink-700 transition-colors active:bg-black/[0.04]"
+              >
+                <ChevronLeft className="size-5 shrink-0" />
+                Retour
+              </button>
+              <Link
+                href={`/app${suffix}`}
+                aria-label="Accueil"
+                className="flex min-h-[2.75rem] items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-ink-700 transition-colors active:bg-black/[0.04]"
+              >
+                <HomeIcon className="size-5 shrink-0" />
+                Accueil
+              </Link>
+            </div>
+          </div>
+        )}
         <main className="flex-1">{children}</main>
 
         <PWAInstallBanner />
-
-        {/* Mobile bottom bar — Accueil (scalable launcher grid) + primary apps */}
-        <nav
-          className="app-surface fixed inset-x-3 bottom-3 z-30 rounded-2xl px-1.5 py-1.5 lg:hidden"
-          style={{ paddingBottom: "calc(0.375rem + env(safe-area-inset-bottom, 0px))" }}
-        >
-          <div
-            className="grid gap-1"
-            style={{ gridTemplateColumns: `repeat(${bottomTabs.length}, minmax(0, 1fr))` }}
-          >
-            {bottomTabs.map((item) => {
-              const href = `${item.href}${suffix}`;
-              const active = isActivePath(pathname, item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  aria-current={active ? "page" : undefined}
-                  key={item.href}
-                  href={href}
-                  className={cn(
-                    "flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-2 text-center text-[0.65rem] font-semibold transition-all",
-                    active
-                      ? "bg-white text-ink-950 shadow-[0_8px_20px_rgba(70,48,20,0.12)] ring-1 ring-black/5 dark:bg-[#262830]"
-                      : "text-[var(--ink-600)] active:bg-black/[0.04]",
-                  )}
-                >
-                  <Icon className="size-5 shrink-0" />
-                  <span className="leading-tight">{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
       </div>
       <FeatureTour open={tourOpen} onClose={closeTour} />
     </div>
