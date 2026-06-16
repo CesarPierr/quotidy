@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useEffect, useRef, useState, useCallback, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -62,28 +62,46 @@ export function BottomSheet({ isOpen, onClose, title, children, maxHeight = 85 }
   const contentRef = useRef<HTMLDivElement>(null);
   const startYRef = useRef<number>(0);
   const currentYRef = useRef<number>(0);
+  // Keep the dialog mounted/open while it animates out so the exit transition is visible.
+  const [rendered, setRendered] = useState(isOpen);
+  const [visible, setVisible] = useState(false);
 
-  // Open/close dialog
+  // Open/close dialog with an enter + exit transition.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRendered(true);
       if (!dialog.open) {
         dialog.showModal();
         document.body.style.overflow = "hidden";
       }
-    } else {
-      if (dialog.open) {
-        dialog.close();
-        document.body.style.overflow = "";
-      }
+      // Flip to the visible state on the next frame so the transition runs.
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
     }
 
+    // Closing: animate out, then unmount/close the dialog.
+    setVisible(false);
+    if (dialog.open) {
+      const timer = setTimeout(() => {
+        if (dialog.open) dialog.close();
+        document.body.style.overflow = "";
+        setRendered(false);
+      }, 220);
+      return () => clearTimeout(timer);
+    }
+    document.body.style.overflow = "";
+    return undefined;
+  }, [isOpen]);
+
+  useEffect(() => {
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
+  }, []);
 
   // Handle backdrop click
   const handleBackdropClick = useCallback(
@@ -154,7 +172,11 @@ export function BottomSheet({ isOpen, onClose, title, children, maxHeight = 85 }
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 m-0 h-full w-full max-w-none max-h-none bg-transparent p-0 backdrop:bg-black/40 backdrop:backdrop-blur-sm open:animate-none"
+      className={cn(
+        "fixed inset-0 m-0 h-full w-full max-w-none max-h-none bg-transparent p-0 open:animate-none",
+        "backdrop:bg-black/40 backdrop:backdrop-blur-sm backdrop:transition-opacity backdrop:duration-200",
+        visible ? "backdrop:opacity-100" : "backdrop:opacity-0",
+      )}
       onClick={handleBackdropClick}
       onClose={onClose}
     >
@@ -163,7 +185,8 @@ export function BottomSheet({ isOpen, onClose, title, children, maxHeight = 85 }
           ref={contentRef}
           className={cn(
             "w-full rounded-t-3xl bg-[var(--card)] shadow-[0_-20px_60px_rgba(0,0,0,0.15)] overflow-hidden",
-            isOpen ? "animate-slide-up" : "",
+            "transition-transform duration-[260ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform motion-reduce:transition-none",
+            visible ? "translate-y-0" : "translate-y-full",
           )}
           style={{
             maxHeight: `${maxHeight}vh`,
@@ -195,7 +218,7 @@ export function BottomSheet({ isOpen, onClose, title, children, maxHeight = 85 }
             className="overflow-y-auto overscroll-contain px-4 pb-12"
             style={{ maxHeight: `calc(${maxHeight}vh - 4rem)` }}
           >
-            {children}
+            {rendered ? children : null}
           </div>
         </div>
       </div>

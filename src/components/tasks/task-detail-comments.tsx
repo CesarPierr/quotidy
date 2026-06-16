@@ -65,7 +65,7 @@ export function TaskDetailComments({ occurrenceId, currentMemberId, active }: Ta
       ) : (
         <ul aria-live="polite" className="space-y-2">
           {comments.map((c) => (
-            <li key={c.id} className="rounded-xl border border-line bg-white/70 dark:bg-[#262830]/70 px-3 py-2.5">
+            <li key={c.id} className="rounded-xl border border-line bg-white/70 dark:bg-surface/70 px-3 py-2.5">
               <p className="text-xs font-semibold text-ink-700">{c.authorName}</p>
               <p className="mt-0.5 text-sm">{c.body}</p>
               <p className="mt-1 text-[0.6rem] text-ink-400">

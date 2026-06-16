@@ -334,7 +334,7 @@ export function OccurrenceCard({
               Reporter à :
             </span>
             <button
-              className="inline-flex items-center gap-1 rounded-full border border-line bg-glass-bg px-2.5 py-1 text-[0.7rem] font-semibold text-ink-700 transition-all hover:bg-white dark:bg-[#262830] active:scale-95 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-glass-bg px-2.5 py-1 text-[0.7rem] font-semibold text-ink-700 transition-all hover:bg-white dark:bg-surface active:scale-95 disabled:opacity-40"
               disabled={isSubmitting}
               onClick={(event) => {
                 stopEvent(event);
@@ -346,7 +346,7 @@ export function OccurrenceCard({
               Demain
             </button>
             <button
-              className="inline-flex items-center gap-1 rounded-full border border-line bg-white/70 dark:bg-[#262830]/70 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-700 transition-all hover:bg-white dark:bg-[#262830] active:scale-95 disabled:opacity-40"
+              className="inline-flex items-center gap-1 rounded-full border border-line bg-white/70 dark:bg-surface/70 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-700 transition-all hover:bg-white dark:bg-surface active:scale-95 disabled:opacity-40"
               disabled={isSubmitting}
               onClick={(event) => {
                 stopEvent(event);

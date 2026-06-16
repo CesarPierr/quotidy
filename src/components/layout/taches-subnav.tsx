@@ -44,8 +44,8 @@ export function TachesSubnav({ manageable }: { manageable: boolean }) {
             className={cn(
               "flex shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-all duration-150",
               active
-                ? "border-coral-500 bg-white text-coral-600 shadow-[0_8px_20px_rgba(216,100,61,0.08)] dark:bg-[#262830]"
-                : "border-line bg-white/80 text-ink-700 hover:border-ink-300 hover:bg-white active:scale-95 dark:bg-[#262830]/80 dark:hover:bg-[#262830]",
+                ? "border-coral-500 bg-white text-coral-600 shadow-[0_8px_20px_rgba(216,100,61,0.08)] dark:bg-surface"
+                : "border-line bg-white/80 text-ink-700 hover:border-ink-300 hover:bg-white active:scale-95 dark:bg-surface/80 dark:hover:bg-surface",
             )}
           >
             <Icon className="size-4 opacity-60" />

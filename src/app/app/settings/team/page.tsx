@@ -7,5 +7,5 @@ export default async function RedirectStub({ searchParams }: Props) {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(sp)) if (v) qs.set(k, String(v));
   const q = qs.toString();
-  redirect(`/app/foyer${q ? `?${q}` : ""}`);
+  redirect(`/app/foyer/membres${q ? `?${q}` : ""}`);
 }

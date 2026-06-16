@@ -35,12 +35,12 @@ export function CalendarSidebar({ householdFeedUrl, personalFeedUrl, householdId
             "flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-6 transition-all duration-300 group",
             activeTab === "sync"
               ? "bg-ink-950 text-white border-ink-950 shadow-xl shadow-black/10 scale-[1.02]"
-              : "bg-white dark:bg-[#262830] border-line text-ink-700 hover:border-ink-300 hover:bg-[var(--ink-50)]"
+              : "bg-white dark:bg-surface border-line text-ink-700 hover:border-ink-300 hover:bg-[var(--ink-50)]"
           )}
         >
           <div className={cn(
             "flex size-12 items-center justify-center rounded-full transition-colors",
-            activeTab === "sync" ? "bg-white/10 dark:bg-[#262830]/10" : "bg-[var(--ink-50)] group-hover:bg-white dark:bg-[#262830]"
+            activeTab === "sync" ? "bg-white/10 dark:bg-surface/10" : "bg-[var(--ink-50)] group-hover:bg-white dark:bg-surface"
           )}>
             <CloudSync className="size-6" />
           </div>
@@ -53,12 +53,12 @@ export function CalendarSidebar({ householdFeedUrl, personalFeedUrl, householdId
             "flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-6 transition-all duration-300 group",
             activeTab === "export"
               ? "bg-ink-950 text-white border-ink-950 shadow-xl shadow-black/10 scale-[1.02]"
-              : "bg-white dark:bg-[#262830] border-line text-ink-700 hover:border-ink-300 hover:bg-[var(--ink-50)]"
+              : "bg-white dark:bg-surface border-line text-ink-700 hover:border-ink-300 hover:bg-[var(--ink-50)]"
           )}
         >
           <div className={cn(
             "flex size-12 items-center justify-center rounded-full transition-colors",
-            activeTab === "export" ? "bg-white/10 dark:bg-[#262830]/10" : "bg-[var(--ink-50)] group-hover:bg-white dark:bg-[#262830]"
+            activeTab === "export" ? "bg-white/10 dark:bg-surface/10" : "bg-[var(--ink-50)] group-hover:bg-white dark:bg-surface"
           )}>
             <Download className="size-6" />
           </div>

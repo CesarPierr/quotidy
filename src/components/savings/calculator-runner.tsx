@@ -144,7 +144,7 @@ export function CalculatorRunner({
           <button
             type="button"
             onClick={onCreate}
-            className="app-surface rounded-2xl border border-dashed border-black/10 p-5 flex flex-col items-center justify-center gap-2 text-center hover:bg-black/[0.02] transition-colors group h-full min-h-[80px]"
+            className="app-surface rounded-2xl border border-dashed border-black/10 p-5 flex flex-col items-center justify-center gap-2 text-center hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] group h-full min-h-[80px]"
           >
             <Plus className="size-5 text-ink-400 group-hover:text-coral-500 transition-colors" />
             <span className="text-xs font-bold text-ink-400">Nouveau calculateur</span>
@@ -174,7 +174,7 @@ export function CalculatorRunner({
         <button
           type="button"
           onClick={clearSelection}
-          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-ink-500 hover:text-ink-950 hover:bg-black/[0.04]"
+          className="inline-flex min-h-9 items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ink-500 transition-all hover:text-ink-950 hover:bg-black/[0.04] active:scale-95"
           aria-label="Revenir à la liste des calculateurs"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
@@ -223,14 +223,25 @@ export function CalculatorRunner({
       <button
         type="submit"
         disabled={run.isSubmitting || !preview || (selected.resultMode !== "none" && (preview.amount <= 0 || !targetBoxId))}
-        className="btn-primary flex w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold shadow-md disabled:opacity-50"
+        className="btn-primary flex min-h-12 w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
       >
-        <Calculator className="size-4" />
-        {selected.resultMode === "none"
-          ? "Terminer"
-          : preview
-          ? `${preview.entryType === "deposit" ? "Ajouter" : "Retirer"} ${formatCurrency(preview.amount)}`
-          : "Calculer"}
+        <Calculator className="size-4 shrink-0" />
+        <span
+          key={
+            selected.resultMode === "none"
+              ? "done"
+              : preview
+                ? `${preview.entryType}-${preview.amount}`
+                : "idle"
+          }
+          className="animate-in fade-in duration-200 motion-reduce:animate-none"
+        >
+          {selected.resultMode === "none"
+            ? "Terminer"
+            : preview
+              ? `${preview.entryType === "deposit" ? "Ajouter" : "Retirer"} ${formatCurrency(preview.amount)}`
+              : "Calculer"}
+        </span>
       </button>
     </form>
   ) : null;
@@ -242,7 +253,7 @@ export function CalculatorRunner({
           <button
             type="button"
             onClick={() => chooseCalculator(calculator)}
-            className="w-full app-surface rounded-2xl border border-black/[0.04] p-4 text-left hover:border-black/[0.1] hover:bg-black/[0.01] transition-colors"
+            className="w-full app-surface rounded-2xl border border-black/[0.04] p-4 text-left hover:border-black/[0.1] hover:bg-black/[0.01] transition-all duration-150 active:scale-[0.98]"
             style={{ borderLeft: `4px solid ${color}` }}
           >
             <div className="flex items-start gap-3">
@@ -261,7 +272,7 @@ export function CalculatorRunner({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onEdit(calculator); }}
-              className="absolute top-2 right-2 p-2 rounded-lg text-ink-400 hover:text-[var(--ink-900)] hover:bg-black/[0.05]"
+              className="absolute top-2 right-2 flex size-9 items-center justify-center rounded-lg text-ink-400 hover:text-[var(--ink-900)] hover:bg-black/[0.05] transition-all duration-150 active:scale-90"
               title="Modifier le modèle"
               aria-label={`Modifier ${calculator.name}`}
             >
@@ -274,7 +285,7 @@ export function CalculatorRunner({
         <button
           type="button"
           onClick={onCreate}
-          className="app-surface rounded-2xl border border-dashed border-black/10 p-4 flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-colors min-h-[72px]"
+          className="app-surface rounded-2xl border border-dashed border-black/10 p-4 flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] min-h-[72px]"
         >
           <Plus className="size-4 text-ink-400" />
           <span className="text-xs font-bold text-ink-400">Nouveau</span>
@@ -287,11 +298,16 @@ export function CalculatorRunner({
     return (
       <section className="space-y-4">
         {selected ? (
-          <div className="app-surface rounded-2xl border border-black/[0.03] p-5">
+          <div
+            key={selected.id}
+            className="app-surface mx-auto w-full max-w-lg rounded-2xl border border-black/[0.03] p-5 animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none"
+          >
             {form}
           </div>
         ) : (
-          calculatorList(false)
+          <div className="animate-in fade-in duration-200 motion-reduce:animate-none">
+            {calculatorList(false)}
+          </div>
         )}
       </section>
     );
@@ -308,7 +324,7 @@ export function CalculatorRunner({
             return next;
           });
         }}
-        className="flex w-full items-center justify-between gap-3 p-4 text-left"
+        className="flex w-full items-center justify-between gap-3 p-4 text-left transition-colors active:bg-black/[0.02]"
         aria-expanded={isOpen}
       >
         <span className="flex items-center gap-2 text-sm font-bold text-[var(--ink-800)]">

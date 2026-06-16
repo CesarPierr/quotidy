@@ -48,8 +48,8 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("general")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
-            settingsTab === "general" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
+            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            settingsTab === "general" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
           Général
@@ -58,8 +58,8 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("autofill")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
-            settingsTab === "autofill" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
+            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            settingsTab === "autofill" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
           Auto-versement
@@ -68,14 +68,15 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("calculators")}
           className={cn(
-            "flex-1 py-1.5 text-[10px] font-bold rounded-md transition-colors duration-150",
-            settingsTab === "calculators" ? "bg-white dark:bg-[#262830] shadow-sm" : "text-ink-500"
+            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            settingsTab === "calculators" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
           Calculateurs
         </button>
       </div>
 
+      <div key={settingsTab} className="animate-in fade-in duration-200 motion-reduce:animate-none">
       {settingsTab === "general" ? (
         <div className="space-y-6">
           <section className="app-surface rounded-2xl p-5 border border-black/[0.03]">
@@ -193,6 +194,7 @@ export function BoxDetailSettings({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }

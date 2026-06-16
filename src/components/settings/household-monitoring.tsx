@@ -21,7 +21,7 @@ function ProgressBar({ value, color = "var(--leaf-500)" }: { value: number; colo
 function MetricPill({ children, tone = "leaf" }: { children: React.ReactNode; tone?: "leaf" | "coral" | "sky" }) {
   const color = tone === "coral" ? "var(--coral-500)" : tone === "sky" ? "var(--sky-500)" : "var(--leaf-500)";
   return (
-    <span className="accent-pill bg-white shadow-sm dark:bg-[#262830]">
+    <span className="accent-pill bg-white shadow-sm dark:bg-surface">
       <span className="accent-pill-dot" style={{ backgroundColor: color }} />
       {children}
     </span>
@@ -127,7 +127,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
           </summary>
           <div className="mt-4 space-y-3">
             {snapshot.upcoming.byMember.map((member) => (
-              <div key={member.memberId} className="rounded-2xl border border-line bg-white/65 p-3 dark:bg-[#262830]/65">
+              <div key={member.memberId} className="rounded-2xl border border-line bg-white/65 p-3 dark:bg-surface/65">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="size-2.5 rounded-full" style={{ backgroundColor: member.color }} />
@@ -155,7 +155,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
           </summary>
           <div className="mt-4 grid gap-2">
             {snapshot.rolling.map((window) => (
-              <div key={window.days} className="rounded-2xl border border-line bg-white/65 p-3 dark:bg-[#262830]/65">
+              <div key={window.days} className="rounded-2xl border border-line bg-white/65 p-3 dark:bg-surface/65">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold">{window.days} jours</p>
                   <p className="text-sm font-semibold text-ink-600">{window.completionRate}% validées</p>
@@ -186,13 +186,13 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
           <div className="mt-4 space-y-2">
             {snapshot.topCompletedTasks.length ? (
               snapshot.topCompletedTasks.map((task) => (
-                <div key={task.title} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-[#262830]/65">
+                <div key={task.title} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-surface/65">
                   <span className="truncate font-semibold">{task.title}</span>
                   <span className="shrink-0 text-xs text-ink-600">{task.count}x · {formatMinutes(task.minutes)}</span>
                 </div>
               ))
             ) : (
-              <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-[#262830]/65">
+              <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-surface/65">
                 Pas encore assez de tâches complétées pour faire ressortir une tendance.
               </p>
             )}
@@ -216,7 +216,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
               <div className="space-y-2">
                 {snapshot.savings.recurringMovements.length ? (
                   snapshot.savings.recurringMovements.map((movement) => (
-                    <div key={movement.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-[#262830]/65">
+                    <div key={movement.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-surface/65">
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{movement.boxName}</span>
                         <span className="text-xs text-ink-500">
@@ -227,7 +227,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-[#262830]/65">
+                  <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-surface/65">
                     Aucune récurrence d&apos;épargne active.
                   </p>
                 )}
@@ -242,7 +242,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
               <div className="space-y-2">
                 {snapshot.savings.recentExpenses.length ? (
                   snapshot.savings.recentExpenses.map((expense) => (
-                    <div key={expense.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-[#262830]/65">
+                    <div key={expense.id} className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-white/65 px-3 py-2.5 text-sm dark:bg-surface/65">
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{expense.reason || expense.boxName}</span>
                         <span className="text-xs text-ink-500">{format(expense.occurredOn, "d MMM", { locale: fr })} · {expense.boxName}</span>
@@ -253,7 +253,7 @@ export function HouseholdMonitoring({ snapshot }: HouseholdMonitoringProps) {
                     </div>
                   ))
                 ) : (
-                  <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-[#262830]/65">
+                  <p className="rounded-2xl border border-line bg-white/65 p-3 text-sm text-ink-600 dark:bg-surface/65">
                     Aucune dépense récente enregistrée.
                   </p>
                 )}

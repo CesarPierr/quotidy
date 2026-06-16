@@ -72,7 +72,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
             <summary className="btn-secondary cursor-pointer list-none px-4 py-2 text-sm font-semibold">
               Changer de foyer
             </summary>
-            <div className="absolute right-0 z-10 mt-2 w-64 space-y-1 rounded-[1rem] border border-line bg-white p-2 shadow-lg dark:bg-[#262830]">
+            <div className="absolute right-0 z-10 mt-2 w-64 space-y-1 rounded-[1rem] border border-line bg-white p-2 shadow-lg dark:bg-surface">
               {otherMemberships.map((m) => (
                 <Link
                   key={m.id}
@@ -105,7 +105,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
                 className={cn(
                   "flex flex-1 items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-colors duration-150 sm:text-sm",
                   active
-                    ? "bg-white text-ink-950 shadow-sm dark:bg-[#262830]"
+                    ? "bg-white text-ink-950 shadow-sm dark:bg-surface"
                     : "text-ink-500 hover:text-ink-700",
                 )}
               >
@@ -173,7 +173,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
                 return (
                   <div
                     key={membership.id}
-                    className="flex items-center justify-between gap-3 rounded-[1rem] border border-line bg-white/70 px-4 py-3 dark:bg-[#262830]/70"
+                    className="flex items-center justify-between gap-3 rounded-[1rem] border border-line bg-white/70 px-4 py-3 dark:bg-surface/70"
                   >
                     <div className="min-w-0">
                       <p className="font-semibold text-ink-950">{membership.household.name}</p>

@@ -73,7 +73,7 @@ export function EntryRow({ entry, householdId, onChanged }: EntryRowProps) {
   if (editing) {
     content = (
       <form
-        className="rounded-xl border border-black/[0.08] bg-white dark:bg-[#262830] p-3 space-y-2"
+        className="rounded-xl border border-black/[0.08] bg-white dark:bg-surface p-3 space-y-2"
         onSubmit={(e) => {
           e.preventDefault();
           const fd = new FormData();

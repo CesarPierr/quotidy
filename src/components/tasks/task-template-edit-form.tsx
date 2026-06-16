@@ -148,7 +148,7 @@ export function TaskTemplateEditForm({ task, householdId, onCancel, onSuccess }:
 
       <div className="mt-4 field-label">
         <span>Icône (optionnel)</span>
-        <div className="flex flex-wrap gap-2 overflow-y-auto max-h-40 rounded-2xl border border-line bg-white/50 dark:bg-[#262830]/50 p-3">
+        <div className="flex flex-wrap gap-2 overflow-y-auto max-h-40 rounded-2xl border border-line bg-white/50 dark:bg-surface/50 p-3">
           <button
             className={cn(
               "flex size-10 items-center justify-center rounded-lg border-2 transition-all",
@@ -196,7 +196,7 @@ export function TaskTemplateEditForm({ task, householdId, onCancel, onSuccess }:
         </div>
       </div>
 
-      <div className="mt-4 space-y-3 rounded-2xl border border-line bg-white/60 dark:bg-[#262830]/60 p-4">
+      <div className="mt-4 space-y-3 rounded-2xl border border-line bg-white/60 dark:bg-surface/60 p-4">
         <p className="text-sm font-bold uppercase tracking-wider text-ink-950">Planification</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="field-label">

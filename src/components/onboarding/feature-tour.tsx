@@ -215,7 +215,7 @@ export function FeatureTour({ open, onClose }: FeatureTourProps) {
             {slide.bullets.map(({ icon: Icon, label }) => (
               <li
                 key={label}
-                className="flex items-center gap-3 rounded-2xl border border-line bg-white/60 dark:bg-[#262830]/60 px-4 py-2.5"
+                className="flex items-center gap-3 rounded-2xl border border-line bg-white/60 dark:bg-surface/60 px-4 py-2.5"
               >
                 <span
                   className="flex size-8 shrink-0 items-center justify-center rounded-xl"
@@ -230,7 +230,7 @@ export function FeatureTour({ open, onClose }: FeatureTourProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-line bg-white/40 dark:bg-[#262830]/40 px-5 py-3">
+        <div className="flex items-center justify-between gap-3 border-t border-line bg-white/40 dark:bg-surface/40 px-5 py-3">
           <button
             className="btn-quiet inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold disabled:opacity-40"
             disabled={index === 0}
@@ -318,7 +318,7 @@ export function FeatureTourInline({ onComplete }: FeatureTourInlineProps) {
           {slide.bullets.map(({ icon: Icon, label }) => (
             <li
               key={label}
-              className="flex items-center gap-3 rounded-2xl border border-line bg-white/60 dark:bg-[#262830]/60 px-4 py-2.5"
+              className="flex items-center gap-3 rounded-2xl border border-line bg-white/60 dark:bg-surface/60 px-4 py-2.5"
             >
               <span
                 className="flex size-8 shrink-0 items-center justify-center rounded-xl"

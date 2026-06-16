@@ -56,7 +56,7 @@ export default async function AdminPage() {
           Indicateurs agrégés (sans donnée personnelle), activation et signalements.
         </p>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <MetricCard label="Utilisateurs" value={stats.totals.users} hint={`+${stats.growth30.users} sur 30 j`} />
           <MetricCard label="Foyers" value={stats.totals.households} hint={`+${stats.growth30.households} sur 30 j`} />
           <MetricCard label="Actifs 7 j" value={stats.active.d7} hint={`${stats.active.d1} aujourd'hui`} />
@@ -128,7 +128,7 @@ export default async function AdminPage() {
           <h2 className="display-title text-2xl">Signalements récents</h2>
           <div className="mt-4 space-y-2">
             {recentReports.length ? recentReports.map((report) => (
-              <article key={report.id} className="rounded-2xl border border-line bg-white/70 p-3 text-sm dark:bg-[#262830]/70">
+              <article key={report.id} className="rounded-2xl border border-line bg-white/70 p-3 text-sm dark:bg-surface/70">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-bold">{report.kind} · {report.status}</span>
                   <span className="text-xs text-ink-500">
@@ -157,7 +157,7 @@ export default async function AdminPage() {
           <h2 className="display-title text-2xl">Événements récents</h2>
           <div className="mt-4 space-y-2">
             {recentEvents.length ? recentEvents.map((event) => (
-              <article key={event.id} className="rounded-2xl border border-line bg-white/70 p-3 text-sm dark:bg-[#262830]/70">
+              <article key={event.id} className="rounded-2xl border border-line bg-white/70 p-3 text-sm dark:bg-surface/70">
                 <div className="flex items-center justify-between gap-3">
                   <span className="font-bold">{event.event}</span>
                   <span className="text-xs text-ink-500">

@@ -9,7 +9,7 @@ export default function EpargneLoading() {
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="rounded-[1.45rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4">
+            <div key={i} className="rounded-[1.45rem] border border-line bg-white/70 dark:bg-surface/70 p-4">
               <div className="shimmer-line h-3 w-16 rounded-full bg-black/8" />
               <div className="shimmer-line mt-3 h-7 w-24 rounded-xl bg-black/8" />
             </div>

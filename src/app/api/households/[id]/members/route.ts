@@ -9,7 +9,7 @@ import { memberSchema } from "@/lib/validation";
 
 export const POST = withHousehold<{ id: string }>(
   async ({ request, params, formData }) => {
-    const fallback = `/app/foyer?household=${params.id}`;
+    const fallback = `/app/foyer/membres?household=${params.id}`;
 
     const parsed = memberSchema.safeParse({
       householdId: params.id,

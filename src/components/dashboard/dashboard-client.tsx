@@ -164,7 +164,7 @@ export function DashboardClient({
       />
 
       {completedCount >= 3 ? (
-        <div className="rounded-[1.5rem] border border-line bg-white/60 px-4 py-3 text-sm text-ink-700 dark:bg-[#262830]/60">
+        <div className="rounded-[1.5rem] border border-line bg-white/60 px-4 py-3 text-sm text-ink-700 dark:bg-surface/60">
           L&apos;app commence à vous servir ?{" "}
           <Link className="font-semibold text-coral-600 underline" href="/support">
             Soutenir le projet
@@ -182,7 +182,7 @@ export function DashboardClient({
                 {isPersonal ? "Ma semaine" : "La semaine du foyer"}
               </h3>
             </div>
-            <span className="chev rounded-full border border-line bg-white/70 dark:bg-[#262830]/70 p-1.5 text-ink-500 transition-transform">
+            <span className="chev rounded-full border border-line bg-white/70 dark:bg-surface/70 p-1.5 text-ink-500 transition-transform">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
             </span>
           </summary>

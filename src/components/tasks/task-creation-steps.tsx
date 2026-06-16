@@ -134,12 +134,12 @@ export function WizardStep2({ draft, updateDraft }: BaseStepProps) {
             "flex flex-col items-center gap-4 rounded-3xl border-2 p-6 transition-all text-center",
             draft.kind === "single"
               ? "border-coral-500 bg-[var(--coral-50)]/30"
-              : "border-line bg-white/50 dark:bg-[#262830]/50 grayscale opacity-60"
+              : "border-line bg-white/50 dark:bg-surface/50 grayscale opacity-60"
           )}
           onClick={() => updateDraft("kind", "single")}
           type="button"
         >
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-white dark:bg-[#262830] shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-white dark:bg-surface shadow-sm">
             <Calendar className="size-7 text-coral-500" />
           </div>
           <div>
@@ -157,7 +157,7 @@ export function WizardStep2({ draft, updateDraft }: BaseStepProps) {
           onClick={() => updateDraft("kind", "recurring")}
           type="button"
         >
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-white dark:bg-[#262830] shadow-sm">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-white dark:bg-surface shadow-sm">
             <CalendarClock className="size-7 text-coral-500" />
           </div>
           <div>
@@ -317,7 +317,7 @@ export function WizardStep4({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="field-label px-1">Personnes éligibles</p>
-            <label className="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-white dark:bg-[#262830] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-600)] transition-all hover:bg-black/[0.02]">
+            <label className="flex cursor-pointer items-center gap-2 rounded-full border border-line bg-white dark:bg-surface px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-600)] transition-all hover:bg-black/[0.02]">
               <input
                 type="checkbox"
                 checked={draft.isCollective}
@@ -361,7 +361,7 @@ export function WizardStep4({
                     "flex-1 min-w-[48px] rounded-xl border py-2.5 text-sm font-bold transition-all",
                     draft.estimatedMinutes === m
                       ? "bg-ink-950 text-white border-ink-950"
-                      : "bg-white dark:bg-[#262830] border-line"
+                      : "bg-white dark:bg-surface border-line"
                   )}
                 >
                   {m}

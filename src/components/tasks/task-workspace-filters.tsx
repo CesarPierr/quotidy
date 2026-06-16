@@ -48,9 +48,9 @@ export function TaskWorkspaceFilters({
   return (
     <>
       <section className="app-surface rounded-[1.35rem] p-3 sm:rounded-[1.6rem] sm:p-4">
-        <div className="grid gap-3 xl:grid-cols-[minmax(13rem,auto)_1fr_auto] xl:items-center">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <h3 className="display-title min-w-0 truncate text-2xl leading-tight sm:text-[1.65rem]">
+        <div className="grid gap-3 lg:grid-cols-[minmax(13rem,auto)_1fr_auto] lg:items-center">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <h3 className="display-title min-w-0 text-2xl leading-tight sm:text-[1.65rem]">
               {search ? "Tâches correspondantes" : "Tâches à venir"}
             </h3>
             <div aria-live="polite" className="flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-glass-bg px-2.5 py-1 text-[11px] font-bold text-ink-500">
@@ -59,7 +59,7 @@ export function TaskWorkspaceFilters({
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center xl:justify-end">
+          <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <button
               onClick={() => setFilterType(filterType === "active" ? "history" : "active")}
               className="btn-quiet flex min-h-9 items-center justify-center gap-1.5 rounded-xl px-2 py-2 text-[0.72rem] font-bold sm:justify-start sm:gap-2 sm:px-3 sm:text-xs"
@@ -88,7 +88,7 @@ export function TaskWorkspaceFilters({
             {!activeRunningSession && (
               <>
                 <button
-                  className="btn-primary col-span-2 inline-flex min-h-9 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold sm:col-span-1 sm:px-4"
+                  className="btn-primary inline-flex min-h-9 items-center justify-center gap-2 px-3 py-2 text-sm font-semibold sm:px-4"
                   onClick={() => setShowOptimizedPicker(true)}
                   type="button"
                 >
@@ -111,7 +111,7 @@ export function TaskWorkspaceFilters({
               <SlidersHorizontal className="size-3.5" aria-hidden="true" />
               {hasAdvancedFilters ? "Filtres actifs" : "Recherche et filtres"}
             </span>
-            <span className="inline-flex size-7 items-center justify-center rounded-full border border-line bg-white/70 text-ink-500 transition-transform group-open:rotate-180 dark:bg-[#262830]/70">
+            <span className="inline-flex size-7 items-center justify-center rounded-full border border-line bg-white/70 text-ink-500 transition-transform group-open:rotate-180 dark:bg-surface/70">
               <ChevronDown className="size-3.5" aria-hidden="true" />
             </span>
           </summary>

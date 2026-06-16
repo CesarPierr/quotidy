@@ -108,9 +108,9 @@ function BoxDetailContent({
               type="button"
               onClick={() => setTab(t)}
               className={cn(
-                "rounded-lg py-2 text-xs font-bold transition-colors duration-150 truncate px-1",
+                "rounded-lg py-2.5 text-xs font-bold transition-all duration-200 active:scale-[0.96] truncate px-1",
                 tab === t
-                  ? "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
+                  ? "bg-white dark:bg-surface text-ink-950 shadow-sm"
                   : "text-ink-500 hover:text-ink-700",
               )}
             >
@@ -120,7 +120,7 @@ function BoxDetailContent({
         </div>
       </div>
 
-      <div className="min-h-[350px]">
+      <div key={tab} className="min-h-[350px] animate-in fade-in duration-200 motion-reduce:animate-none">
         {tab === "summary" ? (
           <BoxDetailSummary
             box={box}

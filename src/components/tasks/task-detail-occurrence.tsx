@@ -86,7 +86,7 @@ export function TaskDetailOccurrence({
   return (
     <div className="space-y-3">
       {/* Summary */}
-      <div className="rounded-[1.3rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4">
+      <div className="rounded-[1.3rem] border border-line bg-white/70 dark:bg-surface/70 p-4">
         <p className="section-kicker">À faire</p>
         <h3 className="mt-2 text-xl font-semibold text-ink-950">{occurrence.taskTemplate.title}</h3>
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink-700">
@@ -202,7 +202,7 @@ export function TaskDetailOccurrence({
 
       {mode === "complete-details" ? (
         <form
-          className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4"
+          className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-surface/70 p-4"
           onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
@@ -241,11 +241,11 @@ export function TaskDetailOccurrence({
               />
             </label>
           </div>
-          <p className="rounded-xl border border-line bg-white/70 dark:bg-[#262830]/70 px-3 py-2.5 text-xs leading-5 text-ink-500">
+          <p className="rounded-xl border border-line bg-white/70 dark:bg-surface/70 px-3 py-2.5 text-xs leading-5 text-ink-500">
             Le calendrier suivant est automatiquement réaligné depuis aujourd&apos;hui.
           </p>
           {occurrence.taskTemplate.isCollective ? (
-            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-white/70 dark:bg-[#262830]/70 px-3 py-2.5 text-xs font-medium text-ink-700">
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-white/70 dark:bg-surface/70 px-3 py-2.5 text-xs font-medium text-ink-700">
               <input name="wasCompletedAlone" type="checkbox" />
               J&apos;ai fait cette tâche collective seul(e)
             </label>
@@ -257,7 +257,7 @@ export function TaskDetailOccurrence({
       ) : null}
 
       {mode === "reschedule" ? (
-        <div className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4">
+        <div className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-surface/70 p-4">
           <button type="button" onClick={backToMain} className="text-xs font-semibold text-ink-500 inline-flex items-center gap-1">
             <ArrowLeft className="size-3.5" /> Retour
           </button>
@@ -273,7 +273,7 @@ export function TaskDetailOccurrence({
             ] as const).map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white/70 dark:bg-[#262830]/70 px-3 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:bg-white dark:bg-[#262830] active:scale-[0.98] disabled:opacity-40"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-line bg-white/70 dark:bg-surface/70 px-3 py-2.5 text-sm font-semibold text-ink-700 transition-all hover:bg-white dark:bg-surface active:scale-[0.98] disabled:opacity-40"
                 disabled={isSubmitting}
                 onClick={() => {
                   const today = new Date();
@@ -320,14 +320,14 @@ export function TaskDetailOccurrence({
       ) : null}
 
       {mode === "reassign" ? (
-        <div className="space-y-2 rounded-[1.3rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4">
+        <div className="space-y-2 rounded-[1.3rem] border border-line bg-white/70 dark:bg-surface/70 p-4">
           <button type="button" onClick={backToMain} className="text-xs font-semibold text-ink-500 inline-flex items-center gap-1">
             <ArrowLeft className="size-3.5" /> Retour
           </button>
           {members.map((member) => (
             <button
               key={member.id}
-              className="flex w-full items-center gap-3 rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 px-4 py-3 text-left text-sm font-semibold transition-all hover:bg-black/[0.04] active:scale-[0.98] disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-2xl border border-line bg-white/70 dark:bg-surface/70 px-4 py-3 text-left text-sm font-semibold transition-all hover:bg-black/[0.04] active:scale-[0.98] disabled:opacity-50"
               disabled={isSubmitting}
               onClick={() => onSubmit(`/api/occurrences/${occurrence.id}/reassign`, { assignedMemberId: member.id })}
               type="button"
@@ -343,7 +343,7 @@ export function TaskDetailOccurrence({
 
       {mode === "skip-note" ? (
         <form
-          className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4"
+          className="space-y-3 rounded-[1.3rem] border border-line bg-white/70 dark:bg-surface/70 p-4"
           onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);

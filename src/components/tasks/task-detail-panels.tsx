@@ -73,7 +73,7 @@ export function TemplateEditPanel({
 
   if (loading && !data) {
     return (
-      <div className="rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 p-6 text-center text-sm text-ink-700">
+      <div className="rounded-2xl border border-line bg-white/70 dark:bg-surface/70 p-6 text-center text-sm text-ink-700">
         Chargement du modèle…
       </div>
     );
@@ -109,7 +109,7 @@ export function TaskHistoryPanel({ taskId, open }: TaskHistoryPanelProps) {
 
   if (loading && !data) {
     return (
-      <div className="rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 p-6 text-center text-sm text-ink-700">
+      <div className="rounded-2xl border border-line bg-white/70 dark:bg-surface/70 p-6 text-center text-sm text-ink-700">
         Chargement de l&apos;historique…
       </div>
     );
@@ -125,7 +125,7 @@ export function TaskHistoryPanel({ taskId, open }: TaskHistoryPanelProps) {
 
   if (data.recentRuns.length === 0) {
     return (
-      <div className="rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 p-4 text-center text-sm text-ink-700">
+      <div className="rounded-2xl border border-line bg-white/70 dark:bg-surface/70 p-4 text-center text-sm text-ink-700">
         Cette tâche n&apos;a pas encore d&apos;historique.
       </div>
     );
@@ -139,7 +139,7 @@ export function TaskHistoryPanel({ taskId, open }: TaskHistoryPanelProps) {
         return (
           <li
             key={run.id}
-            className="flex items-start gap-3 rounded-2xl border border-line bg-white/80 dark:bg-[#262830]/80 p-3"
+            className="flex items-start gap-3 rounded-2xl border border-line bg-white/80 dark:bg-surface/80 p-3"
           >
             <span
               className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full"

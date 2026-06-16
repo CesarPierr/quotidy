@@ -44,7 +44,7 @@ export function BoxDetailSummary({
       {/* Balance Card - Becomes compact when an action is active to save vertical space */}
       <div
         className={cn(
-          "rounded-2xl",
+          "rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           actionType ? "p-3 flex items-center justify-between" : "p-6 text-center"
         )}
         style={{ background: `${box.color}1A` }}
@@ -95,7 +95,7 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "deposit" ? null : "deposit")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
+            "flex min-h-[4.25rem] flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-[0.97]",
             actionType === "deposit"
               ? "bg-leaf-500 border-[var(--leaf-600)] text-white shadow-md"
               : "bg-[var(--leaf-50)] border-[var(--leaf-100)] text-[var(--leaf-700)] hover:bg-[var(--leaf-100)] opacity-80"
@@ -107,7 +107,7 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "withdrawal" ? null : "withdrawal")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
+            "flex min-h-[4.25rem] flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-[0.97]",
             actionType === "withdrawal"
               ? "bg-coral-500 border-[var(--coral-600)] text-white shadow-md"
               : "bg-red-50 border-red-100 text-red-700 hover:bg-red-100 opacity-80"
@@ -119,7 +119,7 @@ export function BoxDetailSummary({
         <button
           onClick={() => setActionType(actionType === "transfer" ? null : "transfer")}
           className={cn(
-            "flex flex-col items-center gap-2 p-3 rounded-2xl border transition-colors duration-150",
+            "flex min-h-[4.25rem] flex-col items-center justify-center gap-2 p-3 rounded-2xl border transition-all duration-200 active:scale-[0.97]",
             actionType === "transfer"
               ? "bg-blue-600 border-blue-700 text-white shadow-md"
               : "bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100 opacity-80"
@@ -132,7 +132,7 @@ export function BoxDetailSummary({
 
       {/* Dynamic Form Display */}
       {actionType ? (
-        <div className="app-surface rounded-2xl p-5 border border-black/[0.03]">
+        <div key={actionType} className="app-surface rounded-2xl p-5 border border-black/[0.03] animate-in fade-in slide-in-from-top-2 duration-200 motion-reduce:animate-none">
           <div className="flex items-center justify-between mb-5">
             <h4 className="text-xs uppercase tracking-widest font-bold text-ink-500">
               {actionType === "deposit" ? "Nouveau versement" : actionType === "withdrawal" ? "Nouveau retrait" : "Nouveau transfert"}

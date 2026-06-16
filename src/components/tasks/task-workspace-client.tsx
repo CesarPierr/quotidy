@@ -366,7 +366,7 @@ export function TaskWorkspaceClient({
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-white/70 px-4 text-xs font-bold text-coral-600 hover:bg-white dark:bg-[#262830]/70"
+                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-white/70 px-4 text-xs font-bold text-coral-600 hover:bg-white dark:bg-surface/70"
                   type="button"
                 >
                   Réinitialiser la recherche

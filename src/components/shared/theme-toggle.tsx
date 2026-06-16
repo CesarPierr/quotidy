@@ -18,7 +18,7 @@ export function ThemeToggle() {
         "flex items-center gap-2 rounded-2xl border border-line px-4 py-2 text-xs font-bold transition-all",
         isDark 
           ? "bg-[rgba(30,31,34,0.4)] text-ink-950 border-white/10" 
-          : "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
+          : "bg-white dark:bg-surface text-ink-950 shadow-sm"
       )}
     >
       {isDark ? (

@@ -78,7 +78,7 @@ export function EpargneClient({
           </div>
 
           {debtBoxes.length > 0 ? (
-            <span className="accent-pill self-start bg-white shadow-sm dark:bg-[#262830] sm:self-auto">
+            <span className="accent-pill self-start bg-white shadow-sm dark:bg-surface sm:self-auto">
               <span className="accent-pill-dot" style={{ backgroundColor: "var(--coral-500)" }} />
               <span className="text-[10px] font-bold uppercase tracking-wider">Dettes</span>
               <span className="text-xs font-bold text-red-700">{formatCurrency(totalDebt)}</span>
@@ -126,13 +126,13 @@ export function EpargneClient({
             window.history.replaceState({}, "", url.toString());
           }}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-colors duration-150 sm:text-sm",
+            "flex-1 flex min-h-11 items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-all duration-200 active:scale-[0.97] sm:text-sm",
             tab === "boxes"
-              ? "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
+              ? "bg-white dark:bg-surface text-ink-950 shadow-sm"
               : "text-ink-500 hover:text-ink-700",
           )}
         >
-          <Sparkles className={cn("size-4", tab === "boxes" ? "text-coral-500" : "")} />
+          <Sparkles className={cn("size-4 transition-colors", tab === "boxes" ? "text-coral-500" : "")} />
           Enveloppes
         </button>
         <button
@@ -143,19 +143,19 @@ export function EpargneClient({
             window.history.replaceState({}, "", url.toString());
           }}
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-colors duration-150 sm:text-sm",
+            "flex-1 flex min-h-11 items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold transition-all duration-200 active:scale-[0.97] sm:text-sm",
             tab === "calculators"
-              ? "bg-white dark:bg-[#262830] text-ink-950 shadow-sm"
+              ? "bg-white dark:bg-surface text-ink-950 shadow-sm"
               : "text-ink-500 hover:text-ink-700",
           )}
         >
-          <Calculator className={cn("size-4", tab === "calculators" ? "text-coral-500" : "")} />
+          <Calculator className={cn("size-4 transition-colors", tab === "calculators" ? "text-coral-500" : "")} />
           Calculateurs
         </button>
       </nav>
 
       {tab === "boxes" ? (
-        <div>
+        <div key="tab-boxes" className="animate-in fade-in duration-300 motion-reduce:animate-none">
           {isEmpty ? (
             <section className="app-surface rounded-2xl p-5 text-center sm:p-6">
               <Sparkles className="mx-auto size-7 text-coral-500 sm:size-8" />
@@ -195,7 +195,7 @@ export function EpargneClient({
           ) : null}
         </div>
       ) : (
-        <section className="space-y-4">
+        <section key="tab-calculators" className="space-y-4 animate-in fade-in duration-300 motion-reduce:animate-none">
           <div className="px-1 flex items-center justify-between">
             <div>
               <p className="section-kicker text-coral-500">Utiliser</p>

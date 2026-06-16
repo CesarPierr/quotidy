@@ -20,9 +20,9 @@ type CompletedTasksDialogProps = {
 export function CompletedTasksDialog({ tasks, members, currentMemberId }: CompletedTasksDialogProps) {
   return (
     <div className="space-y-4">
-      <div className="rounded-[1.4rem] border border-line bg-white/80 dark:bg-[#262830]/80 px-4 py-3 sm:px-5">
+      <div className="rounded-[1.4rem] border border-line bg-white/80 dark:bg-surface/80 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-full border border-line bg-white dark:bg-[#262830] text-leaf-600">
+          <div className="flex size-9 items-center justify-center rounded-full border border-line bg-white dark:bg-surface text-leaf-600">
             <CheckCircle2 className="size-4.5" />
           </div>
           <div>

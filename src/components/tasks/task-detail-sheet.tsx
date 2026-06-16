@@ -81,7 +81,7 @@ export function TaskDetailSheet({
               type="button"
               className={
                 tab === t.id
-                  ? "shrink-0 rounded-full bg-white dark:bg-[#262830] px-4 py-1.5 text-sm font-bold text-ink-950 shadow-sm"
+                  ? "shrink-0 rounded-full bg-white dark:bg-surface px-4 py-1.5 text-sm font-bold text-ink-950 shadow-sm"
                   : "shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold text-ink-500"
               }
               onClick={() => {

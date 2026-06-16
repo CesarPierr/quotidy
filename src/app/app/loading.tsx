@@ -9,7 +9,7 @@ export default function AppLoading() {
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="rounded-[1.45rem] border border-line bg-white/70 dark:bg-[#262830]/70 p-4">
+            <div key={i} className="rounded-[1.45rem] border border-line bg-white/70 dark:bg-surface/70 p-4">
               <div className="shimmer-line h-3 w-20 rounded-full bg-black/8" />
               <div className="shimmer-line mt-3 h-8 w-16 rounded-xl bg-black/8" />
               <div className="shimmer-line mt-2 h-3 w-24 rounded-full bg-black/6" />
@@ -25,7 +25,7 @@ export default function AppLoading() {
 
         <div className="mt-5 space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="rounded-2xl border border-line bg-white/60 dark:bg-[#262830]/60 p-4">
+            <div key={i} className="rounded-2xl border border-line bg-white/60 dark:bg-surface/60 p-4">
               <div className="flex items-center gap-3">
                 <div className="shimmer-line size-8 rounded-full bg-black/8" />
                 <div className="flex-1">

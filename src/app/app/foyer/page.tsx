@@ -1,95 +1,109 @@
-import { MemberSettingsList } from "@/components/settings/member-settings-list";
+import Link from "next/link";
+import { ChevronRight, History, Mail, Users, Warehouse, ShieldAlert, type LucideIcon } from "lucide-react";
+
 import { requireUser } from "@/lib/auth";
 import { canManageHousehold, requireHouseholdContext } from "@/lib/households";
-import { ClientForm } from "@/components/shared/client-form";
+import { hexToRgba } from "@/lib/colors";
 
-type TeamPageProps = {
-  searchParams: Promise<{ household?: string; member?: string }>;
+type FoyerHubProps = {
+  searchParams: Promise<{ household?: string }>;
 };
 
-export default async function TeamSettingsPage({ searchParams }: TeamPageProps) {
+type FoyerCard = {
+  href: string;
+  label: string;
+  description: string;
+  icon: LucideIcon;
+  hex: string;
+};
+
+export default async function FoyerHubPage({ searchParams }: FoyerHubProps) {
   const user = await requireUser();
   const params = await searchParams;
   const context = await requireHouseholdContext(user.id, params.household);
   const manageable = canManageHousehold(context.membership.role);
 
-  const feedbackMessage =
-    params.member === "updated"
-      ? { tone: "success" as const, text: "Profil du foyer mis à jour." }
-      : params.member === "invalid"
-        ? { tone: "error" as const, text: "Impossible d'enregistrer ce membre." }
-        : null;
+  const suffix = `?household=${context.household.id}`;
+
+  const cards: FoyerCard[] = [
+    {
+      href: "/app/foyer/membres",
+      label: "Membres",
+      description: "Profils, couleurs & capacités",
+      icon: Users,
+      hex: "#d8643d",
+    },
+    ...(manageable
+      ? [
+          {
+            href: "/app/foyer/invitations",
+            label: "Invitations",
+            description: "Codes & liens d'accès",
+            icon: Mail,
+            hex: "#2f6d88",
+          },
+        ]
+      : []),
+    {
+      href: "/app/foyer/foyers",
+      label: "Foyers",
+      description: "Changer ou rejoindre un foyer",
+      icon: Warehouse,
+      hex: "#38735d",
+    },
+    {
+      href: "/app/foyer/activite",
+      label: "Activité",
+      description: "Historique des actions",
+      icon: History,
+      hex: "#545c68",
+    },
+    {
+      href: "/app/foyer/zone-sensible",
+      label: "Zone sensible",
+      description: "Quitter, transférer & supprimer",
+      icon: ShieldAlert,
+      hex: "#b3492c",
+    },
+  ];
 
   return (
-    <section className="app-surface rounded-[2rem] p-5 sm:p-6 space-y-5">
-      <div>
-        <p className="section-kicker">Équipe</p>
-        <h3 className="display-title mt-2 text-3xl">{manageable ? "Membres" : "Mon profil foyer"}</h3>
+    <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <header className="px-1">
+        <p className="section-kicker">Foyer</p>
+        <h2 className="display-title mt-1 text-3xl leading-tight sm:text-4xl">
+          {context.household.name}
+        </h2>
+        <p className="mt-1 text-sm font-medium text-ink-500">Membres, accès & paramètres du foyer.</p>
+      </header>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {cards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.href}
+              href={`${card.href}${suffix}`}
+              className="soft-panel interactive-surface group flex min-h-[7.5rem] flex-col justify-between p-4 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
+              style={{ background: hexToRgba(card.hex, 0.08) }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span
+                  className="flex size-11 items-center justify-center rounded-2xl"
+                  style={{ background: hexToRgba(card.hex, 0.16), color: card.hex }}
+                >
+                  <Icon className="size-5" />
+                </span>
+                <ChevronRight className="size-4 text-ink-400 transition-transform group-hover:translate-x-0.5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-ink-950">{card.label}</p>
+                <p className="mt-0.5 text-xs leading-snug text-ink-500">{card.description}</p>
+              </div>
+            </Link>
+          );
+        })}
       </div>
-
-      {feedbackMessage ? (
-        <div
-          className="rounded-[1.4rem] border px-4 py-3 text-sm leading-6"
-          style={{
-            backgroundColor: feedbackMessage.tone === "success" ? "rgba(56, 115, 93, 0.12)" : "rgba(216, 100, 61, 0.12)",
-            borderColor: "rgba(30, 31, 34, 0.06)",
-            color: feedbackMessage.tone === "success" ? "var(--leaf-600)" : "var(--coral-600)",
-          }}
-        >
-          {feedbackMessage.text}
-        </div>
-      ) : null}
-
-      <MemberSettingsList
-        canManage={manageable}
-        currentUserId={user.id}
-        householdId={context.household.id}
-        members={context.household.members.map((member) => ({
-          id: member.id,
-          displayName: member.displayName,
-          color: member.color,
-          role: member.role,
-          weeklyCapacityMinutes: member.weeklyCapacityMinutes,
-          userId: member.userId,
-        }))}
-      />
-
-      {manageable ? (
-        <ClientForm action={`/api/households/${context.household.id}/members`} method="POST" className="soft-panel compact-form-grid p-5">
-          <p className="text-sm font-semibold text-ink-950">Ajouter un membre</p>
-          <label className="field-label">
-            <span>Nom</span>
-            <input className="field" type="text" name="displayName" placeholder="Nom affiché" required />
-          </label>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="field-label">
-              <span>Couleur</span>
-              <input className="field h-[3.2rem] px-2" type="color" name="color" defaultValue="#E86A33" />
-            </label>
-            <label className="field-label">
-              <span>Rôle</span>
-              <select className="field" name="role" defaultValue="member">
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-                <option value="owner">Owner</option>
-              </select>
-            </label>
-            <label className="field-label">
-              <span>Capacité</span>
-              <input className="field" type="number" name="weeklyCapacityMinutes" min="0" placeholder="Min / semaine" />
-            </label>
-          </div>
-          <label className="field-label">
-            <span className="inline-flex items-center gap-3 rounded-[1rem] border border-line bg-white/70 dark:bg-[#262830]/70 px-4 py-3 font-medium text-ink-950">
-              <input defaultChecked name="includeInExistingTasks" type="checkbox" value="on" />
-              Inclure ce membre dans les tâches futures existantes
-            </span>
-          </label>
-          <button className="btn-primary w-full px-5 py-3 font-semibold" type="submit">
-            Ajouter le membre
-          </button>
-        </ClientForm>
-      ) : null}
     </section>
   );
 }

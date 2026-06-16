@@ -79,7 +79,7 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
             className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
               activeTab === "list"
                 ? "bg-coral-500 text-white shadow-[0_8px_20px_rgba(216,100,61,0.2)]"
-                : "bg-white/80 dark:bg-[#262830]/80 border border-line text-ink-700 hover:bg-white dark:bg-[#262830]"
+                : "bg-white/80 dark:bg-surface/80 border border-line text-ink-700 hover:bg-white dark:bg-surface"
             }`}
             href={`/app/taches/routines${householdSuffix}`}
           >
@@ -90,7 +90,7 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
             className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
               activeTab === "wizard"
                 ? "bg-coral-500 text-white shadow-[0_8px_20px_rgba(216,100,61,0.2)]"
-                : "bg-white/80 dark:bg-[#262830]/80 border border-line text-ink-700 hover:bg-white dark:bg-[#262830]"
+                : "bg-white/80 dark:bg-surface/80 border border-line text-ink-700 hover:bg-white dark:bg-surface"
             }`}
             href={`/app/taches/routines${householdSuffix}&tab=wizard`}
           >

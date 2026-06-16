@@ -121,7 +121,7 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
 
         <div className="mt-auto space-y-3 pt-6">
           <button
-            className="interactive-surface flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-ink-700 hover:bg-white dark:bg-[#262830] hover:text-ink-950 hover:shadow-sm"
+            className="interactive-surface flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-ink-700 hover:bg-white dark:bg-surface hover:text-ink-950 hover:shadow-sm"
             onClick={() => setTourOpen(true)}
             type="button"
           >

@@ -21,7 +21,7 @@ export function CalendarSyncPanel({
           <p className="text-xs text-ink-700">Ajoutez l&apos;URL iCal copiée ci-dessous dans l&apos;interface de Google.</p>
         </div>
         <a
-          className="btn-secondary flex items-center justify-center gap-2 rounded-full border-2 border-ink-950/5 bg-white dark:bg-[#262830] px-5 py-2.5 text-sm font-bold shadow-sm transition-all hover:border-ink-950/10 hover:shadow-md active:scale-95"
+          className="btn-secondary flex items-center justify-center gap-2 rounded-full border-2 border-ink-950/5 bg-white dark:bg-surface px-5 py-2.5 text-sm font-bold shadow-sm transition-all hover:border-ink-950/10 hover:shadow-md active:scale-95"
           href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
           rel="noreferrer"
           target="_blank"

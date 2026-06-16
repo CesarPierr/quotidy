@@ -98,22 +98,22 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
         <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-700">
           Retrouvez vite ce qui a été terminé, passé, déplacé ou corrigé, sans perdre le fil du foyer.
         </p>
-        <div className="mt-5 summary-strip sm:grid-cols-2 xl:grid-cols-4">
-          <div className="metric-card interactive-surface px-4 py-3">
-            <p className="text-sm text-ink-700">Terminées</p>
-            <p className="mt-1 text-2xl font-semibold">{historySummary.completed}</p>
+        <div className="mt-5 summary-strip grid-cols-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="metric-card interactive-surface px-3 py-2.5">
+            <p className="text-xs text-ink-700">Terminées</p>
+            <p className="mt-0.5 text-lg font-semibold">{historySummary.completed}</p>
           </div>
-          <div className="metric-card interactive-surface px-4 py-3">
-            <p className="text-sm text-ink-700">Sautées</p>
-            <p className="mt-1 text-2xl font-semibold">{historySummary.skipped}</p>
+          <div className="metric-card interactive-surface px-3 py-2.5">
+            <p className="text-xs text-ink-700">Sautées</p>
+            <p className="mt-0.5 text-lg font-semibold">{historySummary.skipped}</p>
           </div>
-          <div className="metric-card interactive-surface px-4 py-3">
-            <p className="text-sm text-ink-700">Reportées</p>
-            <p className="mt-1 text-2xl font-semibold">{historySummary.rescheduled}</p>
+          <div className="metric-card interactive-surface px-3 py-2.5">
+            <p className="text-xs text-ink-700">Reportées</p>
+            <p className="mt-0.5 text-lg font-semibold">{historySummary.rescheduled}</p>
           </div>
-          <div className="metric-card interactive-surface px-4 py-3">
-            <p className="text-sm text-ink-700">Corrections</p>
-            <p className="mt-1 text-2xl font-semibold">{historySummary.edited}</p>
+          <div className="metric-card interactive-surface px-3 py-2.5">
+            <p className="text-xs text-ink-700">Corrections</p>
+            <p className="mt-0.5 text-lg font-semibold">{historySummary.edited}</p>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
               return (
                 <article
                   key={occ.id}
-                  className="flex items-center gap-3 rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 p-3"
+                  className="flex items-center gap-3 rounded-2xl border border-line bg-white/70 dark:bg-surface/70 p-3"
                 >
                   <span
                     className="size-2.5 shrink-0 rounded-full"
@@ -217,7 +217,7 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
                 const tone = getActionTone(log.actionType);
                 const Icon = tone.icon;
                 return (
-                  <article key={log.id} className="app-surface flex items-center gap-4 rounded-[1.3rem] p-3 transition-all hover:bg-white/50 dark:bg-[#262830]/50">
+                  <article key={log.id} className="app-surface flex items-center gap-4 rounded-[1.3rem] p-3 transition-all hover:bg-white/50 dark:bg-surface/50">
                     <div
                       className="flex size-10 shrink-0 items-center justify-center rounded-full shadow-sm"
                       style={{ backgroundColor: tone.surface, color: tone.accent, border: `1px solid ${tone.accent}20` }}
@@ -273,7 +273,7 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
                   const tone = getActionTone(log.actionType);
                   const Icon = tone.icon;
                   return (
-                    <article key={log.id} className="app-surface flex items-center gap-4 rounded-[1.3rem] p-3 transition-all hover:bg-white/50 dark:bg-[#262830]/50">
+                    <article key={log.id} className="app-surface flex items-center gap-4 rounded-[1.3rem] p-3 transition-all hover:bg-white/50 dark:bg-surface/50">
                       <div
                         className="flex size-10 shrink-0 items-center justify-center rounded-full shadow-sm"
                         style={{ backgroundColor: tone.surface, color: tone.accent, border: `1px solid ${tone.accent}20` }}

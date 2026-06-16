@@ -73,24 +73,24 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
 
   if (!fullUser) {
     return (
-      <section className="app-surface rounded-[2rem] p-6 text-sm text-ink-700">
+      <section className="app-surface rounded-[1.6rem] p-5 text-sm text-ink-700 sm:rounded-[2rem] sm:p-6">
         Compte introuvable.
       </section>
     );
   }
 
   return (
-    <section className="space-y-3 sm:space-y-4">
+    <section className="space-y-4 sm:space-y-5">
       <div className="px-1">
         <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
-          <div>
+          <div className="min-w-0">
             <p className="section-kicker text-[0.62rem] sm:text-xs">Compte</p>
             <h2 className="display-title mt-1 text-2xl leading-tight sm:mt-2 sm:text-3xl">Mon compte utilisateur</h2>
             <p className="mt-2 max-w-2xl text-xs leading-5 text-ink-700 sm:mt-3 sm:text-sm sm:leading-6">
               Gérez votre identité globale, votre email, votre mot de passe et vos droits RGPD.
             </p>
           </div>
-          <span className="accent-pill">
+          <span className="accent-pill shrink-0">
             {fullUser.emailVerifiedAt ? "Email vérifié" : "Email non vérifié"}
           </span>
         </div>
@@ -99,8 +99,8 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
           <div
             className="mt-4 rounded-[1.2rem] border px-3 py-2.5 text-sm leading-6 sm:mt-5 sm:rounded-[1.4rem] sm:px-4 sm:py-3"
             style={{
-              backgroundColor: feedback.tone === "success" ? "rgba(56,115,93,0.12)" : "rgba(216,100,61,0.12)",
-              borderColor: "rgba(30,31,34,0.06)",
+              backgroundColor: feedback.tone === "success" ? "rgba(56,115,93,0.08)" : "rgba(216,100,61,0.08)",
+              borderColor: feedback.tone === "success" ? "rgba(56,115,93,0.22)" : "rgba(216,100,61,0.22)",
               color: feedback.tone === "success" ? "var(--leaf-600)" : "var(--coral-600)",
             }}
           >
@@ -109,14 +109,21 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
         ) : null}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-          <UserRound className="size-6 text-coral-600 sm:size-7" />
-          <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Profil</h3>
+      <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
+        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+              <UserRound className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="section-kicker text-[0.62rem]">Identité</p>
+              <h3 className="display-title text-xl sm:text-2xl">Profil</h3>
+            </div>
+          </div>
           <ClientForm
             action="/api/account/profile"
             method="POST"
-            className="mt-4 space-y-4"
+            className="mt-5 space-y-4"
             successMessage="Profil mis à jour."
             errorMessage="Impossible de mettre à jour le profil."
           >
@@ -125,16 +132,25 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
               <span>Nom affiché global</span>
               <input className="field" name="displayName" defaultValue={fullUser.displayName} minLength={2} maxLength={60} required />
             </label>
-            <button className="btn-primary w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
               Enregistrer
             </button>
           </ClientForm>
         </section>
 
-        <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-          <Mail className="size-6 text-sky-600 sm:size-7" />
-          <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Email</h3>
-          <p className="mt-2 break-words text-sm text-ink-700">Email actuel: <strong>{fullUser.email}</strong></p>
+        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600">
+              <Mail className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="section-kicker text-[0.62rem]">Connexion</p>
+              <h3 className="display-title text-xl sm:text-2xl">Email</h3>
+            </div>
+          </div>
+          <p className="field-help mt-3 break-words">
+            Email actuel : <strong className="font-semibold text-ink-950">{fullUser.email}</strong>
+          </p>
           <ClientForm
             action="/api/account/email"
             method="POST"
@@ -151,21 +167,28 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
               <span>Mot de passe actuel</span>
               <input className="field" name="password" type="password" autoComplete="current-password" required />
             </label>
-            <button className="btn-primary w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
               Changer l&apos;email
             </button>
           </ClientForm>
         </section>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-          <KeyRound className="size-6 text-coral-600 sm:size-7" />
-          <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Mot de passe</h3>
+      <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
+        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+              <KeyRound className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="section-kicker text-[0.62rem]">Sécurité</p>
+              <h3 className="display-title text-xl sm:text-2xl">Mot de passe</h3>
+            </div>
+          </div>
           <ClientForm
             action="/api/account/password"
             method="POST"
-            className="mt-4 space-y-4"
+            className="mt-5 space-y-4"
             successMessage="Mot de passe mis à jour."
             errorMessage="Impossible de mettre à jour le mot de passe."
           >
@@ -184,25 +207,32 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
                 <input className="field" name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required />
               </label>
             </div>
-            <button className="btn-primary w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
               Mettre à jour
             </button>
           </ClientForm>
         </section>
 
-        <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-          <ShieldCheck className="size-6 text-leaf-600 sm:size-7" />
-          <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Sessions</h3>
-          <p className="mt-2 text-sm text-ink-700">
+        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-leaf-500/10 text-leaf-600">
+              <ShieldCheck className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="section-kicker text-[0.62rem]">Appareils</p>
+              <h3 className="display-title text-xl sm:text-2xl">Sessions</h3>
+            </div>
+          </div>
+          <p className="field-help mt-3">
             {fullUser.sessions.length} session{fullUser.sessions.length > 1 ? "s" : ""} active{fullUser.sessions.length > 1 ? "s" : ""}.
           </p>
           <div className="mt-4 space-y-2">
             {fullUser.sessions.slice(0, 4).map((session) => (
-              <div key={session.id} className="rounded-2xl border border-line bg-white/70 px-4 py-3 text-sm dark:bg-[#262830]/70">
-                <p className="font-semibold">
+              <div key={session.id} className="rounded-2xl border border-line bg-white/70 px-4 py-3 text-sm dark:bg-surface/70">
+                <p className="break-words font-semibold">
                   Créée {formatDistanceToNow(session.createdAt, { addSuffix: true, locale: fr })}
                 </p>
-                <p className="text-xs text-ink-500">
+                <p className="break-words text-xs text-ink-500">
                   Expire {formatDistanceToNow(session.expiresAt, { addSuffix: true, locale: fr })}
                 </p>
               </div>
@@ -216,31 +246,34 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
             errorMessage="Impossible de révoquer les sessions."
           >
             <input name="nextPath" type="hidden" value={nextPath} />
-            <button className="btn-secondary w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-secondary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
               Révoquer les autres sessions
             </button>
           </ClientForm>
         </section>
       </div>
 
-      <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-        <Download className="size-6 text-sky-600 sm:size-7" />
-        <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Données & RGPD</h3>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-700">
+      <section className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600">
+            <Download className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="section-kicker text-[0.62rem]">Confidentialité</p>
+            <h3 className="display-title text-xl sm:text-2xl">Données &amp; RGPD</h3>
+          </div>
+        </div>
+        <p className="field-help mt-3 max-w-2xl">
           Téléchargez vos données, consultez les demandes récentes ou supprimez définitivement votre compte.
           Pour une demande spécifique, contactez{" "}
-          <a className="font-semibold text-coral-600 underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          <a className="break-words font-semibold text-coral-600 underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
         </p>
 
-        <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
+        <div className="mt-5 grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
           <a href="/api/me/export" className="btn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold">
-            <Download className="size-4" />
+            <Download className="size-4 shrink-0" />
             Exporter mes données
           </a>
-          <Link href={`/app/foyer/zone-sensible${householdSuffix}`} className="btn-quiet inline-flex min-h-11 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-red-700">
-            <Trash2 className="size-4" />
-            Supprimer mon compte
-          </Link>
           <Link href="/privacy" className="btn-quiet inline-flex min-h-11 items-center justify-center px-4 py-3 text-sm font-semibold">
             Confidentialité
           </Link>
@@ -250,29 +283,45 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
         </div>
 
         <div className="mt-5 grid gap-3 lg:grid-cols-2">
-          <div className="rounded-2xl border border-line bg-white/70 p-4 text-sm dark:bg-[#262830]/70">
+          <div className="rounded-2xl border border-line bg-white/70 p-4 text-sm dark:bg-surface/70">
             <p className="font-bold">Derniers exports</p>
             <div className="mt-2 space-y-1 text-xs text-ink-600">
               {fullUser.dataExportRequests.length ? fullUser.dataExportRequests.map((request) => (
-                <p key={request.id}>{request.status} · {formatDistanceToNow(request.createdAt, { addSuffix: true, locale: fr })}</p>
+                <p key={request.id} className="break-words">{request.status} · {formatDistanceToNow(request.createdAt, { addSuffix: true, locale: fr })}</p>
               )) : <p>Aucun export récent.</p>}
             </div>
           </div>
-          <div className="rounded-2xl border border-line bg-white/70 p-4 text-sm dark:bg-[#262830]/70">
+          <div className="rounded-2xl border border-line bg-white/70 p-4 text-sm dark:bg-surface/70">
             <p className="font-bold">Demandes de suppression</p>
             <div className="mt-2 space-y-1 text-xs text-ink-600">
               {fullUser.deletionRequests.length ? fullUser.deletionRequests.map((request) => (
-                <p key={request.id}>{request.status} · {formatDistanceToNow(request.createdAt, { addSuffix: true, locale: fr })}</p>
+                <p key={request.id} className="break-words">{request.status} · {formatDistanceToNow(request.createdAt, { addSuffix: true, locale: fr })}</p>
               )) : <p>Aucune demande récente.</p>}
             </div>
           </div>
         </div>
+
+        <div className="mt-5 rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
+          <p className="text-sm font-semibold text-red-700">Zone sensible</p>
+          <p className="field-help mt-1">Cette action est définitive et supprime toutes vos données.</p>
+          <Link href={`/app/foyer/zone-sensible${householdSuffix}`} className="btn-quiet mt-3 inline-flex min-h-11 items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-red-700">
+            <Trash2 className="size-4 shrink-0" />
+            Supprimer mon compte
+          </Link>
+        </div>
       </section>
 
-      <section className="app-surface rounded-[1.6rem] p-4 sm:rounded-[2rem] sm:p-6">
-        <Bell className="size-6 text-coral-600 sm:size-7" />
-        <h3 className="display-title mt-2 text-xl sm:mt-3 sm:text-2xl">Notifications &amp; apparence</h3>
-        <div className="mt-4 space-y-6">
+      <section className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+            <Bell className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <p className="section-kicker text-[0.62rem]">Préférences</p>
+            <h3 className="display-title text-xl sm:text-2xl">Notifications &amp; apparence</h3>
+          </div>
+        </div>
+        <div className="mt-5 space-y-5">
           <div className="space-y-2">
             <p className="text-sm font-semibold text-ink-950">Apparence</p>
             <ThemeToggle />

@@ -63,7 +63,7 @@ export function FeatureToggle({
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-line bg-white/70 px-4 py-3.5 dark:bg-[#262830]/70">
+    <div className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-line bg-white/70 px-4 py-3.5 dark:bg-surface/70">
       <div className="min-w-0">
         <p className="font-semibold text-ink-950">{label}</p>
         {description ? (

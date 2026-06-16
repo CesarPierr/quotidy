@@ -11,7 +11,7 @@ export default function SettingsLoading() {
       {/* Content rows skeleton */}
       <div className="space-y-3 pt-2">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="flex items-center gap-4 rounded-2xl border border-line bg-white/60 dark:bg-[#262830]/60 p-4">
+          <div key={i} className="flex items-center gap-4 rounded-2xl border border-line bg-white/60 dark:bg-surface/60 p-4">
             <div className="shimmer-line size-10 shrink-0 rounded-xl bg-black/8" />
             <div className="flex-1 space-y-2">
               <div className="shimmer-line h-4 w-36 rounded-lg bg-black/8" />

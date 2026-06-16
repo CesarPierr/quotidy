@@ -96,7 +96,7 @@ export function PushNotificationToggle({ memberId }: Props) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white/70 dark:bg-[#262830]/70 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white/70 dark:bg-surface/70 px-4 py-3">
       <div className="flex items-center gap-3">
         {subscribed ? (
           <Bell className="size-5 text-leaf-600" />

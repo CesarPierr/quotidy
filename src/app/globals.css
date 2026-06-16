@@ -91,7 +91,10 @@
   --color-glass-bg: var(--glass-bg);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  
+  /* Canonical dark-mode card/panel surface. Use via dark:bg-surface (and
+     opacity variants like dark:bg-surface/70) instead of the #262830 literal. */
+  --color-surface: #262830;
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-sans);
 }
