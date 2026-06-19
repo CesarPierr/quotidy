@@ -178,7 +178,6 @@ export function BottomSheet({ isOpen, onClose, title, children, maxHeight = 85 }
         visible ? "backdrop:opacity-100" : "backdrop:opacity-0",
       )}
       onClick={handleBackdropClick}
-      onClose={onClose}
     >
       <div className="flex h-full w-full items-end justify-center">
         <div

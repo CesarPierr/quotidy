@@ -223,7 +223,7 @@ export function AutoFillForm({ householdId, boxId, current, onSaved }: AutoFillF
             onClick={() => {
               if (!window.confirm("Supprimer l'auto-versement ?")) return;
               const fd = new FormData();
-              fd.set("_action", "delete");
+              fd.set("_action", "remove");
               remove.submit(fd);
             }}
             className="btn-quiet inline-flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold text-red-700 disabled:opacity-50"

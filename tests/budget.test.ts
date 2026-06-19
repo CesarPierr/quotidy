@@ -63,6 +63,10 @@ describe("getBudgetOverview", () => {
     expect(o.week.index).toBe(3); // days 15–21
     expect(o.week.label).toMatch(/juin/);
     expect(o.expenses.length).toBe(4);
+    // Argent libre reserves each pocket's full budget: p1 monthly 400; p2 weekly
+    // 50 × 5 in-month weeks = 250 → reserved 650; + uncategorised 20 →
+    // 2000 − 800 − 650 − 20 = 530.
+    expect(o.totals.freeMoney).toBe(530);
   });
 
   it("classifies the month's spending by type for the Analyse panel", async () => {

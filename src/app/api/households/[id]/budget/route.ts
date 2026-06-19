@@ -102,12 +102,13 @@ export const POST = withHousehold<{ id: string }>(async ({ request, params, memb
     case "pocket.update": {
       const parsed = budgetPocketSchema.safeParse({
         name: str("name"),
+        icon: str("icon"),
         color: str("color") || undefined,
         period: str("period") || undefined,
         quota: str("quota"),
       });
       if (!parsed.success) return fail("Poste invalide.");
-      const data = { name: parsed.data.name, color: parsed.data.color, period: parsed.data.period, quota: parsed.data.quota };
+      const data = { name: parsed.data.name, icon: parsed.data.icon || null, color: parsed.data.color, period: parsed.data.period, quota: parsed.data.quota };
       if (action === "pocket.create") {
         await db.budgetPocket.create({ data: { householdId, ...data, sortOrder: await nextSortOrder("pocket") } });
       } else {

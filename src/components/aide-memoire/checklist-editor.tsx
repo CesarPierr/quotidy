@@ -22,6 +22,12 @@ import { cn } from "@/lib/utils";
 
 type TaskOption = { id: string; title: string };
 
+// Curated household-relevant emoji set for the optional checklist icon.
+const CHECKLIST_ICONS = [
+  "🧳", "🛒", "🏖️", "👶", "🐾", "🧹", "🎒", "🎁",
+  "🧺", "🍽️", "🏕️", "🚗", "🧴", "📦", "🩺", "🎉",
+] as const;
+
 type ChecklistEditorProps = {
   householdId: string;
   checklist: SerializedChecklist | null;
@@ -44,6 +50,7 @@ export function ChecklistEditor({
   const { error: showError, success } = useToast();
   const [current, setCurrent] = useState<SerializedChecklist | null>(checklist);
   const [name, setName] = useState(checklist?.name ?? "");
+  const [icon, setIcon] = useState(checklist?.icon ?? "");
   const [color, setColor] = useState(checklist?.color ?? "#D8643D");
   const [taskTemplateId, setTaskTemplateId] = useState(checklist?.taskTemplateId ?? "");
   const [newItem, setNewItem] = useState("");
@@ -64,6 +71,7 @@ export function ChecklistEditor({
     try {
       const response = await postForm(`/api/households/${householdId}/checklists`, {
         name: name.trim(),
+        icon,
         color,
         taskTemplateId,
       });
@@ -191,6 +199,38 @@ export function ChecklistEditor({
               ))}
             </div>
           </div>
+          <div className="field-label">
+            <span>Icône (facultatif)</span>
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                aria-label="Aucune icône"
+                aria-pressed={icon === ""}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-full border border-line text-[0.7rem] font-semibold text-ink-500 transition-colors",
+                  icon === "" ? "ring-2 ring-offset-1 ring-ink-950/30" : "hover:bg-black/[0.05]",
+                )}
+                onClick={() => setIcon("")}
+                type="button"
+              >
+                Aucune
+              </button>
+              {CHECKLIST_ICONS.map((emoji) => (
+                <button
+                  aria-label={`Icône ${emoji}`}
+                  aria-pressed={icon === emoji}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full text-lg transition-colors",
+                    icon === emoji ? "ring-2 ring-offset-1 ring-ink-950/30" : "hover:bg-black/[0.05]",
+                  )}
+                  key={emoji}
+                  onClick={() => setIcon(emoji)}
+                  type="button"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
           {tasks.length > 0 ? (
             <label className="field-label">
               <span>Tâche liée (facultatif)</span>
@@ -249,6 +289,40 @@ export function ChecklistEditor({
                   type="button"
                 />
               ))}
+            </div>
+            <div className="field-label">
+              <span>Icône (facultatif)</span>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  aria-label="Aucune icône"
+                  aria-pressed={!current.icon}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-full border border-line text-[0.7rem] font-semibold text-ink-500 transition-colors disabled:opacity-50",
+                    !current.icon ? "ring-2 ring-offset-1 ring-ink-950/30" : "hover:bg-black/[0.05]",
+                  )}
+                  disabled={busy}
+                  onClick={() => updateChecklist({ icon: "" })}
+                  type="button"
+                >
+                  Aucune
+                </button>
+                {CHECKLIST_ICONS.map((emoji) => (
+                  <button
+                    aria-label={`Icône ${emoji}`}
+                    aria-pressed={current.icon === emoji}
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-full text-lg transition-colors disabled:opacity-50",
+                      current.icon === emoji ? "ring-2 ring-offset-1 ring-ink-950/30" : "hover:bg-black/[0.05]",
+                    )}
+                    disabled={busy}
+                    key={emoji}
+                    onClick={() => updateChecklist({ icon: emoji })}
+                    type="button"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
             {tasks.length > 0 ? (
               <label className="field-label">

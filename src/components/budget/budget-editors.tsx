@@ -13,6 +13,7 @@ type Submit = (fields: Record<string, string>) => Promise<boolean>;
 type Remove = (fields: Record<string, string>) => Promise<boolean>;
 
 const COLORS = taskPalette.slice(0, 8);
+const POCKET_ICONS = ["🛒", "🍽️", "🚗", "🏠", "🎬", "💊", "👕", "💡", "🎁", "📚", "✈️", "☕", "🏥", "💼", "🐾", "💪"];
 
 function AmountField({ value, onChange, label = "Montant", autoFocus }: { value: string; onChange: (v: string) => void; label?: string; autoFocus?: boolean }) {
   return (
@@ -167,6 +168,7 @@ export function PocketEditor({
   onDelete: Remove;
 }) {
   const [name, setName] = useState(entity?.name ?? "");
+  const [icon, setIcon] = useState(entity?.icon ?? "");
   const [color, setColor] = useState(entity?.color ?? COLORS[0] ?? "#2F6D88");
   const [period, setPeriod] = useState<BudgetPeriod>(entity?.period ?? "monthly");
   const [quota, setQuota] = useState(entity ? String(entity.quota) : "");
@@ -178,6 +180,30 @@ export function PocketEditor({
           <span>Nom</span>
           <input autoFocus className="field" maxLength={60} onChange={(e) => setName(e.target.value)} placeholder="Ex. Alimentation" value={name} />
         </label>
+        <div className="field-label">
+          <span>Icône (facultatif)</span>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              aria-pressed={icon === ""}
+              className={cn("flex size-8 items-center justify-center rounded-full border text-sm transition-transform", icon === "" ? "border-ink-950 bg-ink-950/[0.06] text-ink-700" : "border-line text-ink-400 hover:scale-110")}
+              onClick={() => setIcon("")}
+              type="button"
+            >
+              ∅
+            </button>
+            {POCKET_ICONS.map((e) => (
+              <button
+                aria-pressed={icon === e}
+                className={cn("flex size-8 items-center justify-center rounded-full border text-base transition-transform", icon === e ? "scale-110 border-coral-500 bg-coral-500/10" : "border-line hover:scale-110")}
+                key={e}
+                onClick={() => setIcon(e)}
+                type="button"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="field-label">
           <span>Période du budget</span>
           <div className="grid grid-cols-2 gap-1 rounded-2xl border border-line bg-white/60 p-1 dark:bg-surface/60">
@@ -215,7 +241,7 @@ export function PocketEditor({
           <button
             className="btn-primary min-h-11 px-5 py-2.5 text-sm font-bold disabled:opacity-50"
             disabled={busy || !name.trim() || !quota.trim()}
-            onClick={() => onSubmit({ _action: entity ? "pocket.update" : "pocket.create", id: entity?.id ?? "", name, color, period, quota })}
+            onClick={() => onSubmit({ _action: entity ? "pocket.update" : "pocket.create", id: entity?.id ?? "", name, icon, color, period, quota })}
             type="button"
           >
             {entity ? "Enregistrer" : "Créer le poste"}
@@ -308,7 +334,7 @@ export function ChargeEditor({
         </div>
         {savingsBoxes.length > 0 ? (
           <label className="field-label">
-            <span>Versement vers une épargne (facultatif)</span>
+            <span>Liée à une enveloppe d&apos;épargne (facultatif)</span>
             <select className="field" onChange={(e) => setSavingsBoxId(e.target.value)} value={savingsBoxId}>
               <option value="">Aucune — charge classique</option>
               {savingsBoxes.map((b) => (
@@ -317,6 +343,7 @@ export function ChargeEditor({
                 </option>
               ))}
             </select>
+            <span className="field-help">Indicatif : étiquette la charge comme une épargne récurrente. Le versement réel se règle dans l&apos;enveloppe (auto-versement).</span>
           </label>
         ) : null}
         <div className="flex items-center justify-between gap-2 pt-1">

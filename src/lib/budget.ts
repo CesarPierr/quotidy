@@ -34,6 +34,7 @@ export type SerializedCharge = {
 export type SerializedPocket = {
   id: string;
   name: string;
+  icon: string | null;
   color: string;
   period: BudgetPeriod;
   quota: number;
@@ -88,6 +89,10 @@ export type BudgetOverview = {
     plannedReste: number;
     /** Money still owed to the household across all pending/partial refunds. */
     awaitingRefund: number;
+    /** Conservative spendable: income − charges − reserved budgets (every pocket's
+     *  full quota, or what it already overspent) − unbudgeted spend. Pending
+     *  refunds stay counted as spent, so the figure can't be over-stated. */
+    freeMoney: number;
   };
   income: SerializedIncome[];
   charges: SerializedCharge[];
@@ -206,6 +211,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
     return {
       id: p.id,
       name: p.name,
+      icon: p.icon,
       color: p.color,
       period,
       quota,
@@ -219,6 +225,17 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
 
   const plannedPocketTotal = serializedPockets.reduce((sum, p) => sum + p.quota, 0);
 
+  // ── Argent libre: conservative spendable. Reserve every pocket's full budget
+  // (or its overspend), subtract unbudgeted spend; pending refunds stay counted
+  // as spent (net), so the user can't think they have more than they do. ──────
+  const pocketedSpent = [...monthByPocket.values()].reduce((sum, v) => sum + v, 0);
+  const uncategorizedSpent = totalMonthExpenses - pocketedSpent;
+  const reservedBudgets = serializedPockets.reduce((sum, p) => {
+    const monthlyBudget = p.period === "weekly" ? p.quota * weekCount : p.quota;
+    return sum + Math.max(monthlyBudget, monthByPocket.get(p.id) ?? 0);
+  }, 0);
+  const freeMoney = totalIncome - totalCharges - reservedBudgets - uncategorizedSpent;
+
   const weekLabel = `${format(weekStart, "d", { locale: fr })} – ${format(weekEnd, "d MMM", { locale: fr })}`;
 
   return {
@@ -231,6 +248,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       reste: totalIncome - totalCharges - totalMonthExpenses,
       plannedReste: totalIncome - totalCharges - plannedPocketTotal,
       awaitingRefund,
+      freeMoney,
     },
     income: income.map((i) => ({ id: i.id, label: i.label, amount: dec(i.amount), sortOrder: i.sortOrder })),
     charges: charges.map((c) => ({

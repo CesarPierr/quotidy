@@ -70,7 +70,11 @@ function PocketCard({ pocket, onTap, weekLabel }: { pocket: SerializedPocket; on
     <button className="soft-panel flex w-full flex-col gap-2 rounded-xl border border-line p-3 text-left transition-all active:scale-[0.99]" onClick={onTap} type="button">
       <div className="flex items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2">
-          <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: pocket.color }} />
+          {pocket.icon ? (
+            <span className="shrink-0 text-base leading-none">{pocket.icon}</span>
+          ) : (
+            <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: pocket.color }} />
+          )}
           <span className="truncate text-sm font-bold text-ink-950">{pocket.name}</span>
         </span>
         <span className="shrink-0 rounded-full bg-black/[0.05] px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wide text-ink-500">
@@ -204,6 +208,12 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
               <Stat icon={TrendingUp} label="Revenus" tone="text-leaf-600" value={t.income} />
               <Stat icon={Repeat} label="Charges" tone="text-ink-800" value={t.charges} />
               <Stat icon={TrendingDown} label="Dépenses" tone="text-coral-600" value={t.monthExpenses} />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-line bg-white/60 px-3 py-2 dark:bg-surface/60">
+              <span className="min-w-0 text-xs font-semibold text-ink-700">
+                Argent libre <span className="font-normal text-ink-400">· budgets réservés</span>
+              </span>
+              <span className={cn("shrink-0 text-sm font-bold tabular-nums", t.freeMoney < 0 ? "text-red-600" : "text-leaf-600")}>{formatCurrency(t.freeMoney)}</span>
             </div>
             {t.awaitingRefund > 0 ? (
               <button

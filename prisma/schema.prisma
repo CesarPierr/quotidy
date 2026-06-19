@@ -925,6 +925,8 @@ model BudgetPocket {
   id          String   @id @default(cuid())
   householdId String
   name        String
+  /// Optional emoji icon for personalisation (rendered as a string).
+  icon        String?
   color       String   @default("#2F6D88")
   /// "monthly" | "weekly" — the period the quota resets on.
   period      String   @default("monthly")

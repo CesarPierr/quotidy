@@ -60,7 +60,8 @@ export const POST = withHousehold<{ id: string; checklistId: string }>(
     // update
     const parsed = checklistUpdateSchema.safeParse({
       name: formData.get("name") || undefined,
-      icon: formData.get("icon") || undefined,
+      // Present-but-empty means "clear the icon"; absent means "leave unchanged".
+      icon: formData.has("icon") ? formData.get("icon") : undefined,
       color: formData.get("color") || undefined,
       taskTemplateId: formData.has("taskTemplateId") ? formData.get("taskTemplateId") : undefined,
       isArchived: formData.has("isArchived")
@@ -87,7 +88,8 @@ export const POST = withHousehold<{ id: string; checklistId: string }>(
       where: { id: checklistId },
       data: {
         name: parsed.data.name ?? undefined,
-        icon: parsed.data.icon ?? undefined,
+        // undefined = unchanged; empty string = explicit clear (store null).
+        icon: parsed.data.icon === undefined ? undefined : parsed.data.icon || null,
         color: parsed.data.color ?? undefined,
         taskTemplateId:
           parsed.data.taskTemplateId === undefined ? undefined : parsed.data.taskTemplateId,

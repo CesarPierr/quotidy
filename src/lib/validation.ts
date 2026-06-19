@@ -326,6 +326,7 @@ export const budgetChargeUpdateSchema = budgetChargeSchema.partial();
 
 export const budgetPocketSchema = z.object({
   name: z.string().trim().min(1).max(60),
+  icon: z.string().trim().max(40).optional(),
   color: colorString,
   period: z.enum(["monthly", "weekly"]).default("monthly"),
   quota: positiveAmount,
