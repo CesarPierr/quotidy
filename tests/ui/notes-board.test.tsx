@@ -51,7 +51,10 @@ describe("NotesBoard", () => {
     await user.click(screen.getByLabelText("Ajouter la note"));
 
     await waitFor(() => expect(screen.getByText("Pain")).toBeInTheDocument());
-    expect(vi.mocked(postForm)).toHaveBeenCalledWith("/api/households/h-1/notes", { body: "Pain" });
+    expect(vi.mocked(postForm)).toHaveBeenCalledWith(
+      "/api/households/h-1/notes",
+      expect.objectContaining({ body: "Pain" }),
+    );
   });
 
   test("marking a note done moves it to the Fait list", async () => {

@@ -80,7 +80,7 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
   }
 
   return (
-    <section className="space-y-4 sm:space-y-5">
+    <section className="space-y-3 sm:space-y-4">
       <div className="px-1">
         <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
@@ -109,21 +109,21 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
-        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <section className="app-surface flex flex-col rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
               <UserRound className="size-5" />
             </span>
             <div className="min-w-0">
               <p className="section-kicker text-[0.62rem]">Identité</p>
-              <h3 className="display-title text-xl sm:text-2xl">Profil</h3>
+              <h3 className="display-title text-lg sm:text-xl">Profil</h3>
             </div>
           </div>
           <ClientForm
             action="/api/account/profile"
             method="POST"
-            className="mt-5 space-y-4"
+            className="mt-4 space-y-3"
             successMessage="Profil mis à jour."
             errorMessage="Impossible de mettre à jour le profil."
           >
@@ -132,20 +132,20 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
               <span>Nom affiché global</span>
               <input className="field" name="displayName" defaultValue={fullUser.displayName} minLength={2} maxLength={60} required />
             </label>
-            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-semibold sm:w-auto" type="submit">
               Enregistrer
             </button>
           </ClientForm>
         </section>
 
-        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <section className="app-surface flex flex-col rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
               <Mail className="size-5" />
             </span>
             <div className="min-w-0">
               <p className="section-kicker text-[0.62rem]">Connexion</p>
-              <h3 className="display-title text-xl sm:text-2xl">Email</h3>
+              <h3 className="display-title text-lg sm:text-xl">Email</h3>
             </div>
           </div>
           <p className="field-help mt-3 break-words">
@@ -154,7 +154,7 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
           <ClientForm
             action="/api/account/email"
             method="POST"
-            className="mt-4 space-y-4"
+            className="mt-4 space-y-3"
             successMessage="Email mis à jour."
             errorMessage="Impossible de mettre à jour l'email."
           >
@@ -167,28 +167,28 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
               <span>Mot de passe actuel</span>
               <input className="field" name="password" type="password" autoComplete="current-password" required />
             </label>
-            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-semibold sm:w-auto" type="submit">
               Changer l&apos;email
             </button>
           </ClientForm>
         </section>
       </div>
 
-      <div className="grid gap-4 sm:gap-5 xl:grid-cols-2">
-        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+      <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
+        <section className="app-surface flex flex-col rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
               <KeyRound className="size-5" />
             </span>
             <div className="min-w-0">
               <p className="section-kicker text-[0.62rem]">Sécurité</p>
-              <h3 className="display-title text-xl sm:text-2xl">Mot de passe</h3>
+              <h3 className="display-title text-lg sm:text-xl">Mot de passe</h3>
             </div>
           </div>
           <ClientForm
             action="/api/account/password"
             method="POST"
-            className="mt-5 space-y-4"
+            className="mt-4 space-y-3"
             successMessage="Mot de passe mis à jour."
             errorMessage="Impossible de mettre à jour le mot de passe."
           >
@@ -207,20 +207,20 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
                 <input className="field" name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required />
               </label>
             </div>
-            <button className="btn-primary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-semibold sm:w-auto" type="submit">
               Mettre à jour
             </button>
           </ClientForm>
         </section>
 
-        <section className="app-surface flex flex-col rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <section className="app-surface flex flex-col rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-leaf-500/10 text-leaf-600">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-leaf-500/10 text-leaf-600">
               <ShieldCheck className="size-5" />
             </span>
             <div className="min-w-0">
               <p className="section-kicker text-[0.62rem]">Appareils</p>
-              <h3 className="display-title text-xl sm:text-2xl">Sessions</h3>
+              <h3 className="display-title text-lg sm:text-xl">Sessions</h3>
             </div>
           </div>
           <p className="field-help mt-3">
@@ -246,21 +246,21 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
             errorMessage="Impossible de révoquer les sessions."
           >
             <input name="nextPath" type="hidden" value={nextPath} />
-            <button className="btn-secondary min-h-11 w-full px-5 py-3 text-sm font-semibold sm:w-auto" type="submit">
+            <button className="btn-secondary min-h-11 w-full px-4 py-2.5 text-sm font-semibold sm:w-auto" type="submit">
               Révoquer les autres sessions
             </button>
           </ClientForm>
         </section>
       </div>
 
-      <section className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+      <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
             <Download className="size-5" />
           </span>
           <div className="min-w-0">
             <p className="section-kicker text-[0.62rem]">Confidentialité</p>
-            <h3 className="display-title text-xl sm:text-2xl">Données &amp; RGPD</h3>
+            <h3 className="display-title text-lg sm:text-xl">Données &amp; RGPD</h3>
           </div>
         </div>
         <p className="field-help mt-3 max-w-2xl">
@@ -311,17 +311,17 @@ export default async function AccountSettingsPage({ searchParams }: AccountPageP
         </div>
       </section>
 
-      <section className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+      <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-coral-500/10 text-coral-600">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
             <Bell className="size-5" />
           </span>
           <div className="min-w-0">
             <p className="section-kicker text-[0.62rem]">Préférences</p>
-            <h3 className="display-title text-xl sm:text-2xl">Notifications &amp; apparence</h3>
+            <h3 className="display-title text-lg sm:text-xl">Notifications &amp; apparence</h3>
           </div>
         </div>
-        <div className="mt-5 space-y-5">
+        <div className="mt-4 space-y-4">
           <div className="space-y-2">
             <p className="text-sm font-semibold text-ink-950">Apparence</p>
             <ThemeToggle />

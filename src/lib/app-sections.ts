@@ -35,7 +35,7 @@ export const appSections: AppSection[] = [
   {
     href: "/app/aide-memoire",
     label: "Aide-mémoire",
-    description: "Notes & listes du foyer",
+    description: "À faire & checklists du foyer",
     icon: NotebookPen,
     accent: "leaf",
   },

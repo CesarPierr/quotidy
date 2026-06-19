@@ -52,9 +52,9 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
   const visibleSegments = segments.filter((s) => s.visible);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header — foyer actif, compact, avec sélecteur si plusieurs foyers */}
-      <header className="app-surface flex flex-col gap-3 rounded-[1.6rem] p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[2rem] sm:p-5">
+      <header className="app-surface flex flex-col gap-3 rounded-[1.4rem] p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:rounded-[1.6rem] sm:p-5">
         <div className="min-w-0">
           <p className="section-kicker">Foyer actif</p>
           <h2 className="display-title mt-1 truncate text-2xl leading-tight sm:text-3xl">
@@ -119,7 +119,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
 
       {feedbackMessage ? (
         <div
-          className="rounded-[1.4rem] border px-4 py-3 text-sm leading-6"
+          className="rounded-xl border px-4 py-3 text-sm leading-6"
           style={{
             backgroundColor: "rgba(216,100,61,0.12)",
             borderColor: "rgba(30,31,34,0.06)",
@@ -135,14 +135,14 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
         <HouseholdMonitoring snapshot={monitoring} />
       ) : null}
       {view === "apercu" && !manageable ? (
-        <section className="app-surface rounded-[1.6rem] p-6 text-sm text-ink-700 sm:rounded-[2rem]">
+        <section className="app-surface rounded-[1.4rem] p-4 text-sm text-ink-700 sm:rounded-[1.6rem] sm:p-5">
           L&apos;aperçu détaillé est réservé aux admins du foyer.
         </section>
       ) : null}
 
       {/* PRÉFÉRENCES — toggles modules */}
       {view === "preferences" && manageable ? (
-        <section className="app-surface space-y-3 rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <section className="app-surface space-y-3 rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
           <div>
             <p className="section-kicker">Modules</p>
             <h3 className="display-title mt-1 text-xl">Activer ce qui sert vraiment</h3>
@@ -164,16 +164,16 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
 
       {/* GESTION — créer / rejoindre / quitter / liste */}
       {view === "gestion" ? (
-        <div className="space-y-4">
-          <section className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem] sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
+          <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
             <p className="section-kicker">Mes foyers</p>
-            <div className="mt-3 space-y-2">
+            <div className="mt-4 space-y-2">
               {householdMemberships.map((membership) => {
                 const active = membership.householdId === context.household.id;
                 return (
                   <div
                     key={membership.id}
-                    className="flex items-center justify-between gap-3 rounded-[1rem] border border-line bg-white/70 px-4 py-3 dark:bg-surface/70"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-line bg-white/70 p-3 text-sm dark:bg-surface/70"
                   >
                     <div className="min-w-0">
                       <p className="font-semibold text-ink-950">{membership.household.name}</p>
@@ -195,11 +195,11 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
             </div>
           </section>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <ClientForm
               action="/api/households"
               method="POST"
-              className="app-surface compact-form-grid rounded-[1.6rem] p-5 sm:rounded-[2rem]"
+              className="app-surface compact-form-grid rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5"
             >
               <p className="section-kicker">Créer</p>
               <h4 className="display-title mt-1 text-lg">Un nouveau foyer</h4>
@@ -211,7 +211,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
                 <span>Fuseau horaire</span>
                 <input className="field" type="text" name="timezone" defaultValue={context.household.timezone} required />
               </label>
-              <button className="btn-primary px-5 py-3 font-semibold" type="submit">
+              <button className="btn-primary min-h-11 w-full px-4 py-2.5 font-semibold sm:w-auto" type="submit">
                 Créer
               </button>
             </ClientForm>
@@ -220,7 +220,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
               <ClientForm
                 action="/api/invitations/redeem"
                 method="POST"
-                className="app-surface compact-form-grid rounded-[1.6rem] p-5 sm:rounded-[2rem]"
+                className="app-surface compact-form-grid rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5"
               >
                 <p className="section-kicker">Rejoindre</p>
                 <h4 className="display-title mt-1 text-lg">Avec un code d&apos;invitation</h4>
@@ -228,7 +228,7 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
                   <span>Code</span>
                   <input className="field" type="text" name="code" placeholder="Code reçu" required />
                 </label>
-                <button className="btn-secondary px-5 py-3 font-semibold" type="submit">
+                <button className="btn-secondary min-h-11 w-full px-4 py-2.5 font-semibold sm:w-auto" type="submit">
                   Rejoindre
                 </button>
               </ClientForm>
@@ -236,14 +236,14 @@ export default async function HouseholdsSettingsPage({ searchParams }: Household
               <ClientForm
                 action={`/api/households/${context.household.id}/leave`}
                 method="POST"
-                className="app-surface rounded-[1.6rem] p-5 sm:rounded-[2rem]"
+                className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5"
               >
                 <p className="section-kicker">Quitter</p>
                 <h4 className="display-title mt-1 text-lg">Ce foyer</h4>
                 <p className="mt-1 text-xs text-ink-500">
                   Vous resterez membre des autres foyers, le cas échéant.
                 </p>
-                <button className="btn-quiet mt-3 w-full px-5 py-3 text-sm font-semibold text-red-600" type="submit">
+                <button className="btn-quiet mt-3 min-h-11 w-full px-4 py-2.5 text-sm font-semibold text-red-600" type="submit">
                   Quitter {context.household.name}
                 </button>
               </ClientForm>

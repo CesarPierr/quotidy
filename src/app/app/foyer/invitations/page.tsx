@@ -39,15 +39,15 @@ export default async function AccessSettingsPage({ searchParams }: AccessPagePro
         : null;
 
   return (
-    <section className="app-surface rounded-[2rem] p-5 sm:p-6 space-y-5">
+    <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5 space-y-3 sm:space-y-4">
       <div>
         <p className="section-kicker">Accès</p>
-        <h3 className="display-title mt-2 text-3xl">Partager l&apos;accès</h3>
+        <h3 className="display-title mt-1 text-2xl sm:text-3xl">Partager l&apos;accès</h3>
       </div>
 
       {feedbackMessage ? (
         <div
-          className="rounded-[1.4rem] border px-4 py-3 text-sm leading-6"
+          className="rounded-xl border px-4 py-3 text-sm leading-6"
           style={{
             backgroundColor: feedbackMessage.tone === "success" ? "rgba(56, 115, 93, 0.12)" : "rgba(216, 100, 61, 0.12)",
             borderColor: "rgba(30, 31, 34, 0.06)",
@@ -58,7 +58,7 @@ export default async function AccessSettingsPage({ searchParams }: AccessPagePro
         </div>
       ) : null}
 
-      <ClientForm action={`/api/households/${context.household.id}/invites`} method="POST" className="soft-panel compact-form-grid p-5">
+      <ClientForm action={`/api/households/${context.household.id}/invites`} method="POST" className="soft-panel space-y-3 p-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="field-label">
             <span>Rôle</span>
@@ -73,7 +73,7 @@ export default async function AccessSettingsPage({ searchParams }: AccessPagePro
             <input className="field" type="number" min="1" max="30" name="expiresInDays" defaultValue="7" />
           </label>
         </div>
-        <button className="btn-primary w-full px-5 py-3 font-semibold" type="submit">
+        <button className="btn-primary min-h-11 w-full px-4 py-2.5 font-semibold sm:w-auto" type="submit">
           Créer une invitation
         </button>
       </ClientForm>
@@ -84,18 +84,18 @@ export default async function AccessSettingsPage({ searchParams }: AccessPagePro
             const joinLink = `${appBaseUrl}/join/${invite.token}`;
 
             return (
-              <div key={invite.id} className="soft-panel space-y-3 p-4">
+              <div key={invite.id} className="space-y-3 rounded-xl border border-line p-3">
                 <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-semibold">Code {invite.code}</p>
-                    <p className="text-sm text-ink-700">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">Code {invite.code}</p>
+                    <p className="text-xs text-ink-700">
                       Rôle {invite.role} · expire le{" "}
                       {new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(invite.expiresAt)}
                     </p>
                   </div>
-                  <span className="stat-pill px-3 py-1 text-sm">Active</span>
+                  <span className="stat-pill px-3 py-1 text-xs">Active</span>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2 sm:grid-cols-2">
                   <CopyValueButton label="Copier le lien" value={joinLink} />
                   <CopyValueButton label="Copier le code" value={invite.code} />
                 </div>
@@ -106,7 +106,7 @@ export default async function AccessSettingsPage({ searchParams }: AccessPagePro
             );
           })
         ) : (
-          <div className="soft-panel p-4 text-sm text-ink-700">Aucune invitation active.</div>
+          <div className="rounded-xl border border-line p-3 text-sm text-ink-700">Aucune invitation active.</div>
         )}
       </div>
     </section>

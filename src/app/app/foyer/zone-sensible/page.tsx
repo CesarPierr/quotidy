@@ -31,14 +31,14 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
           : null;
 
   return (
-    <section className="app-surface rounded-[2rem] p-5 sm:p-6 space-y-6">
+    <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5 space-y-3 sm:space-y-4">
       <div>
         <p className="section-kicker text-red-700">Zone sensible</p>
-        <h3 className="display-title mt-2 text-3xl text-red-900">Actions irréversibles</h3>
+        <h3 className="display-title mt-1 text-2xl text-red-900 sm:text-3xl">Actions irréversibles</h3>
       </div>
 
       {/* Personal data — RGPD */}
-      <div className="rounded-[1.5rem] border border-line bg-glass-bg p-5 space-y-3">
+      <div className="rounded-xl border border-line bg-glass-bg p-3 space-y-3">
         <div>
           <h4 className="font-bold text-ink-950">Mes données personnelles</h4>
           <p className="mt-1 text-sm text-ink-700">
@@ -47,7 +47,7 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
         </div>
         <a
           href="/api/me/export"
-          className="btn-secondary inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
+          className="btn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold"
         >
           Télécharger mes données (.json)
         </a>
@@ -55,7 +55,7 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
 
       {/* Household deletion (owner only) */}
       {isOwner ? (
-        <div className="rounded-[1.5rem] border border-red-200/70 bg-red-50/75 p-5 space-y-4">
+        <div className="rounded-xl border border-red-200/70 bg-red-50/75 p-3 space-y-3">
           <div>
             <h4 className="font-bold text-red-900">Supprimer le foyer « {context.household.name} »</h4>
             <p className="mt-1 text-sm text-red-700">
@@ -63,19 +63,19 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
             </p>
           </div>
           {householdMessage ? (
-            <div className="rounded-[1rem] border border-red-200 bg-red-50/80 px-3 py-2 text-xs text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50/80 px-3 py-2 text-xs text-red-700">
               {householdMessage}
             </div>
           ) : null}
-          <ClientForm action={`/api/households/${context.household.id}/delete`} method="POST" className="space-y-4">
+          <ClientForm action={`/api/households/${context.household.id}/delete`} method="POST" className="space-y-3">
             <label className="field-label">
-              <span className="inline-flex items-start gap-3 rounded-[1rem] border border-red-200 bg-red-50 px-4 py-3 font-medium text-red-900">
+              <span className="inline-flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 font-medium text-red-900">
                 <input name="confirmDelete" type="checkbox" className="mt-1" />
                 <span>Je confirme la suppression définitive de ce foyer.</span>
               </span>
             </label>
             <button
-              className="btn-primary w-full border-none bg-red-700 px-5 py-3 font-semibold hover:bg-red-800"
+              className="btn-primary min-h-11 w-full border-none bg-red-700 px-4 py-2.5 font-semibold hover:bg-red-800 sm:w-auto"
               type="submit"
             >
               Supprimer le foyer
@@ -85,7 +85,7 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
       ) : null}
 
       {/* Account deletion — RGPD article 17 */}
-      <div className="rounded-[1.5rem] border border-red-300/70 bg-red-50/60 p-5 space-y-4">
+      <div className="rounded-xl border border-red-300/70 bg-red-50/60 p-3 space-y-3">
         <div>
           <h4 className="font-bold text-red-900">Supprimer définitivement mon compte</h4>
           <p className="mt-1 text-sm text-red-700">
@@ -94,7 +94,7 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
           </p>
         </div>
         {accountMessage ? (
-          <div className="rounded-[1rem] border border-red-200 bg-red-50/80 px-3 py-2 text-xs text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50/80 px-3 py-2 text-xs text-red-700">
             {accountMessage}
           </div>
         ) : null}
@@ -113,7 +113,7 @@ export default async function DangerSettingsPage({ searchParams }: DangerPagePro
             />
           </label>
           <button
-            className="btn-primary w-full border-none bg-red-800 px-5 py-3 font-semibold hover:bg-red-900"
+            className="btn-primary min-h-11 w-full border-none bg-red-800 px-4 py-2.5 font-semibold hover:bg-red-900 sm:w-auto"
             type="submit"
           >
             Supprimer mon compte définitivement
