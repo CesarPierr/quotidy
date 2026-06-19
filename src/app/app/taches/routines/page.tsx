@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { startOfDay } from "date-fns";
+import { ListChecks, Repeat } from "lucide-react";
 
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -61,10 +62,17 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
   const householdSuffix = `?household=${context.household.id}`;
 
   return (
-    <section className="space-y-5">
-      <div className="app-surface glow-card rounded-[2rem] p-5 sm:p-6">
-        <p className="section-kicker">Réglages · Tâches</p>
-        <h2 className="display-title mt-2 text-3xl leading-tight sm:text-4xl">Gérer la bibliothèque de tâches</h2>
+    <section className="space-y-3 sm:space-y-4">
+      <div className="app-surface glow-card rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
+            <Repeat className="size-5" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <p className="section-kicker text-[0.62rem]">Réglages · Tâches</p>
+            <h2 className="display-title text-lg sm:text-xl">Gérer la bibliothèque de tâches</h2>
+          </div>
+        </div>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-700">
           Tout le catalogue du foyer : ajouter, modifier, archiver les routines. Les actions du jour restent dans{" "}
           <Link className="font-semibold text-coral-600 underline" href={`/app/taches/aujourd-hui${householdSuffix}`}>
@@ -73,10 +81,10 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
           .
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Link
             aria-current={activeTab === "list" ? "page" : undefined}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
+            className={`min-h-11 inline-flex items-center rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
               activeTab === "list"
                 ? "bg-coral-500 text-white shadow-[0_8px_20px_rgba(216,100,61,0.2)]"
                 : "bg-white/80 dark:bg-surface/80 border border-line text-ink-700 hover:bg-white dark:bg-surface"
@@ -87,7 +95,7 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
           </Link>
           <Link
             aria-current={activeTab === "wizard" ? "page" : undefined}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all ${
+            className={`min-h-11 inline-flex items-center rounded-full px-4 py-2.5 text-sm font-semibold transition-all ${
               activeTab === "wizard"
                 ? "bg-coral-500 text-white shadow-[0_8px_20px_rgba(216,100,61,0.2)]"
                 : "bg-white/80 dark:bg-surface/80 border border-line text-ink-700 hover:bg-white dark:bg-surface"
@@ -111,18 +119,23 @@ export default async function TasksSettingsPage({ searchParams }: TasksSettingsP
           />
         </section>
       ) : (
-        <section className="app-surface rounded-[2rem] p-5 sm:p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <section className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="section-kicker">Récurrences</p>
-              <h3 className="display-title mt-2 text-2xl">Catalogue du foyer</h3>
+            <div className="flex items-center gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
+                <ListChecks className="size-5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="section-kicker text-[0.62rem]">Récurrences</p>
+                <h3 className="display-title text-lg sm:text-xl">Catalogue du foyer</h3>
+              </div>
             </div>
             <span className="accent-pill">
               <span className="accent-pill-dot" style={{ backgroundColor: "var(--sky-500)" }} />
               {context.tasks.length} tâche{context.tasks.length > 1 ? "s" : ""}
             </span>
           </div>
-          <div className="mt-5">
+          <div className="mt-4">
             <TaskSettingsList
               tasks={context.tasks}
               householdId={context.household.id}

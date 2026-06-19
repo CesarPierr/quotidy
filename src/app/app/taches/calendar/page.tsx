@@ -91,13 +91,13 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
   const nextDaysHref = baseHref(`&monthOffset=${monthOffset}&dayOffset=${dayOffset + 4}`);
 
   return (
-    <div className="grid gap-4 sm:gap-6 xl:grid-cols-[1fr_380px]">
-      <section className="space-y-4 sm:space-y-6">
+    <div className="grid gap-3 sm:gap-4 xl:grid-cols-[1fr_380px]">
+      <section className="space-y-3 sm:space-y-4">
         <div className="px-1">
           <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="section-kicker text-[0.62rem] sm:text-xs">Planifier</p>
-              <h2 className="display-title mt-1 truncate text-2xl leading-tight sm:mt-2 sm:text-4xl">
+              <h2 className="display-title mt-1 truncate text-2xl leading-tight sm:mt-2 sm:text-3xl">
                 {format(startDate, "d MMM", { locale: fr })} — {format(endDate, "d MMM yyyy", { locale: fr })}
               </h2>
               <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-3 sm:gap-3">

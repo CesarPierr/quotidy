@@ -69,10 +69,10 @@ export function EpargneClient({
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:gap-6">
           <div>
             <p className="section-kicker text-[0.62rem] text-leaf-600 sm:text-xs">Épargne & Provisions</p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-ink-950 sm:text-5xl">
+            <p className="display-title mt-1 text-2xl tabular-nums text-ink-950 sm:text-3xl">
               {formatCurrency(totalSavings)}
             </p>
-            <p className="mt-1 text-xs text-ink-700 sm:text-sm">
+            <p className="mt-1 text-sm text-ink-700">
               Réparti sur {balanceBoxes.length} enveloppe{balanceBoxes.length > 1 ? "s" : ""}.
             </p>
           </div>
@@ -157,9 +157,9 @@ export function EpargneClient({
       {tab === "boxes" ? (
         <div key="tab-boxes" className="animate-in fade-in duration-300 motion-reduce:animate-none">
           {isEmpty ? (
-            <section className="app-surface rounded-2xl p-5 text-center sm:p-6">
+            <section className="app-surface rounded-[1.4rem] p-4 text-center sm:rounded-[1.6rem] sm:p-5">
               <Sparkles className="mx-auto size-7 text-coral-500 sm:size-8" />
-              <h3 className="mt-3 text-lg font-bold">Commencez par une enveloppe</h3>
+              <h3 className="display-title mt-3 text-lg sm:text-xl">Commencez par une enveloppe</h3>
               <p className="mt-1 text-sm text-ink-700 max-w-md mx-auto">
                 Choisissez un modèle (épargne précaution, vacances, voiture…) ou créez la vôtre.
               </p>
@@ -181,7 +181,7 @@ export function EpargneClient({
           )}
 
           {archivedBoxes.length > 0 ? (
-            <details className="mt-4 app-surface rounded-2xl p-4 group">
+            <details className="mt-4 app-surface rounded-[1.4rem] p-4 group sm:rounded-[1.6rem]">
               <summary className="cursor-pointer text-sm font-semibold text-ink-500 flex items-center justify-between">
                 <span>{archivedBoxes.length} enveloppe{archivedBoxes.length > 1 ? "s" : ""} archivée{archivedBoxes.length > 1 ? "s" : ""}</span>
                 <Plus className="size-4 group-open:rotate-45 transition-transform" />
@@ -195,14 +195,17 @@ export function EpargneClient({
           ) : null}
         </div>
       ) : (
-        <section key="tab-calculators" className="space-y-4 animate-in fade-in duration-300 motion-reduce:animate-none">
-          <div className="px-1 flex items-center justify-between">
+        <section key="tab-calculators" className="space-y-3 sm:space-y-4 animate-in fade-in duration-300 motion-reduce:animate-none">
+          <div className="px-1 flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
+              <Calculator className="size-4" />
+            </span>
             <div>
               <p className="section-kicker text-coral-500">Utiliser</p>
-              <h2 className="text-lg font-bold text-ink-950">Lancer un calcul</h2>
+              <h2 className="display-title text-lg sm:text-xl">Lancer un calcul</h2>
             </div>
           </div>
-          
+
           <CalculatorRunner
             key={refreshCalculatorsKey}
             householdId={householdId}

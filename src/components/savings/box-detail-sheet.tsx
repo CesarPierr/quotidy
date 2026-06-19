@@ -108,7 +108,7 @@ function BoxDetailContent({
               type="button"
               onClick={() => setTab(t)}
               className={cn(
-                "rounded-lg py-2.5 text-xs font-bold transition-all duration-200 active:scale-[0.96] truncate px-1",
+                "min-h-11 rounded-lg py-2 text-xs font-bold transition-all duration-200 active:scale-[0.96] truncate px-1",
                 tab === t
                   ? "bg-white dark:bg-surface text-ink-950 shadow-sm"
                   : "text-ink-500 hover:text-ink-700",

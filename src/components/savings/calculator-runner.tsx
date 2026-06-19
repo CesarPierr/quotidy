@@ -144,7 +144,7 @@ export function CalculatorRunner({
           <button
             type="button"
             onClick={onCreate}
-            className="app-surface rounded-2xl border border-dashed border-black/10 p-5 flex flex-col items-center justify-center gap-2 text-center hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] group h-full min-h-[80px]"
+            className="app-surface rounded-xl border border-dashed border-black/10 p-4 flex flex-col items-center justify-center gap-2 text-center hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] group h-full min-h-[72px]"
           >
             <Plus className="size-5 text-ink-400 group-hover:text-coral-500 transition-colors" />
             <span className="text-xs font-bold text-ink-400">Nouveau calculateur</span>
@@ -157,7 +157,7 @@ export function CalculatorRunner({
 
   const form = selected ? (
     <form
-      className="space-y-4"
+      className="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
         const fd = new FormData();
@@ -183,7 +183,7 @@ export function CalculatorRunner({
         <p className="text-sm font-bold text-[var(--ink-900)] truncate">{selected.name}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {selected.resultMode !== "none" ? (
           <label className="field-label sm:col-span-2">
             <span className="text-[10px] uppercase font-bold text-ink-500">Enveloppe cible</span>
@@ -223,7 +223,7 @@ export function CalculatorRunner({
       <button
         type="submit"
         disabled={run.isSubmitting || !preview || (selected.resultMode !== "none" && (preview.amount <= 0 || !targetBoxId))}
-        className="btn-primary flex min-h-12 w-full items-center justify-center gap-2 px-4 py-3.5 text-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+        className="btn-primary flex min-h-11 w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
       >
         <Calculator className="size-4 shrink-0" />
         <span
@@ -253,7 +253,7 @@ export function CalculatorRunner({
           <button
             type="button"
             onClick={() => chooseCalculator(calculator)}
-            className="w-full app-surface rounded-2xl border border-black/[0.04] p-4 text-left hover:border-black/[0.1] hover:bg-black/[0.01] transition-all duration-150 active:scale-[0.98]"
+            className="w-full app-surface rounded-xl border border-black/[0.04] p-3 text-left hover:border-black/[0.1] hover:bg-black/[0.01] transition-all duration-150 active:scale-[0.98]"
             style={{ borderLeft: `4px solid ${color}` }}
           >
             <div className="flex items-start gap-3">
@@ -285,7 +285,7 @@ export function CalculatorRunner({
         <button
           type="button"
           onClick={onCreate}
-          className="app-surface rounded-2xl border border-dashed border-black/10 p-4 flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] min-h-[72px]"
+          className="app-surface rounded-xl border border-dashed border-black/10 p-3 flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-all duration-150 active:scale-[0.98] min-h-[72px]"
         >
           <Plus className="size-4 text-ink-400" />
           <span className="text-xs font-bold text-ink-400">Nouveau</span>
@@ -296,11 +296,11 @@ export function CalculatorRunner({
 
   if (variant === "grid") {
     return (
-      <section className="space-y-4">
+      <section className="space-y-3 sm:space-y-4">
         {selected ? (
           <div
             key={selected.id}
-            className="app-surface mx-auto w-full max-w-lg rounded-2xl border border-black/[0.03] p-5 animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none"
+            className="app-surface mx-auto w-full max-w-lg rounded-[1.4rem] border border-black/[0.03] p-4 animate-in fade-in zoom-in-95 duration-200 motion-reduce:animate-none sm:rounded-[1.6rem] sm:p-5"
           >
             {form}
           </div>
@@ -314,7 +314,7 @@ export function CalculatorRunner({
   }
 
   return (
-    <section className="app-surface overflow-hidden rounded-2xl border border-black/[0.03]">
+    <section className="app-surface overflow-hidden rounded-[1.4rem] border border-black/[0.03] sm:rounded-[1.6rem]">
       <button
         type="button"
         onClick={() => {

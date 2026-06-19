@@ -53,7 +53,7 @@ export function BoxCard({ box, onClick }: BoxCardProps) {
       onClick={onClick}
       type="button"
       aria-label={`Ouvrir ${box.name}, solde ${formatCurrency(balance)}`}
-      className="app-surface interactive-surface w-full rounded-2xl p-3.5 text-left transition-all duration-150 hover:shadow-md active:scale-[0.98] sm:p-4"
+      className="app-surface interactive-surface w-full rounded-xl border border-line p-3 text-left transition-all duration-150 hover:shadow-md active:scale-[0.98]"
       style={{ borderLeft: `4px solid ${box.color}` }}
     >
       <div className="flex items-start justify-between gap-3">

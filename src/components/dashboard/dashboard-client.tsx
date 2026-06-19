@@ -174,7 +174,7 @@ export function DashboardClient({
       ) : null}
 
       <aside aria-label={isPersonal ? "Vue d'ensemble de la semaine" : "Vue d'ensemble du foyer"}>
-        <details className="app-surface group rounded-[2rem] p-5 sm:p-6 [&[open]>summary>span.chev]:rotate-180">
+        <details className="app-surface group rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5 [&[open]>summary>span.chev]:rotate-180">
           <summary className="flex cursor-pointer items-center justify-between gap-3 list-none">
             <div>
               <p className="section-kicker">Vue d&apos;ensemble</p>

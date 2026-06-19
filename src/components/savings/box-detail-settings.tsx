@@ -42,13 +42,13 @@ export function BoxDetailSettings({
   });
 
   return (
-    <div className="space-y-4 pb-12">
-      <div className="flex gap-2 p-1 bg-black/[0.03] rounded-lg">
+    <div className="space-y-3 sm:space-y-4 pb-12">
+      <div className="flex gap-1 p-1 bg-black/[0.03] rounded-xl">
         <button
           type="button"
           onClick={() => setSettingsTab("general")}
           className={cn(
-            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            "flex-1 min-h-11 py-2 text-[10px] font-bold rounded-lg transition-all duration-200 active:scale-[0.96]",
             settingsTab === "general" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
@@ -58,7 +58,7 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("autofill")}
           className={cn(
-            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            "flex-1 min-h-11 py-2 text-[10px] font-bold rounded-lg transition-all duration-200 active:scale-[0.96]",
             settingsTab === "autofill" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
@@ -68,7 +68,7 @@ export function BoxDetailSettings({
           type="button"
           onClick={() => setSettingsTab("calculators")}
           className={cn(
-            "flex-1 py-2.5 text-[10px] font-bold rounded-md transition-all duration-200 active:scale-[0.96]",
+            "flex-1 min-h-11 py-2 text-[10px] font-bold rounded-lg transition-all duration-200 active:scale-[0.96]",
             settingsTab === "calculators" ? "bg-white dark:bg-surface shadow-sm" : "text-ink-500"
           )}
         >
@@ -78,13 +78,13 @@ export function BoxDetailSettings({
 
       <div key={settingsTab} className="animate-in fade-in duration-200 motion-reduce:animate-none">
       {settingsTab === "general" ? (
-        <div className="space-y-6">
-          <section className="app-surface rounded-2xl p-5 border border-black/[0.03]">
+        <div className="space-y-3 sm:space-y-4">
+          <section className="app-surface rounded-[1.4rem] p-4 border border-black/[0.03] sm:rounded-[1.6rem] sm:p-5">
             <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-[var(--ink-800)]">
               <Pencil className="size-4 opacity-50" /> Identité
             </h4>
             <form
-              className="space-y-4"
+              className="space-y-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 const fd = new FormData(e.currentTarget);
@@ -105,7 +105,7 @@ export function BoxDetailSettings({
               <button
                 type="submit"
                 disabled={update.isSubmitting}
-                className="btn-primary w-full py-3 text-sm font-bold shadow-md disabled:opacity-50"
+                className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-bold shadow-md disabled:opacity-50 sm:w-auto"
               >
                 {update.isSubmitting ? "Enregistrement…" : "Enregistrer les modifications"}
               </button>
@@ -114,10 +114,10 @@ export function BoxDetailSettings({
 
           <section className="space-y-2">
             <h4 className="px-1 text-[10px] uppercase tracking-wider font-bold text-ink-500">Gestion</h4>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="flex flex-wrap gap-2">
               <a
                 href={`/api/households/${householdId}/savings/boxes/${box.id}/export`}
-                className="btn-secondary inline-flex items-center justify-center gap-2 py-3 text-sm font-bold"
+                className="btn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold"
                 download
               >
                 <Download className="size-4" />
@@ -131,7 +131,7 @@ export function BoxDetailSettings({
                   archive.submit(fd);
                 }}
                 disabled={archive.isSubmitting}
-                className="btn-secondary inline-flex items-center justify-center gap-2 py-3 text-sm font-bold disabled:opacity-50"
+                className="btn-secondary inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold disabled:opacity-50"
               >
                 <Archive className="size-4" />
                 {box.isArchived ? "Désarchiver" : "Archiver l'enveloppe"}
@@ -139,7 +139,7 @@ export function BoxDetailSettings({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(true)}
-                className="btn-quiet inline-flex items-center justify-center gap-2 py-3 text-sm font-bold text-red-700 disabled:opacity-50"
+                className="btn-quiet inline-flex min-h-11 items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-red-700 disabled:opacity-50"
               >
                 <Trash2 className="size-4" />
                 Supprimer définitivement
@@ -149,7 +149,7 @@ export function BoxDetailSettings({
         </div>
       ) : settingsTab === "autofill" ? (
         <div>
-          <section className="app-surface rounded-2xl p-5 border border-black/[0.03]">
+          <section className="app-surface rounded-[1.4rem] p-4 border border-black/[0.03] sm:rounded-[1.6rem] sm:p-5">
             <h4 className="text-sm font-bold mb-4 flex items-center gap-2 text-coral-500">
               <Sparkles className="size-4" /> Auto-versement
             </h4>
