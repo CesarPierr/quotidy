@@ -307,3 +307,35 @@ export const householdNoteUpdateSchema = z.object({
 export const noteRetentionSchema = z.object({
   noteRetentionDays: z.coerce.number().int().min(1).max(365),
 });
+
+// ── Budget ───────────────────────────────────────────────────────────────────
+
+export const budgetIncomeSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  amount: positiveAmount,
+});
+export const budgetIncomeUpdateSchema = budgetIncomeSchema.partial();
+
+export const budgetChargeSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  amount: positiveAmount,
+  dayOfMonth: z.coerce.number().int().min(1).max(31).optional(),
+  savingsBoxId: z.string().trim().min(1).optional(),
+});
+export const budgetChargeUpdateSchema = budgetChargeSchema.partial();
+
+export const budgetPocketSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  color: colorString,
+  period: z.enum(["monthly", "weekly"]).default("monthly"),
+  quota: positiveAmount,
+});
+export const budgetPocketUpdateSchema = budgetPocketSchema.partial();
+
+export const budgetExpenseSchema = z.object({
+  label: z.string().trim().max(120).optional(),
+  amount: positiveAmount,
+  pocketId: z.string().trim().min(1).optional(),
+  spentAt: z.string().trim().min(1).optional(),
+});
+export const budgetExpenseUpdateSchema = budgetExpenseSchema.partial();

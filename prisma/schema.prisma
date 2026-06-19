@@ -191,6 +191,10 @@ model Household {
   featureEntitlements    FeatureEntitlement[]
   checklists             Checklist[]
   householdNotes         HouseholdNote[]
+  budgetIncomes          BudgetIncome[]
+  budgetCharges          BudgetCharge[]
+  budgetPockets          BudgetPocket[]
+  budgetExpenses         BudgetExpense[]
 
   @@index([createdByUserId])
 }
@@ -222,6 +226,7 @@ model HouseholdMember {
   checkedChecklistItems ChecklistItem[]       @relation("ChecklistItemChecker")
   createdNotes          HouseholdNote[]       @relation("HouseholdNoteCreator")
   completedNotes        HouseholdNote[]       @relation("HouseholdNoteCompleter")
+  budgetExpenses        BudgetExpense[]       @relation("BudgetExpenseCreator")
 
   @@unique([householdId, userId])
   @@index([householdId])
@@ -498,6 +503,7 @@ model SavingsBox {
   inTransfers    SavingsTransfer[]      @relation("TransferTo")
   calculators    SavingsCalculator[]
   calculatorRuns SavingsCalculatorRun[]
+  budgetCharges  BudgetCharge[]
 
   @@index([householdId, isArchived, sortOrder])
 }
@@ -873,4 +879,80 @@ model HouseholdNote {
   completedByMember   HouseholdMember? @relation("HouseholdNoteCompleter", fields: [completedByMemberId], references: [id], onDelete: SetNull)
 
   @@index([householdId, completedAt, isPinned, sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Budget — monthly household cash-flow tracker.
+// « Reste sur le compte » = Revenus − Charges fixes − Dépenses du mois.
+// Pockets are per-field spend budgets with a configurable monthly OR weekly
+// quota. A charge may optionally point at a savings box (recurring épargne
+// counted as a budget deduction — a light link, not the core).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BudgetIncome {
+  id          String   @id @default(cuid())
+  householdId String
+  label       String
+  amount      Decimal  @db.Decimal(12, 2)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@index([householdId])
+}
+
+model BudgetCharge {
+  id           String   @id @default(cuid())
+  householdId  String
+  label        String
+  amount       Decimal  @db.Decimal(12, 2)
+  dayOfMonth   Int?
+  savingsBoxId String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  household  Household   @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  savingsBox SavingsBox? @relation(fields: [savingsBoxId], references: [id], onDelete: SetNull)
+
+  @@index([householdId])
+  @@index([savingsBoxId])
+}
+
+model BudgetPocket {
+  id          String   @id @default(cuid())
+  householdId String
+  name        String
+  color       String   @default("#2F6D88")
+  /// "monthly" | "weekly" — the period the quota resets on.
+  period      String   @default("monthly")
+  quota       Decimal  @db.Decimal(12, 2)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household Household       @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  expenses  BudgetExpense[]
+
+  @@index([householdId, sortOrder])
+}
+
+model BudgetExpense {
+  id                String   @id @default(cuid())
+  householdId       String
+  pocketId          String?
+  label             String?
+  amount            Decimal  @db.Decimal(12, 2)
+  spentAt           DateTime @default(now())
+  createdByMemberId String?
+  createdAt         DateTime @default(now())
+
+  household       Household        @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  pocket          BudgetPocket?    @relation(fields: [pocketId], references: [id], onDelete: SetNull)
+  createdByMember HouseholdMember? @relation("BudgetExpenseCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+
+  @@index([householdId, spentAt])
+  @@index([pocketId])
 }

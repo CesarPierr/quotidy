@@ -4,6 +4,7 @@ import {
   NotebookPen,
   PiggyBank,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -46,6 +47,13 @@ export const appSections: AppSection[] = [
     icon: PiggyBank,
     accent: "sky",
     savingsGated: true,
+  },
+  {
+    href: "/app/budget",
+    label: "Budget",
+    description: "Revenus, charges & dépenses",
+    icon: Wallet,
+    accent: "leaf",
   },
   {
     href: "/app/foyer",
