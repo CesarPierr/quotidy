@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -114,6 +115,7 @@ function Bounded<T>({ items, initial, render }: { items: T[]; initial: number; r
 
 export function BudgetClient({ householdId, initialOverview, savingsBoxes }: BudgetClientProps) {
   const { success, error: showError } = useToast();
+  const router = useRouter();
   const [overview, setOverview] = useState(initialOverview);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [busy, setBusy] = useState(false);
@@ -273,15 +275,35 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
                 <Bounded
                   initial={5}
                   items={overview.charges}
-                  render={(c) => (
-                    <Row
-                      key={c.id}
-                      hint={c.savingsBoxName ? `Épargne · ${c.savingsBoxName}` : c.dayOfMonth ? `Le ${c.dayOfMonth} du mois` : undefined}
-                      onClick={() => setSheet({ kind: "charge", entity: c })}
-                      title={c.label}
-                      value={formatCurrency(c.amount)}
-                    />
-                  )}
+                  render={(c) =>
+                    c.isAuto ? (
+                      <Row
+                        badge={<span className="rounded-full bg-sky-500/10 px-1.5 py-0.5 text-[0.6rem] font-bold text-sky-600">auto · épargne</span>}
+                        hint="Versement automatique — géré dans l'enveloppe"
+                        key={c.id}
+                        onClick={() => router.push(`/app/epargne?household=${householdId}`)}
+                        title={c.label}
+                        value={formatCurrency(c.amount)}
+                      />
+                    ) : (
+                      <Row
+                        badge={c.duplicateOfAuto ? <span className="rounded-full bg-coral-500/10 px-1.5 py-0.5 text-[0.6rem] font-bold text-coral-600">doublon</span> : undefined}
+                        hint={
+                          c.duplicateOfAuto
+                            ? "Doublon d'un auto-versement · non compté"
+                            : c.savingsBoxName
+                              ? `Épargne · ${c.savingsBoxName}`
+                              : c.dayOfMonth
+                                ? `Le ${c.dayOfMonth} du mois`
+                                : undefined
+                        }
+                        key={c.id}
+                        onClick={() => setSheet({ kind: "charge", entity: c })}
+                        title={c.label}
+                        value={formatCurrency(c.amount)}
+                      />
+                    )
+                  }
                 />
               )}
             </ListCard>
@@ -439,14 +461,17 @@ function ListCard({ icon: Icon, accent, kicker, title, onAdd, children }: { icon
   );
 }
 
-function Row({ title, value, hint, onClick }: { title: string; value: string; hint?: string; onClick: () => void }) {
+function Row({ title, value, hint, onClick, badge }: { title: string; value: string; hint?: string; onClick: () => void; badge?: React.ReactNode }) {
   return (
     <button className="flex w-full items-center justify-between gap-3 rounded-xl border border-line bg-white/60 p-3 text-left transition-all active:scale-[0.99] dark:bg-surface/60" onClick={onClick} type="button">
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-ink-950">{title}</span>
         {hint ? <span className="block truncate text-[0.7rem] text-ink-500">{hint}</span> : null}
       </span>
-      <span className="shrink-0 text-sm font-bold tabular-nums text-ink-950">{value}</span>
+      <span className="flex shrink-0 items-center gap-2">
+        {badge}
+        <span className="text-sm font-bold tabular-nums text-ink-950">{value}</span>
+      </span>
     </button>
   );
 }

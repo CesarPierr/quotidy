@@ -7,6 +7,7 @@ vi.mock("@/lib/db", () => ({
     budgetCharge: { findMany: vi.fn() },
     budgetPocket: { findMany: vi.fn() },
     budgetExpense: { findMany: vi.fn() },
+    savingsAutoFillRule: { findMany: vi.fn() },
   },
 }));
 
@@ -40,6 +41,8 @@ beforeEach(() => {
     { id: "e3", label: "Resto", amount: 15, pocketId: "p2", spentAt: d("2026-06-18T10:00:00"), pocket: { name: "Loisirs", color: "#2f6d88" }, createdByMember: null },
     { id: "e4", label: "Café", amount: 20, pocketId: null, spentAt: d("2026-06-15T10:00:00"), pocket: null, createdByMember: null },
   ] as never);
+
+  vi.mocked(db.savingsAutoFillRule.findMany).mockResolvedValue([] as never);
 });
 
 describe("normalizePeriod", () => {
@@ -135,5 +138,29 @@ describe("getBudgetOverview", () => {
     expect(o.totals.awaitingRefund).toBe(30); // only r1 still owed
     expect(o.refunds.map((r) => r.id)).toEqual(["r1"]);
     expect(o.refunds[0]?.outstanding).toBe(30);
+  });
+
+  it("surfaces active auto-versements as derived charges and flags manual duplicates", async () => {
+    vi.mocked(db.budgetIncome.findMany).mockResolvedValue([
+      { id: "i1", label: "Salaire", amount: 2000, sortOrder: 0, createdAt: d("2026-06-01") },
+    ] as never);
+    vi.mocked(db.budgetCharge.findMany).mockResolvedValue([
+      { id: "c1", label: "Loyer", amount: 800, dayOfMonth: 5, savingsBoxId: null, sortOrder: 0, createdAt: d("2026-06-01"), savingsBox: null },
+      { id: "c2", label: "Épargne (manuel)", amount: 150, dayOfMonth: null, savingsBoxId: "box1", sortOrder: 1, createdAt: d("2026-06-01"), savingsBox: { name: "Précaution" } },
+    ] as never);
+    vi.mocked(db.budgetPocket.findMany).mockResolvedValue([] as never);
+    vi.mocked(db.budgetExpense.findMany).mockResolvedValue([] as never);
+    vi.mocked(db.savingsAutoFillRule.findMany).mockResolvedValue([
+      { boxId: "box1", amount: 150, type: "monthly_simple", interval: 1, weekdays: null, dayOfMonth: 5, startsOn: d("2026-01-01"), endsOn: null, isPaused: false, box: { id: "box1", name: "Précaution" } },
+    ] as never);
+
+    const o = await getBudgetOverview("h1", NOW);
+    const auto = o.charges.find((c) => c.isAuto);
+    expect(auto?.amount).toBe(150); // monthly_simple → exact
+    expect(auto?.savingsBoxId).toBe("box1");
+    const dup = o.charges.find((c) => c.id === "c2");
+    expect(dup?.duplicateOfAuto).toBe(true);
+    // Loyer 800 (counted) + auto 150; the duplicate manual 150 is NOT counted.
+    expect(o.totals.charges).toBe(950);
   });
 });

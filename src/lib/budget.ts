@@ -29,6 +29,10 @@ export type SerializedCharge = {
   savingsBoxId: string | null;
   savingsBoxName: string | null;
   sortOrder: number;
+  /** True for a charge derived from a savings auto-versement (read-only here). */
+  isAuto: boolean;
+  /** True for a manual charge that duplicates an auto-versement (shown, not counted). */
+  duplicateOfAuto: boolean;
 };
 
 export type SerializedPocket = {
@@ -105,6 +109,38 @@ export type BudgetOverview = {
   analysis: BudgetAnalysis;
 };
 
+const DAYS_PER_MONTH = 30.4368;
+const WEEKS_PER_MONTH = 4.348;
+
+/** Monthly-equivalent amount of a savings auto-versement rule, so it can surface
+ *  as a recurring budget charge. Exact for monthly_simple; estimated otherwise. */
+function monthlyEquivalent(rule: { amount: Prisma.Decimal; type: string; interval: number; weekdays: unknown }): number {
+  const a = dec(rule.amount);
+  const interval = Math.max(1, rule.interval || 1);
+  const weekdayCount = Array.isArray(rule.weekdays) ? Math.max(1, rule.weekdays.length) : 1;
+  let m: number;
+  switch (rule.type) {
+    case "daily":
+      m = a * DAYS_PER_MONTH;
+      break;
+    case "every_x_days":
+      m = a * (DAYS_PER_MONTH / interval);
+      break;
+    case "weekly":
+      m = a * weekdayCount * WEEKS_PER_MONTH;
+      break;
+    case "every_x_weeks":
+      m = a * (WEEKS_PER_MONTH / interval);
+      break;
+    case "monthly_simple":
+      m = a / interval;
+      break;
+    default:
+      m = a;
+  }
+  return Math.round(m * 100) / 100;
+}
+
 /**
  * Aggregate the current-month household budget. Expense figures are NET of
  * refunds already received (amount − refundedAmount) — what each expense really
@@ -124,7 +160,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
   const weekEndRaw = endOfDay(addDays(weekStart, 6));
   const weekEnd = weekEndRaw > monthEnd ? monthEnd : weekEndRaw;
 
-  const [income, charges, pockets, monthExpenses, refundRows] = await Promise.all([
+  const [income, charges, pockets, monthExpenses, refundRows, autoFillRules] = await Promise.all([
     db.budgetIncome.findMany({ where: { householdId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     db.budgetCharge.findMany({
       where: { householdId },
@@ -141,6 +177,10 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       where: { householdId, refundExpected: { not: null } },
       include: { pocket: { select: { name: true, color: true } }, createdByMember: { select: { displayName: true } } },
       orderBy: { spentAt: "desc" },
+    }),
+    db.savingsAutoFillRule.findMany({
+      where: { isPaused: false, box: { householdId, isArchived: false } },
+      include: { box: { select: { id: true, name: true } } },
     }),
   ]);
 
@@ -163,7 +203,39 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
   });
 
   const totalIncome = income.reduce((sum, row) => sum + dec(row.amount), 0);
-  const totalCharges = charges.reduce((sum, row) => sum + dec(row.amount), 0);
+
+  // Active auto-versements (savings) surface as read-only "auto" charges so the
+  // budget reflects recurring savings without a duplicate manual entry.
+  const activeRules = autoFillRules.filter((r) => r.startsOn <= now && (r.endsOn == null || r.endsOn >= now));
+  const autoBoxIds = new Set(activeRules.map((r) => r.boxId));
+  const derivedCharges: SerializedCharge[] = activeRules.map((r) => ({
+    id: `auto-${r.boxId}`,
+    label: r.box.name,
+    amount: monthlyEquivalent(r),
+    dayOfMonth: r.dayOfMonth,
+    savingsBoxId: r.boxId,
+    savingsBoxName: r.box.name,
+    sortOrder: 1000,
+    isAuto: true,
+    duplicateOfAuto: false,
+  }));
+  const manualCharges: SerializedCharge[] = charges.map((c) => ({
+    id: c.id,
+    label: c.label,
+    amount: dec(c.amount),
+    dayOfMonth: c.dayOfMonth,
+    savingsBoxId: c.savingsBoxId,
+    savingsBoxName: c.savingsBox?.name ?? null,
+    sortOrder: c.sortOrder,
+    isAuto: false,
+    duplicateOfAuto: c.savingsBoxId != null && autoBoxIds.has(c.savingsBoxId),
+  }));
+  const allCharges = [...manualCharges, ...derivedCharges];
+  // A manual charge that duplicates an auto-versement is shown (with a warning)
+  // but NOT counted, to avoid charging the same recurring savings twice.
+  const totalCharges =
+    manualCharges.filter((c) => !c.duplicateOfAuto).reduce((sum, c) => sum + c.amount, 0) +
+    derivedCharges.reduce((sum, c) => sum + c.amount, 0);
   const totalMonthExpenses = monthExpenses.reduce((sum, row) => sum + net(row), 0);
 
   const monthByPocket = new Map<string, number>();
@@ -251,15 +323,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       freeMoney,
     },
     income: income.map((i) => ({ id: i.id, label: i.label, amount: dec(i.amount), sortOrder: i.sortOrder })),
-    charges: charges.map((c) => ({
-      id: c.id,
-      label: c.label,
-      amount: dec(c.amount),
-      dayOfMonth: c.dayOfMonth,
-      savingsBoxId: c.savingsBoxId,
-      savingsBoxName: c.savingsBox?.name ?? null,
-      sortOrder: c.sortOrder,
-    })),
+    charges: allCharges,
     pockets: serializedPockets,
     expenses: monthExpenses.slice(0, 365).map(serializeExpense),
     refunds: pendingRefunds.slice(0, 50).map(serializeExpense),
