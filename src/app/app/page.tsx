@@ -141,7 +141,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     budgetOverview.totals.income > 0 ||
     budgetOverview.charges.length > 0 ||
     budgetOverview.pockets.length > 0 ||
-    budgetOverview.recentExpenses.length > 0;
+    budgetOverview.expenses.length > 0;
 
   return (
     <div className="space-y-4">

@@ -62,6 +62,23 @@ describe("getBudgetOverview", () => {
     expect(o.month).toBe("2026-06");
     expect(o.week.index).toBe(3); // days 15–21
     expect(o.week.label).toMatch(/juin/);
+    expect(o.expenses.length).toBe(4);
+  });
+
+  it("classifies the month's spending by type for the Analyse panel", async () => {
+    const o = await getBudgetOverview("h1", NOW);
+    expect(o.analysis.total).toBe(185);
+    // p1=120, p2=30+15=45, uncategorised=20 → biggest first.
+    expect(o.analysis.byType.map((t) => [t.name, t.amount])).toEqual([
+      ["Alimentation", 120],
+      ["Loisirs", 45],
+      ["Sans poste", 20],
+    ]);
+    // By date: Ciné 30 → S1 (2nd), Courses 120 → S2 (10th), Resto 15 + Café 20 → S3 (15th/18th).
+    const wk = Object.fromEntries(o.analysis.byWeek.map((w) => [w.label, w.amount]));
+    expect(wk.S1).toBe(30);
+    expect(wk.S2).toBe(120);
+    expect(wk.S3).toBe(35);
   });
 
   it("tracks a monthly pocket against the whole month", async () => {

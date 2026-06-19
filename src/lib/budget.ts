@@ -63,6 +63,15 @@ export type SerializedExpense = {
   outstanding: number;
 };
 
+export type BudgetAnalysis = {
+  /** Total net spending this month. */
+  total: number;
+  /** Spending grouped by type (pocket, + "Sans poste"), biggest first. */
+  byType: { key: string; name: string; color: string; amount: number; ratio: number }[];
+  /** Net spending per in-month week (same 7-day blocks as weekly pockets). */
+  byWeek: { label: string; amount: number }[];
+};
+
 export type BudgetOverview = {
   /** ISO `YYYY-MM` key for the month the account figures cover. */
   month: string;
@@ -83,9 +92,12 @@ export type BudgetOverview = {
   income: SerializedIncome[];
   charges: SerializedCharge[];
   pockets: SerializedPocket[];
-  recentExpenses: SerializedExpense[];
+  /** All expenses logged this month (newest first), capped for safety. */
+  expenses: SerializedExpense[];
   /** Refundable expenses still awaiting (full or partial) reimbursement. */
   refunds: SerializedExpense[];
+  /** Month spending classified by type, for the Analyse panel. */
+  analysis: BudgetAnalysis;
 };
 
 /**
@@ -163,6 +175,30 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
   const pendingRefunds = refundRows.filter((e) => outstandingOf(e) > 0.001);
   const awaitingRefund = pendingRefunds.reduce((sum, e) => sum + outstandingOf(e), 0);
 
+  // ── Analyse panel: classify the month's spending by type + by week ──────────
+  const typeMap = new Map<string, { key: string; name: string; color: string; amount: number }>();
+  for (const e of monthExpenses) {
+    const key = e.pocketId ?? "none";
+    const entry = typeMap.get(key) ?? { key, name: e.pocket?.name ?? "Sans poste", color: e.pocket?.color ?? "#8a93a0", amount: 0 };
+    entry.amount += net(e);
+    typeMap.set(key, entry);
+  }
+  const byType = [...typeMap.values()]
+    .filter((t) => t.amount > 0.001)
+    .sort((a, b) => b.amount - a.amount)
+    .map((t) => ({ ...t, ratio: totalMonthExpenses > 0 ? t.amount / totalMonthExpenses : 0 }));
+
+  const weekCount = Math.ceil(monthEnd.getDate() / 7);
+  const byWeek: { label: string; amount: number }[] = [];
+  for (let i = 0; i < weekCount; i++) {
+    const wStart = startOfDay(addDays(monthStart, i * 7));
+    const wEndRaw = endOfDay(addDays(wStart, 6));
+    const wEnd = wEndRaw > monthEnd ? monthEnd : wEndRaw;
+    let amount = 0;
+    for (const e of monthExpenses) if (e.spentAt >= wStart && e.spentAt <= wEnd) amount += net(e);
+    byWeek.push({ label: `S${i + 1}`, amount });
+  }
+
   const serializedPockets: SerializedPocket[] = pockets.map((p) => {
     const period = normalizePeriod(p.period);
     const quota = dec(p.quota);
@@ -207,7 +243,8 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       sortOrder: c.sortOrder,
     })),
     pockets: serializedPockets,
-    recentExpenses: monthExpenses.slice(0, 12).map(serializeExpense),
-    refunds: pendingRefunds.slice(0, 12).map(serializeExpense),
+    expenses: monthExpenses.slice(0, 365).map(serializeExpense),
+    refunds: pendingRefunds.slice(0, 50).map(serializeExpense),
+    analysis: { total: totalMonthExpenses, byType, byWeek },
   };
 }
