@@ -337,5 +337,10 @@ export const budgetExpenseSchema = z.object({
   amount: positiveAmount,
   pocketId: z.string().trim().min(1).optional(),
   spentAt: z.string().trim().min(1).optional(),
+  refundExpected: positiveAmount.optional(),
 });
 export const budgetExpenseUpdateSchema = budgetExpenseSchema.partial();
+
+export const budgetRefundSchema = z.object({
+  refundedAmount: positiveAmount,
+});

@@ -945,6 +945,10 @@ model BudgetExpense {
   pocketId          String?
   label             String?
   amount            Decimal  @db.Decimal(12, 2)
+  /// Amount expected back (medical, pro fees…). Null = not a refundable expense.
+  refundExpected    Decimal? @db.Decimal(12, 2)
+  /// Amount actually received back so far (supports partial). Null = nothing yet.
+  refundedAmount    Decimal? @db.Decimal(12, 2)
   spentAt           DateTime @default(now())
   createdByMemberId String?
   createdAt         DateTime @default(now())

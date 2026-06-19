@@ -94,4 +94,25 @@ describe("getBudgetOverview", () => {
     expect(p1.over).toBe(true);
     expect(p1.remaining).toBe(-100);
   });
+
+  it("nets received refunds out of expenses and sums what's still owed", async () => {
+    vi.mocked(db.budgetIncome.findMany).mockResolvedValue([
+      { id: "i1", label: "Salaire", amount: 1000, sortOrder: 0, createdAt: d("2026-06-01") },
+    ] as never);
+    vi.mocked(db.budgetCharge.findMany).mockResolvedValue([] as never);
+    vi.mocked(db.budgetPocket.findMany).mockResolvedValue([] as never);
+    vi.mocked(db.budgetExpense.findMany).mockResolvedValue([
+      // Pending: paid 50, expect 30 back, nothing received yet → net 50, owed 30.
+      { id: "r1", label: "Médecin", amount: 50, refundExpected: 30, refundedAmount: null, pocketId: null, spentAt: d("2026-06-18T10:00:00"), pocket: null, createdByMember: null },
+      // Fully refunded: paid 40, got 40 back → net 0, owed 0 (not pending).
+      { id: "r2", label: "Kiné", amount: 40, refundExpected: 40, refundedAmount: 40, pocketId: null, spentAt: d("2026-06-17T10:00:00"), pocket: null, createdByMember: null },
+    ] as never);
+
+    const o = await getBudgetOverview("h1", NOW);
+    expect(o.totals.monthExpenses).toBe(50); // (50−0) + (40−40)
+    expect(o.totals.reste).toBe(950); // 1000 − 0 − 50
+    expect(o.totals.awaitingRefund).toBe(30); // only r1 still owed
+    expect(o.refunds.map((r) => r.id)).toEqual(["r1"]);
+    expect(o.refunds[0]?.outstanding).toBe(30);
+  });
 });

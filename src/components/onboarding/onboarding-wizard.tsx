@@ -75,6 +75,7 @@ type PersistedState = {
   step: Step;
   persona: PersonaId | null;
   selectedTaskKeys: string[];
+  monthlyIncome: string;
 };
 
 function sendBeacon(payload: object) {
@@ -101,7 +102,8 @@ function loadPersisted(): PersistedState | null {
     const selectedTaskKeys = Array.isArray(parsed.selectedTaskKeys)
       ? parsed.selectedTaskKeys.filter((k): k is string => typeof k === "string" && TASK_BY_KEY.has(k))
       : [];
-    return { step, persona, selectedTaskKeys };
+    const monthlyIncome = typeof parsed.monthlyIncome === "string" ? parsed.monthlyIncome : "";
+    return { step, persona, selectedTaskKeys, monthlyIncome };
   } catch {
     return null;
   }
@@ -120,6 +122,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
   const [step, setStep] = useState<Step>("welcome");
   const [persona, setPersona] = useState<PersonaId | null>(null);
   const [selectedTaskKeys, setSelectedTaskKeys] = useState<Set<string>>(new Set());
+  const [monthlyIncome, setMonthlyIncome] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [restored, setRestored] = useState(false);
   const { success, error: showError } = useToast();
@@ -132,6 +135,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
       setStep(saved.step);
       setPersona(saved.persona);
       setSelectedTaskKeys(new Set(saved.selectedTaskKeys));
+      setMonthlyIncome(saved.monthlyIncome);
     }
     setRestored(true);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -145,12 +149,17 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
     try {
       window.localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ step, persona, selectedTaskKeys: [...selectedTaskKeys] } satisfies PersistedState),
+        JSON.stringify({
+          step,
+          persona,
+          selectedTaskKeys: [...selectedTaskKeys],
+          monthlyIncome,
+        } satisfies PersistedState),
       );
     } catch {
       // ignore — persistence is best-effort.
     }
-  }, [restored, step, persona, selectedTaskKeys]);
+  }, [restored, step, persona, selectedTaskKeys, monthlyIncome]);
 
   // ── onboarding.step_viewed on each step change ─────────────────────────────
   useEffect(() => {
@@ -200,6 +209,24 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
           }
         }
 
+        // Optional household income — best-effort, never blocks completion.
+        const income = monthlyIncome.trim();
+        if (income) {
+          try {
+            const incomeForm = new FormData();
+            incomeForm.set("_action", "income.create");
+            incomeForm.set("label", "Revenu du foyer");
+            incomeForm.set("amount", income);
+            await fetch(`/api/households/${householdId}/budget`, {
+              method: "POST",
+              body: incomeForm,
+              headers: csrfHeaders,
+            });
+          } catch {
+            // ignore — income is optional and must not block onboarding.
+          }
+        }
+
         const completion = await fetch(`/api/households/${householdId}/onboarding`, {
           method: "POST",
           headers: csrfHeaders,
@@ -218,7 +245,7 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
         setIsBusy(false);
       }
     },
-    [householdId, isBusy, router, selectedTaskKeys, showError, success],
+    [householdId, isBusy, monthlyIncome, router, selectedTaskKeys, showError, success],
   );
 
   const stepIndex = STEPS.indexOf(step);
@@ -257,11 +284,12 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
             Bonjour <strong>{currentMemberName}</strong>. Préparons votre foyer en quelques secondes — vous pourrez tout
             ajuster ensuite.
           </p>
-          <div className="mt-8 grid gap-2.5 text-left sm:grid-cols-3">
+          <div className="mt-8 grid grid-cols-2 gap-2.5 text-left">
             {[
               { c: "coral", t: "Tâches partagées", d: "Réparties automatiquement et équitablement." },
-              { c: "leaf", t: "Démarrage rapide", d: "Un profil et c'est prêt, sans paperasse." },
-              { c: "sky", t: "Toujours ajustable", d: "Modifiez vos tâches à tout moment." },
+              { c: "leaf", t: "Budget en temps réel", d: "Suivez salaires, charges et dépenses." },
+              { c: "sky", t: "Démarrage rapide", d: "Un profil et c'est prêt, sans paperasse." },
+              { c: "coral", t: "Toujours ajustable", d: "Modifiez tâches et budget à tout moment." },
             ].map((v) => (
               <div key={v.t} className="rounded-2xl border border-line bg-glass-bg p-4">
                 <span
@@ -419,6 +447,25 @@ export function OnboardingWizard({ householdId, householdName, currentMemberName
               })}
             </div>
           )}
+
+          <div className="mx-auto w-full max-w-sm text-left">
+            <label htmlFor="onboarding-income" className="text-xs font-bold uppercase tracking-wider text-ink-500">
+              Revenu mensuel du foyer (facultatif)
+            </label>
+            <input
+              id="onboarding-income"
+              className="field mt-2 w-full text-center tabular-nums"
+              type="text"
+              inputMode="decimal"
+              placeholder="Ex. 3500"
+              value={monthlyIncome}
+              onChange={(e) => setMonthlyIncome(e.target.value)}
+              disabled={isBusy}
+            />
+            <p className="mt-2 text-center text-xs leading-relaxed text-ink-400">
+              On l&apos;ajoute à votre budget. Modifiable à tout moment.
+            </p>
+          </div>
 
           <div className="flex flex-col gap-3 pt-1">
             <button

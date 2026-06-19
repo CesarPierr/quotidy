@@ -55,6 +55,12 @@ export type SerializedExpense = {
   pocketColor: string | null;
   spentAt: string;
   createdByName: string | null;
+  /** Amount expected back (refundable expense), or null if not refundable. */
+  refundExpected: number | null;
+  /** Amount received back so far, or null if nothing received yet. */
+  refundedAmount: number | null;
+  /** Still owed = max(refundExpected − refundedAmount, 0). */
+  outstanding: number;
 };
 
 export type BudgetOverview = {
@@ -71,19 +77,23 @@ export type BudgetOverview = {
     reste: number;
     /** Income − charges − sum(pocket quotas) — what's left once every budget is funded. */
     plannedReste: number;
+    /** Money still owed to the household across all pending/partial refunds. */
+    awaitingRefund: number;
   };
   income: SerializedIncome[];
   charges: SerializedCharge[];
   pockets: SerializedPocket[];
   recentExpenses: SerializedExpense[];
+  /** Refundable expenses still awaiting (full or partial) reimbursement. */
+  refunds: SerializedExpense[];
 };
 
 /**
- * Aggregate the current-month household budget. The "account" figures use the
- * month window (income − charges − all month expenses). Each pocket is tracked
- * against its OWN period window: monthly pockets sum the month, weekly pockets
- * sum only the current ISO week (Monday-start) — which is why weekly expenses
- * are fetched separately (a week can straddle two months).
+ * Aggregate the current-month household budget. Expense figures are NET of
+ * refunds already received (amount − refundedAmount) — what each expense really
+ * cost. The "account" figures use the month window; each pocket is tracked
+ * against its own period window (monthly = whole month, weekly = the in-month
+ * week). Refundable expenses still owed are summed into `awaitingRefund`.
  */
 export async function getBudgetOverview(householdId: string, now: Date = new Date()): Promise<BudgetOverview> {
   const monthStart = startOfMonth(now);
@@ -97,7 +107,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
   const weekEndRaw = endOfDay(addDays(weekStart, 6));
   const weekEnd = weekEndRaw > monthEnd ? monthEnd : weekEndRaw;
 
-  const [income, charges, pockets, monthExpenses] = await Promise.all([
+  const [income, charges, pockets, monthExpenses, refundRows] = await Promise.all([
     db.budgetIncome.findMany({ where: { householdId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     db.budgetCharge.findMany({
       where: { householdId },
@@ -110,22 +120,48 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       include: { pocket: { select: { name: true, color: true } }, createdByMember: { select: { displayName: true } } },
       orderBy: { spentAt: "desc" },
     }),
+    db.budgetExpense.findMany({
+      where: { householdId, refundExpected: { not: null } },
+      include: { pocket: { select: { name: true, color: true } }, createdByMember: { select: { displayName: true } } },
+      orderBy: { spentAt: "desc" },
+    }),
   ]);
+
+  // Net of refunds already received — the real cost of an expense.
+  const net = (e: { amount: Prisma.Decimal; refundedAmount: Prisma.Decimal | null }) => dec(e.amount) - dec(e.refundedAmount);
+  const outstandingOf = (e: { refundExpected: Prisma.Decimal | null; refundedAmount: Prisma.Decimal | null }) =>
+    Math.max(dec(e.refundExpected) - dec(e.refundedAmount), 0);
+  const serializeExpense = (e: (typeof monthExpenses)[number]): SerializedExpense => ({
+    id: e.id,
+    label: e.label,
+    amount: dec(e.amount),
+    pocketId: e.pocketId,
+    pocketName: e.pocket?.name ?? null,
+    pocketColor: e.pocket?.color ?? null,
+    spentAt: e.spentAt.toISOString(),
+    createdByName: e.createdByMember?.displayName ?? null,
+    refundExpected: e.refundExpected == null ? null : dec(e.refundExpected),
+    refundedAmount: e.refundedAmount == null ? null : dec(e.refundedAmount),
+    outstanding: outstandingOf(e),
+  });
 
   const totalIncome = income.reduce((sum, row) => sum + dec(row.amount), 0);
   const totalCharges = charges.reduce((sum, row) => sum + dec(row.amount), 0);
-  const totalMonthExpenses = monthExpenses.reduce((sum, row) => sum + dec(row.amount), 0);
+  const totalMonthExpenses = monthExpenses.reduce((sum, row) => sum + net(row), 0);
 
   const monthByPocket = new Map<string, number>();
   for (const e of monthExpenses) {
-    if (e.pocketId) monthByPocket.set(e.pocketId, (monthByPocket.get(e.pocketId) ?? 0) + dec(e.amount));
+    if (e.pocketId) monthByPocket.set(e.pocketId, (monthByPocket.get(e.pocketId) ?? 0) + net(e));
   }
   const weekByPocket = new Map<string, number>();
   for (const e of monthExpenses) {
     if (e.pocketId && e.spentAt >= weekStart && e.spentAt <= weekEnd) {
-      weekByPocket.set(e.pocketId, (weekByPocket.get(e.pocketId) ?? 0) + dec(e.amount));
+      weekByPocket.set(e.pocketId, (weekByPocket.get(e.pocketId) ?? 0) + net(e));
     }
   }
+
+  const pendingRefunds = refundRows.filter((e) => outstandingOf(e) > 0.001);
+  const awaitingRefund = pendingRefunds.reduce((sum, e) => sum + outstandingOf(e), 0);
 
   const serializedPockets: SerializedPocket[] = pockets.map((p) => {
     const period = normalizePeriod(p.period);
@@ -158,6 +194,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       monthExpenses: totalMonthExpenses,
       reste: totalIncome - totalCharges - totalMonthExpenses,
       plannedReste: totalIncome - totalCharges - plannedPocketTotal,
+      awaitingRefund,
     },
     income: income.map((i) => ({ id: i.id, label: i.label, amount: dec(i.amount), sortOrder: i.sortOrder })),
     charges: charges.map((c) => ({
@@ -170,15 +207,7 @@ export async function getBudgetOverview(householdId: string, now: Date = new Dat
       sortOrder: c.sortOrder,
     })),
     pockets: serializedPockets,
-    recentExpenses: monthExpenses.slice(0, 12).map((e) => ({
-      id: e.id,
-      label: e.label,
-      amount: dec(e.amount),
-      pocketId: e.pocketId,
-      pocketName: e.pocket?.name ?? null,
-      pocketColor: e.pocket?.color ?? null,
-      spentAt: e.spentAt.toISOString(),
-      createdByName: e.createdByMember?.displayName ?? null,
-    })),
+    recentExpenses: monthExpenses.slice(0, 12).map(serializeExpense),
+    refunds: pendingRefunds.slice(0, 12).map(serializeExpense),
   };
 }

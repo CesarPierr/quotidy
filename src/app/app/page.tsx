@@ -1,9 +1,11 @@
 import { startOfDay } from "date-fns";
 import dynamic from "next/dynamic";
 
+import { BudgetSummaryCard } from "@/components/budget/budget-summary-card";
 import { ClientForm } from "@/components/shared/client-form";
 import { SectionLauncher } from "@/components/dashboard/section-launcher";
 import { requireUser } from "@/lib/auth";
+import { getBudgetOverview } from "@/lib/budget";
 import { db } from "@/lib/db";
 import { canManageHousehold, getCurrentHouseholdContext } from "@/lib/households";
 
@@ -134,12 +136,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const firstName = (context.currentMember?.displayName ?? user.displayName).split(" ")[0];
 
+  const budgetOverview = await getBudgetOverview(context.household.id);
+  const hasBudgetActivity =
+    budgetOverview.totals.income > 0 ||
+    budgetOverview.charges.length > 0 ||
+    budgetOverview.pockets.length > 0 ||
+    budgetOverview.recentExpenses.length > 0;
+
   return (
-    <>
+    <div className="space-y-4">
       {dashboardMessage ? (
-        <div className="app-surface mb-4 rounded-[1.7rem] border border-[rgba(56,115,93,0.12)] px-4 py-3 text-sm text-leaf-600">
+        <div className="app-surface rounded-[1.7rem] border border-[rgba(56,115,93,0.12)] px-4 py-3 text-sm text-leaf-600">
           {dashboardMessage}
         </div>
+      ) : null}
+      {hasBudgetActivity ? (
+        <BudgetSummaryCard overview={budgetOverview} householdId={context.household.id} />
       ) : null}
       <SectionLauncher
         counts={counts}
@@ -148,6 +160,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         householdName={context.household.name}
         savingsEnabled={context.household.savingsEnabled}
       />
-    </>
+    </div>
   );
 }

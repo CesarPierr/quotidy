@@ -6,6 +6,7 @@ import {
   budgetExpenseSchema,
   budgetIncomeSchema,
   budgetPocketSchema,
+  budgetRefundSchema,
 } from "@/lib/validation";
 
 /**
@@ -129,6 +130,7 @@ export const POST = withHousehold<{ id: string }>(async ({ request, params, memb
         amount: str("amount"),
         pocketId: str("pocketId") || undefined,
         spentAt: str("spentAt") || undefined,
+        refundExpected: str("refundExpected") || undefined,
       });
       if (!parsed.success) return fail("Dépense invalide.");
       if (parsed.data.pocketId) {
@@ -145,8 +147,17 @@ export const POST = withHousehold<{ id: string }>(async ({ request, params, memb
           pocketId: parsed.data.pocketId ?? null,
           spentAt,
           createdByMemberId: membership.id,
+          refundExpected: parsed.data.refundExpected ?? null,
         },
       });
+      return ok();
+    }
+    case "expense.refund": {
+      if (!id) return fail("Identifiant manquant.");
+      const parsed = budgetRefundSchema.safeParse({ refundedAmount: str("refundedAmount") });
+      if (!parsed.success) return fail("Montant de remboursement invalide.");
+      const res = await db.budgetExpense.updateMany({ where: { id, householdId }, data: { refundedAmount: parsed.data.refundedAmount } });
+      if (res.count === 0) return fail("Dépense introuvable.");
       return ok();
     }
     case "expense.delete": {

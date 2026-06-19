@@ -5,6 +5,7 @@ import {
   Pencil,
   Plus,
   Repeat,
+  RotateCcw,
   Trash2,
   TrendingDown,
   TrendingUp,
@@ -12,10 +13,10 @@ import {
 } from "lucide-react";
 
 import { BottomSheet, BottomSheetAction } from "@/components/ui/bottom-sheet";
-import { ChargeEditor, ExpenseEditor, IncomeEditor, PocketEditor } from "@/components/budget/budget-editors";
+import { ChargeEditor, ExpenseEditor, IncomeEditor, PocketEditor, RefundEditor } from "@/components/budget/budget-editors";
 import { useToast } from "@/components/ui/toast";
 import { postForm } from "@/lib/api-client";
-import type { BudgetOverview, SerializedCharge, SerializedIncome, SerializedPocket } from "@/lib/budget";
+import type { BudgetOverview, SerializedCharge, SerializedExpense, SerializedIncome, SerializedPocket } from "@/lib/budget";
 import { formatCurrency } from "@/lib/savings/currency";
 import { cn } from "@/lib/utils";
 
@@ -33,11 +34,13 @@ type Sheet =
   | { kind: "pocket"; entity?: SerializedPocket }
   | { kind: "income"; entity?: SerializedIncome }
   | { kind: "charge"; entity?: SerializedCharge }
+  | { kind: "refund"; expense: SerializedExpense }
   | null;
 
 const ACTION_MSG: Record<string, string> = {
   "expense.create": "Dépense ajoutée.",
   "expense.delete": "Dépense supprimée.",
+  "expense.refund": "Remboursement enregistré.",
   "pocket.create": "Poste créé.",
   "pocket.update": "Poste mis à jour.",
   "pocket.delete": "Poste supprimé.",
@@ -156,6 +159,11 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
           <Stat icon={Repeat} label="Charges" tone="text-ink-800" value={t.charges} />
           <Stat icon={TrendingDown} label="Dépenses" tone="text-coral-600" value={t.monthExpenses} />
         </div>
+        {t.awaitingRefund > 0 ? (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-coral-500/10 px-3 py-1 text-xs font-semibold text-coral-600">
+            <RotateCcw className="size-3.5" /> {formatCurrency(t.awaitingRefund)} à recevoir
+          </p>
+        ) : null}
         <button
           className="btn-primary mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold"
           onClick={() => setSheet({ kind: "expense" })}
@@ -239,6 +247,42 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
         </ListCard>
       </div>
 
+      {/* À rembourser */}
+      {overview.refunds.length > 0 ? (
+        <div className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
+          <div className="mb-3 flex items-center gap-2.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-coral-500/10 text-coral-600">
+              <RotateCcw className="size-5" />
+            </span>
+            <span>
+              <span className="section-kicker block">On vous doit</span>
+              <span className="display-title block text-lg leading-none sm:text-xl">À rembourser</span>
+            </span>
+          </div>
+          <ul className="space-y-2">
+            {overview.refunds.map((e) => (
+              <li className="flex items-center gap-3 rounded-xl border border-line bg-white/60 p-3 dark:bg-surface/60" key={e.id}>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-ink-950">{e.label || e.pocketName || "Dépense"}</span>
+                  <span className="block truncate text-[0.7rem] text-ink-500">
+                    Payé {formatCurrency(e.amount)}
+                    {e.refundedAmount ? ` · reçu ${formatCurrency(e.refundedAmount)}` : ""}
+                  </span>
+                </span>
+                <span className="shrink-0 text-sm font-bold tabular-nums text-coral-600">{formatCurrency(e.outstanding)}</span>
+                <button
+                  className="btn-secondary min-h-9 shrink-0 px-3 py-1.5 text-xs font-bold"
+                  onClick={() => setSheet({ kind: "refund", expense: e })}
+                  type="button"
+                >
+                  Reçu
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {/* Dépenses récentes */}
       <div className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
         <div className="mb-3 flex items-center gap-2.5">
@@ -264,6 +308,16 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
                     {e.createdByName ? ` · ${e.createdByName}` : ""}
                   </span>
                 </span>
+                {e.refundExpected != null ? (
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-1.5 py-0.5 text-[0.6rem] font-bold",
+                      e.outstanding > 0 ? "bg-coral-500/10 text-coral-600" : "bg-leaf-600/10 text-leaf-600",
+                    )}
+                  >
+                    {e.outstanding > 0 ? "à rembourser" : "remboursé"}
+                  </span>
+                ) : null}
                 <span className="shrink-0 text-sm font-bold tabular-nums text-coral-600">−{formatCurrency(e.amount)}</span>
                 <button
                   aria-label="Supprimer la dépense"
@@ -303,6 +357,10 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
 
       {sheet?.kind === "charge" ? (
         <ChargeEditor busy={busy} entity={sheet.entity} key={sheet.entity?.id ?? "new"} onClose={() => setSheet(null)} onDelete={mutate} onSubmit={mutate} open savingsBoxes={savingsBoxes} />
+      ) : null}
+
+      {sheet?.kind === "refund" ? (
+        <RefundEditor busy={busy} expense={sheet.expense} key={sheet.expense.id} onClose={() => setSheet(null)} onSubmit={mutate} open />
       ) : null}
 
       <BottomSheet isOpen={sheet?.kind === "pocketActions"} onClose={() => setSheet(null)} title={sheet?.kind === "pocketActions" ? sheet.pocket.name : "Poste"}>

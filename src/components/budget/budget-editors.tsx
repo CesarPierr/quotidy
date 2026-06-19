@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { taskPalette } from "@/lib/constants";
 import type { BudgetPeriod, SerializedCharge, SerializedExpense, SerializedIncome, SerializedPocket } from "@/lib/budget";
+import { formatCurrency } from "@/lib/savings/currency";
 import { cn } from "@/lib/utils";
 
 type Submit = (fields: Record<string, string>) => Promise<boolean>;
@@ -67,6 +68,8 @@ export function ExpenseEditor({
   const [pocketId, setPocketId] = useState(defaultPocketId ?? "");
   const [label, setLabel] = useState("");
   const [date, setDate] = useState(todayIso);
+  const [refundable, setRefundable] = useState(false);
+  const [refundExpected, setRefundExpected] = useState("");
 
   return (
     <BottomSheet isOpen={open} onClose={onClose} title="Nouvelle dépense">
@@ -103,10 +106,41 @@ export function ExpenseEditor({
           <span>Date</span>
           <input className="field" onChange={(e) => setDate(e.target.value)} type="date" value={date} />
         </label>
+        <div className="rounded-xl border border-line p-3">
+          <label className="flex cursor-pointer items-center justify-between gap-3">
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-ink-950">À rembourser</span>
+              <span className="block text-xs text-ink-500">Médical, frais pro… on suit ce qu&apos;on vous doit.</span>
+            </span>
+            <input
+              checked={refundable}
+              className="size-5 shrink-0 accent-coral-500"
+              onChange={(e) => {
+                setRefundable(e.target.checked);
+                if (e.target.checked && !refundExpected) setRefundExpected(amount);
+              }}
+              type="checkbox"
+            />
+          </label>
+          {refundable ? (
+            <div className="mt-3">
+              <AmountField label="Montant attendu" onChange={setRefundExpected} value={refundExpected} />
+            </div>
+          ) : null}
+        </div>
         <button
           className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-bold disabled:opacity-50"
           disabled={busy || !amount.trim()}
-          onClick={() => onSubmit({ _action: "expense.create", amount, pocketId, label, spentAt: date ? `${date}T12:00:00` : "" })}
+          onClick={() =>
+            onSubmit({
+              _action: "expense.create",
+              amount,
+              pocketId,
+              label,
+              spentAt: date ? `${date}T12:00:00` : "",
+              ...(refundable && refundExpected.trim() ? { refundExpected } : {}),
+            })
+          }
           type="button"
         >
           Ajouter la dépense
@@ -296,6 +330,47 @@ export function ChargeEditor({
             {entity ? "Enregistrer" : "Ajouter"}
           </button>
         </div>
+      </div>
+    </BottomSheet>
+  );
+}
+
+// ── Remboursement ──────────────────────────────────────────────────────────────
+export function RefundEditor({
+  open,
+  onClose,
+  busy,
+  expense,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  busy: boolean;
+  expense: SerializedExpense;
+  onSubmit: Submit;
+}) {
+  const [received, setReceived] = useState(expense.refundExpected != null ? String(expense.refundExpected) : "");
+
+  return (
+    <BottomSheet isOpen={open} onClose={onClose} title="Remboursement reçu">
+      <div className="space-y-3">
+        <div className="rounded-xl border border-line p-3 text-sm">
+          <p className="font-semibold text-ink-950">{expense.label || expense.pocketName || "Dépense"}</p>
+          <p className="mt-0.5 text-ink-500">
+            Payé {formatCurrency(expense.amount)}
+            {expense.refundExpected != null ? ` · attendu ${formatCurrency(expense.refundExpected)}` : ""}
+          </p>
+        </div>
+        <AmountField autoFocus label="Montant reçu (total)" onChange={setReceived} value={received} />
+        <p className="field-help">Saisissez le total reçu — laissez tel quel pour un remboursement complet, ou ajustez pour un partiel.</p>
+        <button
+          className="btn-primary min-h-11 w-full px-4 py-2.5 text-sm font-bold disabled:opacity-50"
+          disabled={busy || !received.trim()}
+          onClick={() => onSubmit({ _action: "expense.refund", id: expense.id, refundedAmount: received })}
+          type="button"
+        >
+          Enregistrer le remboursement
+        </button>
       </div>
     </BottomSheet>
   );
