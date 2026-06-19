@@ -1,4 +1,7 @@
+import { NextResponse } from "next/server";
+
 import { dataErrorOrRedirect, dataOrRedirect, withHousehold } from "@/lib/api";
+import { requireUser } from "@/lib/auth";
 import { getBudgetOverview } from "@/lib/budget";
 import { db } from "@/lib/db";
 import {
@@ -15,6 +18,18 @@ import {
  * overview so the client can re-render the live « reste » without a round-trip.
  * Edits send the full payload, so we validate updates with the create schema.
  */
+// Lets the client re-pull the exact overview after an offline outbox flush.
+export async function GET(_request: Request, ctx: { params: Promise<{ id: string }> }) {
+  const user = await requireUser();
+  const { id: householdId } = await ctx.params;
+  const membership = await db.householdMember.findFirst({
+    where: { householdId, userId: user.id },
+    select: { id: true },
+  });
+  if (!membership) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  return NextResponse.json({ overview: await getBudgetOverview(householdId) });
+}
+
 export const POST = withHousehold<{ id: string }>(async ({ request, params, membership, formData }) => {
   const householdId = params.id;
   const back = `/app/budget?household=${householdId}`;
@@ -140,17 +155,23 @@ export const POST = withHousehold<{ id: string }>(async ({ request, params, memb
       }
       const spentAt = parsed.data.spentAt ? new Date(parsed.data.spentAt) : new Date();
       if (Number.isNaN(spentAt.getTime())) return fail("Date invalide.");
-      await db.budgetExpense.create({
-        data: {
-          householdId,
-          label: parsed.data.label ?? null,
-          amount: parsed.data.amount,
-          pocketId: parsed.data.pocketId ?? null,
-          spentAt,
-          createdByMemberId: membership.id,
-          refundExpected: parsed.data.refundExpected ?? null,
-        },
-      });
+      const expenseData = {
+        householdId,
+        label: parsed.data.label ?? null,
+        amount: parsed.data.amount,
+        pocketId: parsed.data.pocketId ?? null,
+        spentAt,
+        createdByMemberId: membership.id,
+        refundExpected: parsed.data.refundExpected ?? null,
+      };
+      // A client-provided id makes offline replays idempotent (upsert, no-op on
+      // re-send) instead of creating duplicates.
+      const clientId = str("id");
+      if (clientId) {
+        await db.budgetExpense.upsert({ where: { id: clientId }, create: { id: clientId, ...expenseData }, update: {} });
+      } else {
+        await db.budgetExpense.create({ data: expenseData });
+      }
       return ok();
     }
     case "expense.refund": {

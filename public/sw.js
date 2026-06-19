@@ -1,4 +1,5 @@
-const CACHE_NAME = "quotidy-static-v8";
+const CACHE_NAME = "quotidy-static-v9";
+const RUNTIME_CACHE = "quotidy-runtime-v9";
 const STATIC_ASSETS = ["/manifest.json", "/icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -12,10 +13,9 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  const keep = new Set([CACHE_NAME, RUNTIME_CACHE]);
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))),
+    caches.keys().then((keys) => Promise.all(keys.filter((key) => !keep.has(key)).map((key) => caches.delete(key)))),
   );
   self.clients.claim();
 });
@@ -57,22 +57,48 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
+// Network-first cache for app navigations + RSC payloads, so the app boots and
+// shows its last-seen data when offline. The app's own outbox handles writes —
+// /api/ is always left to the network (and the app queues failed mutations).
+function isAppDocument(request, url) {
+  if (request.mode === "navigate") return true;
+  // Next App Router client navigations fetch RSC payloads.
+  if (url.searchParams.has("_rsc") || request.headers.get("RSC") === "1") return true;
+  return false;
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  if (request.mode === "navigate") return;
   if (url.pathname.startsWith("/api/")) return;
-  if (!url.pathname.startsWith("/_next/static/") && !STATIC_ASSETS.includes(url.pathname)) return;
 
-  event.respondWith(
-    fetch(request)
-      .then((response) => {
-        const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
-        return response;
-      })
-      .catch(() => caches.match(request)),
-  );
+  // App pages / RSC: network-first, fall back to the cached version (then to a
+  // cached app shell) when offline.
+  if (isAppDocument(request, url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone)).catch(() => undefined);
+          return response;
+        })
+        .catch(async () => (await caches.match(request)) || (await caches.match("/app")) || Response.error()),
+    );
+    return;
+  }
+
+  // Static assets (content-hashed): network-first with cache fallback.
+  if (url.pathname.startsWith("/_next/static/") || STATIC_ASSETS.includes(url.pathname)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone)).catch(() => undefined);
+          return response;
+        })
+        .catch(() => caches.match(request)),
+    );
+  }
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Pencil,
@@ -21,9 +21,66 @@ import { BudgetAnalysisPanel } from "@/components/budget/budget-analysis";
 import { ChargeEditor, ExpenseEditor, IncomeEditor, PocketEditor, RefundEditor } from "@/components/budget/budget-editors";
 import { useToast } from "@/components/ui/toast";
 import { postForm } from "@/lib/api-client";
+import { enqueue, type OutboxEntry } from "@/lib/offline-outbox";
 import type { BudgetOverview, SerializedCharge, SerializedExpense, SerializedIncome, SerializedPocket } from "@/lib/budget";
 import { formatCurrency } from "@/lib/savings/currency";
+import { useOnline } from "@/lib/use-online";
 import { cn } from "@/lib/utils";
+
+function newClientId(): string {
+  const c = globalThis.crypto;
+  if (c && typeof c.randomUUID === "function") return c.randomUUID();
+  return `off-${Date.now().toString(36)}-${Math.round(Math.random() * 1e9).toString(36)}`;
+}
+
+function makeOutboxEntry(url: string, fields: Record<string, string>): OutboxEntry {
+  const id = fields.id || newClientId();
+  return { id, url, fields: { ...fields, id }, label: fields.label || "Dépense", createdAt: Date.now() };
+}
+
+function parseAmount(s: string | undefined): number {
+  if (!s) return 0;
+  const n = Number.parseFloat(s.replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+}
+
+/** Optimistic local apply for an expense captured offline (approximate totals;
+ *  the exact overview is re-pulled from the server on reconnect). */
+function applyOptimisticExpense(prev: BudgetOverview, fields: Record<string, string>): BudgetOverview {
+  const amt = parseAmount(fields.amount);
+  const pocketId = fields.pocketId || null;
+  const pocket = pocketId ? prev.pockets.find((p) => p.id === pocketId) : undefined;
+  const refundExpected = fields.refundExpected ? parseAmount(fields.refundExpected) : null;
+  const expense: SerializedExpense = {
+    id: fields.id,
+    label: fields.label || null,
+    amount: amt,
+    pocketId,
+    pocketName: pocket?.name ?? null,
+    pocketColor: pocket?.color ?? null,
+    spentAt: fields.spentAt ? new Date(fields.spentAt).toISOString() : new Date().toISOString(),
+    createdByName: null,
+    refundExpected,
+    refundedAmount: null,
+    outstanding: refundExpected ?? 0,
+  };
+  const pockets = prev.pockets.map((p) => {
+    if (p.id !== pocketId) return p;
+    const spent = p.spent + amt;
+    return { ...p, spent, remaining: p.quota - spent, ratio: p.quota > 0 ? spent / p.quota : 1, over: spent > p.quota };
+  });
+  return {
+    ...prev,
+    expenses: [expense, ...prev.expenses],
+    pockets,
+    totals: {
+      ...prev.totals,
+      monthExpenses: prev.totals.monthExpenses + amt,
+      reste: prev.totals.reste - amt,
+      freeMoney: prev.totals.freeMoney - amt,
+    },
+  };
+}
 
 type SavingsBoxOption = { id: string; name: string };
 type BudgetClientProps = { householdId: string; initialOverview: BudgetOverview; savingsBoxes: SavingsBoxOption[] };
@@ -116,6 +173,7 @@ function Bounded<T>({ items, initial, render }: { items: T[]; initial: number; r
 export function BudgetClient({ householdId, initialOverview, savingsBoxes }: BudgetClientProps) {
   const { success, error: showError } = useToast();
   const router = useRouter();
+  const online = useOnline();
   const [overview, setOverview] = useState(initialOverview);
   const [sheet, setSheet] = useState<Sheet>(null);
   const [busy, setBusy] = useState(false);
@@ -127,22 +185,66 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
   const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const monthLabel = new Intl.DateTimeFormat("fr-FR", { month: "long", year: "numeric" }).format(new Date(`${overview.month}-01T12:00:00`));
 
+  const budgetUrl = `/api/households/${householdId}/budget`;
+
+  // Offline: only expense capture is allowed (queued + optimistic); config edits
+  // are blocked. A client id makes the queued create idempotent on replay.
+  function captureOffline(fields: Record<string, string>) {
+    const entry = makeOutboxEntry(budgetUrl, fields);
+    void enqueue(entry).catch(() => undefined);
+    setOverview((prev) => applyOptimisticExpense(prev, entry.fields));
+    success("Enregistré hors-ligne · synchro au retour du réseau.");
+    setSheet(null);
+  }
+
   async function mutate(fields: Record<string, string>) {
+    const action = fields._action;
+    const isOffline = !online || (typeof navigator !== "undefined" && !navigator.onLine);
+    if (isOffline) {
+      if (action !== "expense.create") {
+        showError("Indisponible hors-ligne — reconnectez-vous pour cette action.");
+        return false;
+      }
+      captureOffline(fields);
+      return true;
+    }
     setBusy(true);
     try {
-      const res = await postForm(`/api/households/${householdId}/budget`, fields);
+      const res = await postForm(budgetUrl, fields);
       const json = (await res.json()) as { overview?: BudgetOverview };
       if (json.overview) setOverview(json.overview);
-      success(ACTION_MSG[fields._action] ?? "Enregistré.");
+      success(ACTION_MSG[action] ?? "Enregistré.");
       setSheet(null);
       return true;
     } catch {
+      if (action === "expense.create" && typeof navigator !== "undefined" && !navigator.onLine) {
+        captureOffline(fields);
+        return true;
+      }
       showError("Action impossible.");
       return false;
     } finally {
       setBusy(false);
     }
   }
+
+  // On reconnect, re-pull the exact overview once the outbox has flushed.
+  useEffect(() => {
+    const reconcile = () => {
+      window.setTimeout(() => {
+        fetch(`/api/households/${householdId}/budget`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((j) => {
+            if (j?.overview) setOverview(j.overview as BudgetOverview);
+          })
+          .catch(() => undefined);
+      }, 1500);
+    };
+    window.addEventListener("online", reconcile);
+    return () => window.removeEventListener("online", reconcile);
+  }, [householdId]);
+
+  const blockOffline = () => showError("Indisponible hors-ligne — reconnectez-vous pour modifier la configuration.");
 
   const t = overview.totals;
   const used = t.charges + t.monthExpenses;
@@ -239,7 +341,13 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
                   <span className="display-title block text-lg leading-none sm:text-xl">Mes enveloppes</span>
                 </span>
               </span>
-              <button className="btn-secondary inline-flex min-h-9 items-center gap-1.5 px-3 py-2 text-xs font-bold" onClick={() => setSheet({ kind: "pocket" })} type="button">
+              <button
+                className="btn-secondary inline-flex min-h-9 items-center gap-1.5 px-3 py-2 text-xs font-bold disabled:opacity-40"
+                disabled={!online}
+                onClick={() => setSheet({ kind: "pocket" })}
+                title={online ? undefined : "Indisponible hors-ligne"}
+                type="button"
+              >
                 <Plus className="size-4" /> Nouveau
               </button>
             </div>
@@ -248,7 +356,12 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
             ) : (
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {overview.pockets.map((p) => (
-                  <PocketCard key={p.id} onTap={() => setSheet({ kind: "pocketActions", pocket: p })} pocket={p} weekLabel={overview.week.label} />
+                  <PocketCard
+                    key={p.id}
+                    onTap={() => setSheet(online ? { kind: "pocketActions", pocket: p } : { kind: "expense", pocketId: p.id })}
+                    pocket={p}
+                    weekLabel={overview.week.label}
+                  />
                 ))}
               </div>
             )}
@@ -256,19 +369,19 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
 
           {/* Revenus + Charges (bounded) */}
           <div className="grid gap-3 sm:gap-4 xl:grid-cols-2">
-            <ListCard accent="text-leaf-600 bg-leaf-600/10" icon={TrendingUp} kicker="Entrées" onAdd={() => setSheet({ kind: "income" })} title="Revenus">
+            <ListCard accent="text-leaf-600 bg-leaf-600/10" disabled={!online} icon={TrendingUp} kicker="Entrées" onAdd={() => setSheet({ kind: "income" })} title="Revenus">
               {overview.income.length === 0 ? (
                 <Empty>Ajoutez vos salaires et autres revenus mensuels.</Empty>
               ) : (
                 <Bounded
                   initial={5}
                   items={overview.income}
-                  render={(i) => <Row key={i.id} onClick={() => setSheet({ kind: "income", entity: i })} title={i.label} value={formatCurrency(i.amount)} />}
+                  render={(i) => <Row key={i.id} onClick={online ? () => setSheet({ kind: "income", entity: i }) : blockOffline} title={i.label} value={formatCurrency(i.amount)} />}
                 />
               )}
             </ListCard>
 
-            <ListCard accent="text-ink-800 bg-black/[0.06]" icon={Repeat} kicker="Sorties fixes" onAdd={() => setSheet({ kind: "charge" })} title="Charges fixes">
+            <ListCard accent="text-ink-800 bg-black/[0.06]" disabled={!online} icon={Repeat} kicker="Sorties fixes" onAdd={() => setSheet({ kind: "charge" })} title="Charges fixes">
               {overview.charges.length === 0 ? (
                 <Empty>Loyer, abonnements, épargne récurrente…</Empty>
               ) : (
@@ -298,7 +411,7 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
                                 : undefined
                         }
                         key={c.id}
-                        onClick={() => setSheet({ kind: "charge", entity: c })}
+                        onClick={online ? () => setSheet({ kind: "charge", entity: c }) : blockOffline}
                         title={c.label}
                         value={formatCurrency(c.amount)}
                       />
@@ -441,7 +554,7 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
   );
 }
 
-function ListCard({ icon: Icon, accent, kicker, title, onAdd, children }: { icon: typeof TrendingUp; accent: string; kicker: string; title: string; onAdd: () => void; children: React.ReactNode }) {
+function ListCard({ icon: Icon, accent, kicker, title, onAdd, children, disabled }: { icon: typeof TrendingUp; accent: string; kicker: string; title: string; onAdd: () => void; children: React.ReactNode; disabled?: boolean }) {
   return (
     <div className="app-surface rounded-[1.4rem] p-4 sm:rounded-[1.6rem] sm:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -452,7 +565,14 @@ function ListCard({ icon: Icon, accent, kicker, title, onAdd, children }: { icon
             <span className="display-title block text-lg leading-none sm:text-xl">{title}</span>
           </span>
         </span>
-        <button aria-label={`Ajouter — ${title}`} className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-ink-700 transition-colors hover:bg-black/[0.04]" onClick={onAdd} type="button">
+        <button
+          aria-label={`Ajouter — ${title}`}
+          className="flex size-9 shrink-0 items-center justify-center rounded-full border border-line text-ink-700 transition-colors hover:bg-black/[0.04] disabled:opacity-40"
+          disabled={disabled}
+          onClick={onAdd}
+          title={disabled ? "Indisponible hors-ligne" : undefined}
+          type="button"
+        >
           <Plus className="size-4" />
         </button>
       </div>

@@ -7,6 +7,7 @@ import { ChevronLeft, Compass, HomeIcon, LogOut } from "lucide-react";
 
 import { FeatureTour } from "@/components/onboarding/feature-tour";
 import { FeedbackButton } from "@/components/shared/feedback-button";
+import { OfflineIndicator } from "@/components/shared/offline-indicator";
 import { PWAInstallBanner } from "@/components/shared/pwa-install-banner";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { QuotidyLogo } from "@/components/shared/quotidy-logo";
@@ -149,6 +150,7 @@ export function AppShell({ children, householdName, currentHouseholdId, househol
 
       {/* Main Content Area */}
       <div className="flex flex-1 min-w-0 flex-col px-3 pb-8 pt-3 sm:px-5 lg:px-0 lg:pb-0 lg:pt-0">
+        <OfflineIndicator />
         {/* Mobile top nav — Retour + Accueil. The hub holds every app, so these
             two primitives are all we need and they don't grow with app count. */}
         {!isHub && (
