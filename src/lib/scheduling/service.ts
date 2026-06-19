@@ -321,6 +321,18 @@ export async function completeOccurrence(params: {
     return;
   }
 
+  // Idempotent replay guard: an offline "complete" gets re-sent on reconnect. If
+  // it's already completed and the replay carries no new details, no-op — otherwise
+  // we'd append a duplicate action log and re-realign the recurrence anchor.
+  if (
+    existing.status === "completed" &&
+    params.actualMinutes == null &&
+    params.notes == null &&
+    !params.wasCompletedAlone
+  ) {
+    return;
+  }
+
   const isSliding = existing.taskTemplate?.recurrenceRule?.mode === "SLIDING";
   const completedAt = existing.completedAt ?? new Date();
 

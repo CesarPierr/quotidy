@@ -21,22 +21,11 @@ import { BudgetAnalysisPanel } from "@/components/budget/budget-analysis";
 import { ChargeEditor, ExpenseEditor, IncomeEditor, PocketEditor, RefundEditor } from "@/components/budget/budget-editors";
 import { useToast } from "@/components/ui/toast";
 import { postForm } from "@/lib/api-client";
-import { enqueue, type OutboxEntry } from "@/lib/offline-outbox";
+import { buildEntry, enqueue, newOutboxId } from "@/lib/offline-outbox";
 import type { BudgetOverview, SerializedCharge, SerializedExpense, SerializedIncome, SerializedPocket } from "@/lib/budget";
 import { formatCurrency } from "@/lib/savings/currency";
 import { useOnline } from "@/lib/use-online";
 import { cn } from "@/lib/utils";
-
-function newClientId(): string {
-  const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === "function") return c.randomUUID();
-  return `off-${Date.now().toString(36)}-${Math.round(Math.random() * 1e9).toString(36)}`;
-}
-
-function makeOutboxEntry(url: string, fields: Record<string, string>): OutboxEntry {
-  const id = fields.id || newClientId();
-  return { id, url, fields: { ...fields, id }, label: fields.label || "Dépense", createdAt: Date.now() };
-}
 
 function parseAmount(s: string | undefined): number {
   if (!s) return 0;
@@ -190,7 +179,8 @@ export function BudgetClient({ householdId, initialOverview, savingsBoxes }: Bud
   // Offline: only expense capture is allowed (queued + optimistic); config edits
   // are blocked. A client id makes the queued create idempotent on replay.
   function captureOffline(fields: Record<string, string>) {
-    const entry = makeOutboxEntry(budgetUrl, fields);
+    const id = fields.id || newOutboxId("exp");
+    const entry = buildEntry({ id, url: budgetUrl, fields: { ...fields, id }, label: fields.label || "Dépense" });
     void enqueue(entry).catch(() => undefined);
     setOverview((prev) => applyOptimisticExpense(prev, entry.fields));
     success("Enregistré hors-ligne · synchro au retour du réseau.");

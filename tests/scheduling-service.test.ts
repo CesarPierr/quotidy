@@ -32,7 +32,7 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { addMemberToExistingAssignments, reopenOccurrence } from "@/lib/scheduling/service";
+import { addMemberToExistingAssignments, completeOccurrence, reopenOccurrence } from "@/lib/scheduling/service";
 
 describe("scheduling service", () => {
   beforeEach(() => {
@@ -136,6 +136,30 @@ describe("reopenOccurrence", () => {
         }),
       }),
     );
+  });
+});
+
+describe("completeOccurrence (offline replay idempotency)", () => {
+  it("no-ops when already completed and the replay carries no new details", async () => {
+    dbMocks.taskOccurrenceFindUnique.mockResolvedValue({
+      id: "occ-1",
+      status: "completed",
+      scheduledDate: new Date("2099-02-10"),
+      completedAt: new Date("2099-02-11"),
+      completedByMemberId: "member-1",
+      actualMinutes: null,
+      notes: null,
+      wasCompletedAlone: false,
+      taskTemplateId: "tpl-1",
+      taskTemplate: { recurrenceRule: { mode: "FIXED" } },
+    });
+
+    // A queued offline "complete" gets re-sent on reconnect; replaying it must
+    // not append a second action log or re-realign the recurrence.
+    await completeOccurrence({ occurrenceId: "occ-1", actorMemberId: "member-1" });
+
+    expect(dbMocks.taskOccurrenceUpdate).not.toHaveBeenCalled();
+    expect(dbMocks.occurrenceActionLogCreate).not.toHaveBeenCalled();
   });
 });
 

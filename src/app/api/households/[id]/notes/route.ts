@@ -56,19 +56,33 @@ export const POST = withHousehold<{ id: string }>(async ({ request, params, memb
     return dataErrorOrRedirect(request, 400, "Note invalide.", fallback);
   }
 
-  const note = await db.householdNote.create({
-    data: {
-      householdId,
-      createdByMemberId: membership.id,
-      title: parsed.data.title ?? null,
-      body: parsed.data.body,
-      color: parsed.data.color,
-    },
-    include: {
-      createdByMember: { select: { displayName: true } },
-      completedByMember: { select: { displayName: true } },
-    },
-  });
+  const include = {
+    createdByMember: { select: { displayName: true } },
+    completedByMember: { select: { displayName: true } },
+  };
+  const data = {
+    householdId,
+    createdByMemberId: membership.id,
+    title: parsed.data.title ?? null,
+    body: parsed.data.body,
+    color: parsed.data.color,
+  };
+
+  // Offline-created notes carry a client id so a replay on reconnect is
+  // idempotent (upsert no-ops the second time). Guard against an id that
+  // collides with another household's note — fall back to a fresh create.
+  const clientId = formData.get("id")?.toString();
+  const usableId = clientId && clientId.length >= 8 && clientId.length <= 64 ? clientId : null;
+  let note;
+  if (usableId) {
+    const existing = await db.householdNote.findUnique({ where: { id: usableId }, select: { householdId: true } });
+    note =
+      existing && existing.householdId !== householdId
+        ? await db.householdNote.create({ data, include })
+        : await db.householdNote.upsert({ where: { id: usableId }, create: { id: usableId, ...data }, update: {}, include });
+  } else {
+    note = await db.householdNote.create({ data, include });
+  }
 
   return dataOrRedirect(
     request,

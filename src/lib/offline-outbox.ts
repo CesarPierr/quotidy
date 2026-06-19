@@ -47,6 +47,24 @@ function run<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequ
   );
 }
 
+/**
+ * Generate a client-side id for an offline-created entity / queue entry. Lives
+ * here (not in a component) so the impure crypto/Date calls aren't flagged as
+ * "called during render" by the React compiler.
+ */
+export function newOutboxId(prefix = "off"): string {
+  const c = globalThis.crypto;
+  if (c && typeof c.randomUUID === "function") return `${prefix}-${c.randomUUID()}`;
+  return `${prefix}-${Date.now().toString(36)}-${Math.round(Math.random() * 1e9).toString(36)}`;
+}
+
+/** Build an outbox entry, stamping createdAt. The caller owns `id` so that
+ * re-tapping the same action (e.g. complete the same note) overwrites rather
+ * than queues a duplicate, while distinct creates each get a fresh id. */
+export function buildEntry(args: { id: string; url: string; fields: Record<string, string>; label: string }): OutboxEntry {
+  return { id: args.id, url: args.url, fields: args.fields, label: args.label, createdAt: Date.now() };
+}
+
 export async function enqueue(entry: OutboxEntry): Promise<void> {
   await run("readwrite", (s) => s.put(entry));
 }

@@ -16,7 +16,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock("@/lib/offline-outbox", () => ({ enqueue: vi.fn().mockResolvedValue(undefined) }));
+// Keep the real buildEntry/newOutboxId (budget-client uses them); mock only enqueue.
+vi.mock("@/lib/offline-outbox", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/offline-outbox")>()),
+  enqueue: vi.fn().mockResolvedValue(undefined),
+}));
 vi.mock("@/lib/api-client", () => ({ postForm: vi.fn() }));
 
 function makeOverview(): BudgetOverview {

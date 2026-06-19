@@ -25,6 +25,8 @@ import { BottomSheet, BottomSheetAction } from "@/components/ui/bottom-sheet";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { postForm } from "@/lib/api-client";
+import { buildEntry, enqueue, newOutboxId } from "@/lib/offline-outbox";
+import { useOnline } from "@/lib/use-online";
 import { taskPalette } from "@/lib/constants";
 import type { SerializedNote } from "@/lib/aide-memoire";
 import { hexToRgba } from "@/lib/colors";
@@ -51,6 +53,26 @@ function sortActive(notes: SerializedNote[]): SerializedNote[] {
   });
 }
 
+// Module-level so the impure new Date() isn't flagged as called during render.
+function buildOptimisticNote(id: string, body: string, color: string): SerializedNote {
+  return {
+    id,
+    title: null,
+    body,
+    color,
+    isPinned: false,
+    sortOrder: 0,
+    completedAt: null,
+    createdAt: new Date().toISOString(),
+    createdByName: null,
+    completedByName: null,
+  };
+}
+
+function withCompletedNow(note: SerializedNote): SerializedNote {
+  return { ...note, completedAt: new Date().toISOString() };
+}
+
 export function NotesBoard({
   householdId,
   initialActive,
@@ -60,6 +82,7 @@ export function NotesBoard({
   seeAllHref,
 }: NotesBoardProps) {
   const { error: showError, success } = useToast();
+  const online = useOnline();
   const [active, setActive] = useState<SerializedNote[]>(() => sortActive(initialActive));
   const [done, setDone] = useState<SerializedNote[]>(initialDone);
   const [draft, setDraft] = useState("");
@@ -74,24 +97,63 @@ export function NotesBoard({
 
   const visibleActive = compact ? active.slice(0, COMPACT_LIMIT) : active;
 
+  const notesUrl = `/api/households/${householdId}/notes`;
+
+  // Offline capture: queue the create with a client id (idempotent upsert on
+  // replay) and show the note immediately.
+  function queueNewNote(trimmed: string, color: string) {
+    const id = newOutboxId("note");
+    void enqueue(buildEntry({ id, url: notesUrl, fields: { id, body: trimmed, color }, label: "Note" })).catch(() => undefined);
+    setActive((prev) => sortActive([...prev, buildOptimisticNote(id, trimmed, color)]));
+    setDraft("");
+    success("Note enregistrée hors-ligne · synchro au retour du réseau.");
+  }
+
+  // Offline toggle: queue complete/uncomplete (keyed per note+action so a
+  // re-tap overwrites) and move the note between the active/done lists.
+  function queueToggle(note: SerializedNote, action: "complete" | "uncomplete") {
+    const url = `${notesUrl}/${note.id}`;
+    void enqueue(
+      buildEntry({ id: `note-${action}-${note.id}`, url, fields: { _action: action }, label: action === "complete" ? "Note faite" : "Note à refaire" }),
+    ).catch(() => undefined);
+    if (action === "complete") {
+      setActive((prev) => prev.filter((n) => n.id !== note.id));
+      setDone((prev) => [withCompletedNow(note), ...prev]);
+    } else {
+      setDone((prev) => prev.filter((n) => n.id !== note.id));
+      setActive((prev) => sortActive([...prev, { ...note, completedAt: null }]));
+    }
+    success("Enregistré hors-ligne · synchro au retour du réseau.");
+  }
+
   async function handleQuickAdd(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || isAdding) return;
+    if (!online || !navigator.onLine) {
+      queueNewNote(trimmed, quickColor);
+      return;
+    }
     setIsAdding(true);
     try {
-      const response = await postForm(`/api/households/${householdId}/notes`, { body: trimmed, color: quickColor });
+      const response = await postForm(notesUrl, { body: trimmed, color: quickColor });
       const json = (await response.json()) as { note: SerializedNote };
       setActive((prev) => sortActive([...prev, json.note]));
       setDraft("");
     } catch {
-      showError("Impossible d'ajouter la note.");
+      if (!navigator.onLine) queueNewNote(trimmed, quickColor);
+      else showError("Impossible d'ajouter la note.");
     } finally {
       setIsAdding(false);
     }
   }
 
   async function noteAction(note: SerializedNote, action: string, extra?: Record<string, string>) {
+    if (!online || !navigator.onLine) {
+      if (action === "complete" || action === "uncomplete") queueToggle(note, action);
+      else showError("Action indisponible hors-ligne.");
+      return;
+    }
     setBusyId(note.id);
     try {
       const response = await postForm(`/api/households/${householdId}/notes/${note.id}`, {
@@ -120,7 +182,8 @@ export function NotesBoard({
         setActive((prev) => sortActive(prev.map((n) => (n.id === note.id ? updated : n))));
       }
     } catch {
-      showError("Action impossible.");
+      if (!navigator.onLine && (action === "complete" || action === "uncomplete")) queueToggle(note, action);
+      else showError("Action impossible.");
     } finally {
       setBusyId(null);
     }

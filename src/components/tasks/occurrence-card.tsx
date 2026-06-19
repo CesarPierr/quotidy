@@ -16,8 +16,10 @@ import {
 
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { useToast } from "@/components/ui/toast";
+import { buildEntry, enqueue } from "@/lib/offline-outbox";
 import { classifyRelative, formatRelative } from "@/lib/relative-date";
 import { getRoomIcon } from "@/lib/room-icons";
+import { useOnline } from "@/lib/use-online";
 import { formatMinutes } from "@/lib/utils";
 
 type OccurrenceCardProps = {
@@ -145,16 +147,20 @@ export function OccurrenceCard({
   taskTemplateId,
 }: OccurrenceCardProps) {
   const router = useRouter();
+  const online = useOnline();
   const { success, error: showError } = useToast();
   const [isPending, startTransition] = useTransition();
   // useOptimistic syncs back to occurrence.status when the server response
   // arrives, so we don't need a manual rollback on error — React drops the
   // optimistic value once the surrounding transition resolves.
   const [optimisticStatus, applyOptimisticStatus] = useOptimistic(occurrence.status);
+  // Offline completions must persist (useOptimistic reverts once the transition
+  // ends without a router.refresh). Cleared once an online action confirms.
+  const [offlineStatus, setOfflineStatus] = useState<string | null>(null);
   const [showSheet, setShowSheet] = useState(false);
 
   const isSubmitting = isPending;
-  const currentStatus = optimisticStatus;
+  const currentStatus = offlineStatus ?? optimisticStatus;
   const canEditOccurrence = currentStatus !== "cancelled";
   const archived = ["completed", "skipped", "cancelled"].includes(currentStatus);
   const scheduledDate =
@@ -167,23 +173,39 @@ export function OccurrenceCard({
     event.stopPropagation();
   }
 
+  // Marking a task done is the one action worth capturing offline; it replays
+  // idempotently (completeOccurrence no-ops when already completed).
+  function queueOffline(url: string, fields: Record<string, string>) {
+    const entry = buildEntry({ id: `occ-complete-${occurrence.id}`, url, fields, label: "Tâche faite" });
+    void enqueue(entry).catch(() => undefined);
+    setOfflineStatus("completed");
+    success("Fait — enregistré hors-ligne, synchro au retour du réseau.");
+    setShowSheet(false);
+  }
+
   function submitAction(url: string, body?: Record<string, string>) {
     if (isSubmitting) return;
+
+    const queueable = url.endsWith("/complete");
 
     startTransition(async () => {
       if (url.endsWith("/complete")) applyOptimisticStatus("completed");
       else if (url.endsWith("/skip")) applyOptimisticStatus("skipped");
       else if (url.endsWith("/reopen")) applyOptimisticStatus("planned");
 
+      const fields: Record<string, string> = { memberId: currentMemberId ?? "" };
+      if (returnTo) fields.nextPath = returnTo;
+      if (body) for (const [key, value] of Object.entries(body)) fields[key] = value;
+
+      // Offline: queue the completion + keep it shown; everything else needs the network.
+      if (queueable && (!online || !navigator.onLine)) {
+        queueOffline(url, fields);
+        return;
+      }
+
       try {
         const formData = new FormData();
-        formData.set("memberId", currentMemberId ?? "");
-        if (returnTo) formData.set("nextPath", returnTo);
-        if (body) {
-          for (const [key, value] of Object.entries(body)) {
-            formData.set(key, value);
-          }
-        }
+        for (const [key, value] of Object.entries(fields)) formData.set(key, value);
 
         const csrfToken = document.cookie.match(/(?:^|;\s*)__csrf=([^;]+)/)?.[1] ?? "";
         const response = await fetch(url, {
@@ -197,11 +219,17 @@ export function OccurrenceCard({
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
+        setOfflineStatus(null);
         success("Action enregistrée");
         router.refresh();
         setShowSheet(false);
       } catch {
-        showError("Impossible d'effectuer cette action.");
+        // Network dropped mid-request → queue the completion rather than erroring.
+        if (queueable && !navigator.onLine) {
+          queueOffline(url, fields);
+        } else {
+          showError("Impossible d'effectuer cette action.");
+        }
       }
     });
   }
