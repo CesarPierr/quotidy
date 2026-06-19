@@ -4,7 +4,7 @@
   "description": "Répartition équitable du ménage et de l'épargne pour votre foyer.",
   "start_url": "/app",
   "display": "standalone",
-  "background_color": "#F9F7F4",
+  "background_color": "#f4ece0",
   "theme_color": "#D8643D",
   "orientation": "portrait-primary",
   "icons": [

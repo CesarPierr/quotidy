@@ -6,6 +6,7 @@ Historique des versions : [../CHANGELOG.md](../CHANGELOG.md) · vue d'ensemble :
 |---|---|
 | [setup-dev.md](setup-dev.md) | Setup environnement de développement |
 | [setup-prod.md](setup-prod.md) | Déploiement self-hosted (Docker, systemd, cron) |
+| [native-app.md](native-app.md) | Apps natives iOS/Android (Capacitor, mode hébergé) — runbook Mac |
 | [env.md](env.md) | Référence des variables d'environnement |
 | [backup.md](backup.md) | Sauvegarde et restauration PostgreSQL |
 | [beta-readiness.md](beta-readiness.md) | Checklist bêta publique, RGPD minimal et runbook incident |

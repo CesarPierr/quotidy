@@ -159,6 +159,8 @@ docker compose -f docker-compose.prod.yml --env-file .env.production up -d --no-
 
 Guides détaillés : [setup-dev](docs/setup-dev.md) · [setup-prod](docs/setup-prod.md) · [env](docs/env.md) · [backup](docs/backup.md) · [Caddy](docs/reverse-proxy-caddy.md) · [Nginx](docs/reverse-proxy-nginx.md)
 
+**Apps natives (iOS/Android)** — coque Capacitor en mode hébergé (charge le serveur de prod, offline via le service worker + outbox) : runbook Mac dans [docs/native-app.md](docs/native-app.md).
+
 ## Sécurité
 
 Pensée pour exposer un port à Internet sans donner accès au réseau local :

@@ -39,6 +39,10 @@ function run<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequ
         const req = fn(tx.objectStore(STORE));
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
+        // Close the connection once the transaction settles so it never lingers
+        // (lingering handles block deleteDatabase and leak across the app's life).
+        tx.oncomplete = () => db.close();
+        tx.onabort = () => db.close();
       }),
   );
 }

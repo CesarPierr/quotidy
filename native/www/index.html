@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Quotidy</title>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body {
+        display: flex; align-items: center; justify-content: center;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f4ece0; color: #1e1f22;
+      }
+      .dot { opacity: 0.6; }
+    </style>
+  </head>
+  <body>
+    <!-- Hosted-mode fallback: shown only if the server is unreachable on a cold
+         start. The real app + offline cache load from CAPACITOR_SERVER_URL. -->
+    <p class="dot">Connexion à Quotidy…</p>
+    <script>
+      setTimeout(function () { location.reload(); }, 2500);
+    </script>
+  </body>
+</html>
