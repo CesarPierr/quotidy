@@ -48,6 +48,11 @@ quotidy-postgres-prod-data/
 # vercel
 .vercel
 
+# capacitor native projects — generated locally on the Mac (machine-specific,
+# large). The hosted-mode config + the native/www fallback ARE tracked.
+/ios
+/android
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
