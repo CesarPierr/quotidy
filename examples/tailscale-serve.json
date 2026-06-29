@@ -5,7 +5,7 @@
   "Web": {
     "${TS_CERT_DOMAIN}:443": {
       "Handlers": {
-        "/": { "Proxy": "http://reverse-proxy:80" }
+        "/": { "Proxy": "http://app:3000" }
       }
     }
   },

@@ -91,9 +91,11 @@ services:
   # Public HTTPS via Tailscale Funnel, managed with the stack. Opt-in: only runs
   # under the "funnel" profile and with TS_AUTHKEY set (a reusable key from the
   # Tailscale admin console). TLS terminates at the Tailscale edge; this node
-  # proxies funnel traffic to Caddy, which forces https for funnel requests (see
-  # examples/Caddyfile). restart: unless-stopped → survives reboots with the
-  # stack, no host cron needed. Setup + node migration: docs/native-app.md.
+  # proxies funnel traffic straight to the app (examples/tailscale-serve.json →
+  # app:3000). Tailscale sets X-Forwarded-Proto/Host/For, so the app builds
+  # correct https URLs + Secure cookies without a Caddy double-hop.
+  # restart: unless-stopped → survives reboots with the stack, no host cron
+  # needed. Setup + node migration: docs/native-app.md.
   tailscale:
     image: tailscale/tailscale:latest
     restart: unless-stopped
