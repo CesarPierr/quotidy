@@ -3,7 +3,7 @@ import "server-only";
 import { addDays, differenceInDays, endOfDay, startOfDay } from "date-fns";
 import { db } from "@/lib/db";
 import { generateOccurrences } from "@/lib/scheduling/generator";
-import { buildGenerationKey, computeDueDate, computeNextAnchorAfter } from "@/lib/scheduling/recurrence";
+import { buildGenerationKey, computeDueDate, computeNextAnchorAfter, getStableSequenceIndex } from "@/lib/scheduling/recurrence";
 import { logWarn } from "@/lib/logger";
 import type { TaskTemplateInput } from "@/lib/scheduling/types";
 import { getGenerationWindow, isPastDay, isToday } from "@/lib/time";
@@ -91,11 +91,43 @@ export async function syncHouseholdOccurrences(
     });
 
     const generatedKeys = new Set(generated.map((occurrence) => occurrence.sourceGenerationKey));
+    const isSlidingTask = task.recurrenceRule?.mode === "SLIDING";
+    // Rows already bound to a generated slot this run, so two generated entries
+    // can't claim the same row and the slot fallback below can't double-bind.
+    const consumedIds = new Set<string>();
+    const sameDay = (a: Date, b: Date) => startOfDay(a).getTime() === startOfDay(b).getTime();
 
     for (const occurrence of generated) {
-      const existing = task.occurrences.find(
-        (item) => item.sourceGenerationKey === occurrence.sourceGenerationKey,
+      let existing = task.occurrences.find(
+        (item) => item.sourceGenerationKey === occurrence.sourceGenerationKey && !consumedIds.has(item.id),
       );
+
+      // SLIDING idempotence: the `:sliding:<index>` key is recomputed from a moving
+      // base (the latest locked occurrence), so an exact-key miss can still be the
+      // SAME calendar slot. Without this, the slot is re-created (a duplicate) and
+      // the prior row is orphan-cancelled below — the dishwasher-task bug.
+      if (!existing && isSlidingTask) {
+        // A terminal/manual occurrence already owns this slot — never duplicate it.
+        const lockedOnSlot = task.occurrences.find(
+          (item) =>
+            !consumedIds.has(item.id) &&
+            sameDay(item.scheduledDate, occurrence.scheduledDate) &&
+            (item.isManuallyModified ||
+              ["completed", "skipped", "rescheduled"].includes(item.status)),
+        );
+        if (lockedOnSlot) {
+          continue;
+        }
+        // Re-bind a stale-keyed non-terminal row to this slot (its key re-converges
+        // in the update branch below, so the orphan-cancel no longer cancels it).
+        existing = task.occurrences.find(
+          (item) =>
+            !consumedIds.has(item.id) &&
+            sameDay(item.scheduledDate, occurrence.scheduledDate) &&
+            ["planned", "due", "overdue"].includes(item.status) &&
+            !item.isManuallyModified,
+        );
+      }
 
       if (!existing) {
         const created = await db.taskOccurrence.create({
@@ -125,6 +157,8 @@ export async function syncHouseholdOccurrences(
         continue;
       }
 
+      consumedIds.add(existing.id);
+
       const isPastOrDone = ["completed", "skipped"].includes(existing.status);
       const isSliding = task.recurrenceRule?.mode === "SLIDING";
       const isRescheduled = existing.status === "rescheduled";
@@ -135,7 +169,10 @@ export async function syncHouseholdOccurrences(
       }
 
       const statusChanged = existing.status !== occurrence.status;
-      const otherFieldsChanged = 
+      // A re-bound slot (fallback above) carries a stale key; re-converge it so the
+      // orphan-cancel below keeps the row instead of cancelling it.
+      const keyChanged = existing.sourceGenerationKey !== occurrence.sourceGenerationKey;
+      const otherFieldsChanged =
         existing.assignedMemberId !== occurrence.assignedMemberId ||
         existing.scheduledDate.getTime() !== occurrence.scheduledDate.getTime();
 
@@ -158,6 +195,7 @@ export async function syncHouseholdOccurrences(
       if (
         otherFieldsChanged ||
         statusChanged ||
+        keyChanged ||
         (existing.isManuallyModified && options?.forceOverwriteManual)
       ) {
         await db.taskOccurrence.update({
@@ -167,6 +205,7 @@ export async function syncHouseholdOccurrences(
             dueDate: occurrence.dueDate,
             assignedMemberId: occurrence.assignedMemberId,
             status: occurrence.status,
+            sourceGenerationKey: occurrence.sourceGenerationKey,
             ...(options?.forceOverwriteManual ? { isManuallyModified: false } : {}),
           },
         });
@@ -577,11 +616,21 @@ export async function rescheduleOccurrence(params: {
       // Re-key the current occurrence for stability
       // For SLIDING, the generator will pick up this rescheduled date as the new base
       // because it's "locked" (status = rescheduled).
+      // For SLIDING, REUSE the occurrence's existing sliding index rather than
+      // forcing 0 — forcing 0 shifts the base parsed on the next sync, drifting
+      // every downstream slot's key and materialising duplicates.
+      let slidingIndex: number | undefined;
+      if (ruleRecord.mode === "SLIDING") {
+        const parsed = Number.parseInt(existing.sourceGenerationKey.split(":sliding:")[1] ?? "", 10);
+        slidingIndex = Number.isNaN(parsed)
+          ? getStableSequenceIndex(mapRecurrenceRule(ruleRecord), params.scheduledDate)
+          : parsed;
+      }
       const newKey = buildGenerationKey(
         existing.taskTemplate.id,
         params.scheduledDate,
         ruleRecord.mode,
-        ruleRecord.mode === "SLIDING" ? 0 : undefined,
+        slidingIndex,
       );
 
       // Re-keying is best-effort: if another occurrence already holds this key
